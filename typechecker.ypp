@@ -1,0 +1,184 @@
+%{
+
+#include <cstdio>
+#include <iostream>
+
+#include "include/ast.hpp"
+#include "include/symboltable.hpp"
+
+extern "C" {
+    extern int yydebug;
+    extern FILE *yyin;
+    extern int yylineno;
+    extern int yylex(void);
+}
+
+void yyerror(const char *msg);
+bool methodReturnCheck(AST::StatementList *statementList);
+
+AST::Program *root = NULL;
+
+%}
+
+%token <stringValue> ID STRING_LITERAL
+%token <intValue> INTEGER_LITERAL BOOLEAN_LITERAL
+%token AND OR LESSEQ GREATEREQ EQUAL NOTEQ CLASS PUBLIC STATIC VOID MAIN STRING EXTENDS RETURN INT BOOLEAN IF ELSE WHILE LENGTH THIS NEW SYSTEM OUT PRINT PRINTLN LRSQUARE
+%token PLUSPLUS MINUSMINUS
+
+%type <node> Program MainClass ClassDeclList ClassDecl VarDeclList VarDecl MethodDeclList MethodDecl FormalList FormalRestList FormalRest PrimeType Type StatementList Statement Index Exp Object ExpList ExpRestList ExpRest Identifier
+
+%left OR
+%left AND
+%left EQUAL NOTEQ
+%left '<' '>' LESSEQ GREATEREQ
+%left '+' '-'
+%left '*' '/'
+%left '!'
+
+%start Program
+
+%union {
+    int intValue;
+    char *stringValue;
+    void *node;
+}
+
+%%
+Program: MainClass ClassDeclList  { root = new AST::Program((AST::MainClass*)$1, (AST::ClassDeclList*)$2); }
+;
+MainClass: CLASS Identifier '{' PUBLIC STATIC VOID MAIN '(' STRING LRSQUARE Identifier ')' '{' Statement '}' '}'  {
+        $$ = new AST::MainClass((AST::Identifier*)$2, (AST::Identifier*)$11, (AST::Statement*)$14);
+    }
+;
+ClassDeclList: ClassDeclList ClassDecl  { ((AST::ClassDeclList*)$1)->list.push_back((AST::ClassDecl*)$2); $$ = $1; }
+|  { $$ = new AST::ClassDeclList(); }
+;
+ClassDecl: CLASS Identifier '{' VarDeclList MethodDeclList '}'  { $$ = new AST::ClassDecl((AST::Identifier*)$2, NULL, (AST::VarDeclList*)$4, (AST::MethodDeclList*)$5); }
+| CLASS Identifier EXTENDS Identifier '{' VarDeclList MethodDeclList '}'  { $$ = new AST::ClassDecl((AST::Identifier*)$2, (AST::Identifier*)$4, (AST::VarDeclList*)$6, (AST::MethodDeclList*)$7); }
+;
+VarDeclList: VarDeclList VarDecl { ((AST::VarDeclList*)$1)->list.push_back((AST::VarDecl*)$2); $$ = $1; }
+|  { $$ = new AST::VarDeclList(); }
+;
+VarDecl: Type Identifier ';'  { $$ = new AST::VarDecl((AST::Type*)$1, (AST::Identifier*)$2); }
+;
+MethodDeclList: MethodDeclList MethodDecl  { ((AST::MethodDeclList*)$1)->list.push_back((AST::MethodDecl*)$2); $$ = $1; }
+|  { $$ = new AST::MethodDeclList(); }
+;
+MethodDecl: PUBLIC Type Identifier '(' FormalList ')' '{' VarDeclList StatementList '}'  { if (!methodReturnCheck((AST::StatementList*)$9)) YYABORT; $$ = new AST::MethodDecl(yylineno, (AST::Type*)$2, (AST::Identifier*)$3, (AST::VarDeclList*)$5, (AST::VarDeclList*)$8, (AST::StatementList*)$9); }
+;
+FormalList: Type Identifier FormalRestList  { ((AST::VarDeclList*)$3)->list.push_back(new AST::VarDecl((AST::Type*)$1, (AST::Identifier*)$2)); $$ = $3; }
+|  { $$ = new AST::VarDeclList(); }
+;
+FormalRestList: FormalRestList FormalRest  { ((AST::VarDeclList*)$1)->list.push_back((AST::VarDecl*)$2); $$ = $1; }
+|  { $$ = new AST::VarDeclList(); }
+;
+FormalRest: ',' Type Identifier  { $$ = new AST::VarDecl((AST::Type*)$2, (AST::Identifier*)$3); }
+;
+PrimeType: INT  { $$ = new AST::Type(AST::integerType); }
+| BOOLEAN  { $$ = new AST::Type(AST::booleanType); }
+| Identifier { $$ = new AST::Type(yylineno, (AST::Identifier*)$1); }
+;
+Type: PrimeType  { $$ = $1; }
+| Type LRSQUARE  { ((AST::Type*)$1)->arrayDimension += 1; $$ = $1; }
+;
+StatementList: Statement StatementList  { $$ = new AST::StatementList((AST::Statement*)$1, (AST::StatementList*)$2); }
+|  { $$ = new AST::StatementList(); }
+;
+Statement: '{' StatementList '}'  { $$ = new AST::StatementBlock((AST::StatementList*)$2); }
+| IF '(' Exp ')' Statement ELSE Statement  { $$ = new AST::IfElse((AST::Exp*)$3, (AST::Statement*)$5, (AST::Statement*)$7); }
+| WHILE '(' Exp ')' Statement  { $$ = new AST::While((AST::Exp*)$3, (AST::Statement*)$5); }
+| SYSTEM '.' OUT '.' PRINT '(' STRING_LITERAL ')' ';'  { $$ = new AST::Print($7, false); }
+| SYSTEM '.' OUT '.' PRINT '(' Exp ')' ';'  { $$ = new AST::Print((AST::Exp*)$7, false); }
+| SYSTEM '.' OUT '.' PRINTLN '(' STRING_LITERAL ')' ';'  { $$ = new AST::Print($7, true); }
+| SYSTEM '.' OUT '.' PRINTLN '(' Exp ')' ';'  { $$ = new AST::Print((AST::Exp*)$7, true); }
+| Identifier '=' Exp ';'  { $$ = new AST::VarAssign((AST::Identifier*)$1, NULL, (AST::Exp*)$3); }
+| Identifier Index '=' Exp ';'  { $$ = new AST::VarAssign((AST::Identifier*)$1, (AST::Index*)$2, (AST::Exp*)$4); }
+| RETURN Exp ';'  { $$ = new AST::Return((AST::Exp*)$2); }
+;
+Index: '[' Exp ']'  { $$ = new AST::Index(yylineno, NULL, (AST::Exp*)$2); }
+| Index '[' Exp ']'  { $$ = new AST::Index(yylineno, (AST::Index*)$1, (AST::Exp*)$3); }
+;
+Exp: Exp '+' Exp  { $$ = new AST::Add(yylineno, (AST::Exp*)$1, (AST::Exp*)$3); }
+| Exp '-' Exp  { $$ = new AST::Minus(yylineno, (AST::Exp*)$1, (AST::Exp*)$3); }
+| Exp '*' Exp  { $$ = new AST::Multi(yylineno, (AST::Exp*)$1, (AST::Exp*)$3); }
+| Exp '/' Exp  { $$ = new AST::Divide(yylineno, (AST::Exp*)$1, (AST::Exp*)$3); }
+| Exp AND Exp  { $$ = new AST::And(yylineno, (AST::Exp*)$1, (AST::Exp*)$3); }
+| Exp OR Exp  { $$ = new AST::Or(yylineno, (AST::Exp*)$1, (AST::Exp*)$3); }
+| Exp '<' Exp  { $$ = new AST::Less(yylineno, (AST::Exp*)$1, (AST::Exp*)$3); }
+| Exp '>' Exp  { $$ = new AST::Greater(yylineno, (AST::Exp*)$1, (AST::Exp*)$3); }
+| Exp LESSEQ Exp  { $$ = new AST::LessEqual(yylineno, (AST::Exp*)$1, (AST::Exp*)$3); }
+| Exp GREATEREQ Exp  { $$ = new AST::GreaterEqual(yylineno, (AST::Exp*)$1, (AST::Exp*)$3); }
+| Exp EQUAL Exp  { $$ = new AST::Equal(yylineno, (AST::Exp*)$1, (AST::Exp*)$3); }
+| Exp NOTEQ Exp  { $$ = new AST::NotEqual(yylineno, (AST::Exp*)$1, (AST::Exp*)$3); }
+| '+' Exp  { $$ = new AST::Positive(yylineno, (AST::Exp*)$2); }
+| '-' Exp  { $$ = new AST::Negative(yylineno, (AST::Exp*)$2); }
+| '!' Exp  { $$ = new AST::Not(yylineno, (AST::Exp*)$2); }
+| '(' Exp ')'  { $$ = $2; }
+| Identifier Index  { $$ = new AST::IdIndexLength(yylineno, (AST::Identifier*)$1, (AST::Index*)$2, false); }
+| Identifier '.' LENGTH  { $$ = new AST::IdIndexLength(yylineno, (AST::Identifier*)$1, new AST::Index(yylineno, NULL, NULL), true); }
+| Identifier Index '.' LENGTH  { $$ = new AST::IdIndexLength(yylineno, (AST::Identifier*)$1, (AST::Index*)$2, true); }
+| INTEGER_LITERAL  { $$ = new AST::Integer(yylineno, $1); }
+| BOOLEAN_LITERAL  { $$ = new AST::Boolean(yylineno, $1); }
+| Identifier  { $$ = new AST::IdObject(yylineno, (AST::Identifier*)$1); }
+| Object  { $$ = $1; }
+| Identifier '.' Identifier '(' ExpList ')'  { $$ = new AST::MethodCall(yylineno, new AST::IdObject(yylineno, (AST::Identifier*)$1), (AST::Identifier*)$3, (AST::ExpList*)$5); }
+;
+| Object '.' Identifier '(' ExpList ')'  { $$ = new AST::MethodCall(yylineno, (AST::Exp*)$1, (AST::Identifier*)$3, (AST::ExpList*)$5); }
+;
+Object: THIS  { $$ = new AST::ThisObject(yylineno); }
+| NEW Identifier '(' ')'  { $$ = new AST::NewClassObject(yylineno, (AST::Identifier*)$2); }
+| NEW PrimeType Index  { $$ = new AST::NewArrayObject(yylineno, (AST::Type*)$2, (AST::Index*)$3); }
+;
+ExpList: Exp ExpRestList  { ((AST::ExpList*)$2)->list.push_back((AST::Exp*)$1); $$ = $2; }
+|  { $$ = new AST::ExpList(); }
+;
+ExpRestList: ExpRestList ExpRest  { ((AST::ExpList*)$1)->list.push_back((AST::Exp*)$2); $$ = $1; }
+|  { $$ = new AST::ExpList(); }
+;
+ExpRest: ',' Exp  { $$ = $2; }
+;
+Identifier: ID  { $$ = new AST::Identifier(yylineno, $ID); }
+%%
+int main(int argc, char* argv[])
+{
+    // yydebug = 1;
+    yyin = fopen(argv[1], "r");
+    if (!yyin) {
+        printf("Failed to open file\n");
+        return 1;
+    }
+    yyparse();
+    fclose(yyin);
+    if (root != NULL) {
+        root->typecheck();
+        if (AST::Node::countTypeCheckError == 0) {
+            root->execute();
+        }
+#ifdef DETAIL_REPORT
+        else {
+            printf("Total type error: %d\n", AST::Node::countTypeCheckError);
+        }
+#endif
+    }
+    cleanupTables();
+    return 0;
+}
+
+bool methodReturnCheck(AST::StatementList *statementList) {
+    AST::Statement *lastStatement = NULL;
+    while (statementList->statement != NULL) {
+        lastStatement = statementList->statement;
+        statementList = statementList->next;
+    }
+    if (lastStatement == NULL || !lastStatement->isReturn()) {
+        // Method does not end with return statement
+        yyerror("Syntax error");
+        return false;
+    }
+    return true;
+}
+
+void yyerror(const char *msg)
+{
+    printf("Syntax errors in %d\n", yylineno);
+}

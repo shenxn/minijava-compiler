@@ -1,0 +1,93 @@
+		Abstract syntax for the MiniJava language
+		   (Presented in Java Syntax)
+
+NOTE: 	1) This document is specific to MiniJava.  MiniJava+ in our course
+is an extension of MiniJava. Students are responsible for extend the design
+in this document for MiniJava+. As stated in Project 2 handout, students are responsible for
+implementing the design given in this document in C (Yacc) or C++ (Bison),
+of their choice.
+
+	2) The text below the separating line enumerates the classes of nodes
+in the abstract tree that specifies the computation structure of a MiniJava 
+program. The root of the AST is Program.
+
+	3) Each line specifies a specific class of AST node and its children.
+It could be viewed as a prototype for constructing an instance of that class.
+For example, Program(MainClass m, ClassDeclList cl) specifies that the Program
+node has two children. One is a MainClass node and the other a ClassDeclList node.
+
+	If implemented in Java, the class declaration and constructor for
+Program would look as follows:
+
+//Program begins here
+
+public class Program {
+  public MainClass m;
+  public ClassDeclList cl;
+
+  
+   public Program(MainClass am, ClassDeclList acl) 
+	{
+    m=am; cl=acl; 
+  }
+
+  
+
+} // Program ends here
+
+Other methods, e.g. the tree_traversal method, can be added to the class 
+later.
+
+	4) In general XyzList is implemented as a linked list of objects of
+the class Xyz. For example ClassDeclList is a linked list of ClassDecl
+
+	5) Normally, the symbol table (for storing type information 
+for each variable, and later for storing computed value during program
+interpretation) is constructed after the entire AST is built. Information
+needed for constructing the symbol table is obtained by traversing the AST.
+
+----------------------------AST definitions------------------------------------------------
+
+Program(MainClass m, ClassDeclList cl)
+MainClass(Identifier i1, Identifier i2, Statement s)
+
+abstract class ClassDecl
+ClassDeclSimple(Identifier i, VarDeclList vl, MethodDeclList ml)
+ClassDeclExtends(Identifier i, Identifier j,
+                                  VarDeclList vl, MethodDeclList ml) see Ch.14
+
+VarDecl(Type t, Identifier i)
+MethodDecl(Type t, Identifier i, FormalList fl, VarDeclList vl,
+                           StatementList sl, Exp e)
+Formal(Type t, Identifier i)
+
+abstract class Type
+IntArrayType() BooleanType() IntegerType() IdentifierType(String s)
+
+abstract class Statement
+Block(StatementList sl)
+If(Exp e, Statement s1, Statement s2)
+While(Exp e, Statement s)
+Print(Exp e)
+Assign(Identifier i, Exp e)
+ArrayAssign(Identifier i, Exp e1, Exp e2)
+
+abstract class Exp
+And(Exp e1, Exp e2)
+LessThan(Exp e1, Exp e2)
+Plus(Exp e1, Exp e2) Minus(Exp e1, Exp e2) Times(Exp e1, Exp e2)
+ArrayLookup(Exp e1, Exp e2)
+ArrayLength(Exp e)
+Call(Exp e, Identifier i, ExpList el)
+IntegerLiteral(int i)
+True()
+False()
+IdentifierExp(String s)
+This()
+NewArray(Exp e)
+NewObject(Identifier i)
+Not(Exp e)
+
+Identifier(String s)
+list classes ClassDeclList() ExpList() FormalList() MethodDeclList() StatementList() VarDeclList()
+

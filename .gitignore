@@ -1,6 +1,8 @@
-parser
+.vscode
+typechecker
 lex.yy.c
-y.dot
-y.output
-y.tab.c
-y.tab.h
+lex.yy.o
+typechecker.dot
+typechecker.output
+typechecker.tab.cpp
+typechecker.tab.hpp

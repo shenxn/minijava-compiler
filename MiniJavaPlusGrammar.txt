@@ -1,5 +1,9 @@
 ﻿            MiniJava+ Lexical and Syntax Forms
 
+NOTE (Feb. 16): This is a slight revision of the document used in Project 1.
+There are two changes. The first one concerns nonterminal Type and a related
+new nonterminal PrimeType. The second concerns nonterminal Object. See Project 2
+handout for more detials.
 
 MiniJava+ is a subset of Java. The meaning of a MiniJava+ program is given 
 by its meaning as a Java program. Overloading is not allowed in MiniJava+. 
@@ -57,22 +61,32 @@ NOTE 5: A short sample program is appended. Further samples may be posted as nee
  ClassDecl : class id { VarDecl* MethodDecl* }
            : class id extends id { VarDecl* MethodDecl* }
    VarDecl : Type id ;
+
 MethodDecl : public Type id ( FormalList )
                { VarDecl* Statement* return Exp ;}
+
 FormalList : Type id FormalRest*
            :
+
 FormalRest :, Type id
-      Type : int
+
+ PrimeType : int
            : boolean
            : id
+
+      Type : PrimeType
            : Type [ ]
+
  Statement : { Statement* }
            : if ( Exp ) Statement else Statement
            : while ( Exp ) Statement
            : System.out.println ( Exp ) ;
            : System.out.println ( STRING_LITERAL ) ;
+           : System.out.print ( Exp ) ;
+           : System.out.print ( STRING_LITERAL ) ;
            : id = Exp ;
            : id Index = Exp ;
+	   : return Exp ;
     Index  : [ Exp ]
            : Index [Exp]
        Exp : Exp op Exp
@@ -91,7 +105,7 @@ FormalRest :, Type id
   Object   : id
            : this
            : new id ()
-           : new Type Index
+           : new PrimeType Index
    ExpList : Exp ExpRest*
            :
   ExpRest  :  ,Exp
