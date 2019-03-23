@@ -36,7 +36,12 @@ namespace AST {
     }
 
     void IfElse::execute() {
-        // TODO
+        exp->execute();
+        if (exp->value.boolVal) {
+            ifStatement->execute();
+        } else {
+            elseStatement->execute();
+        }
     }
 
     void IfElse::typecheck() {
@@ -60,7 +65,11 @@ namespace AST {
     }
 
     void While::execute() {
-        // TODO
+        exp->execute();
+        while (exp->value.boolVal) {
+            statement->execute();
+            exp->execute();
+        }
     }
 
     void While::typecheck() {
@@ -94,14 +103,43 @@ namespace AST {
 
     void Print::execute() {
         if (isString) {
-            printf("%s", value.s);
+            int length = strlen(value.s);
+            char *s = new char[length];
+            int writePos = 0;
+            bool escaped = false;
+            for (int i = 1; i < length - 1; i++) {
+                if (escaped) {
+                    escaped = false;
+                    switch (value.s[i]) {
+                        case 'b':
+                            s[writePos++] = '\b';
+                            break;
+                        case 'n':
+                            s[writePos++] = '\n';
+                            break;
+                        case 't':
+                            s[writePos++] = '\t';
+                            break;
+                        case '"':
+                            s[writePos++] = '"';
+                            break;
+                        case '\\':
+                            s[writePos++] = '\\';
+                            break;
+                    }
+                } else {
+                    if (value.s[i] == '\\') {
+                        escaped = true;
+                    } else {
+                        s[writePos++] = value.s[i];
+                    }
+                }
+            }
+            s[writePos] = '\0';
+            printf("%s", s);
         } else {
             value.e->execute();
-            if (value.e->isInt()) {
-                printf("%d", value.e->value);
-            } else {
-                printf(value.e->value ? "true" : "false");
-            }
+            printf("%d", value.e->value.intVal);
         }
         if (isNewLine) {
             printf("\n");
@@ -115,8 +153,8 @@ namespace AST {
             if (!this->value.e->isValid()) {
                 return;
             }
-            if (!this->value.e->isInt() && !this->value.e->isBool()) {
-                this->value.e->reportTypeCheckError("Print parameter is neither int nor bool");
+            if (!this->value.e->isInt()) {
+                this->value.e->reportTypeCheckError("Print parameter is neither int nor string literal");
             }
         }
     }
@@ -134,7 +172,17 @@ namespace AST {
     }
 
     void VarAssign::execute() {
-        // TODO
+        if (index != NULL) {
+            index->execute();
+        }
+        exp->execute();
+        Index *subIndex = index;
+        VarValue *subValue = var->find();
+        while (subIndex != NULL) {
+            subValue = &subValue->arrayVal->value[subIndex->exp->value.intVal];
+            subIndex = subIndex->subIndex;
+        }
+        *subValue = exp->value;
     }
 
     void VarAssign::typecheck() {
@@ -154,7 +202,10 @@ namespace AST {
         }
 
         exp->typecheck();
-        if (!varType->equal(exp->type)) {
+        if (!exp->isValid()) {
+            return;
+        }
+        if (!varType->equalOrIsSuperOf(exp->type)) {
             exp->reportTypeCheckError("Assignment type does not match");
         }
     }
@@ -168,7 +219,9 @@ namespace AST {
     }
 
     void Return::execute() {
-        // TODO
+        exp->execute();
+        returnValue = exp->value;
+        returned = true;
     }
 
     void Return::typecheck() {
@@ -177,7 +230,10 @@ namespace AST {
             return;
         }
 
-        if (currentMethod == NULL || !currentMethod->methodDecl->returnType->equal(exp->type)) {
+        if (currentMethod != NULL && !currentMethod->methodDecl->returnType->isValid) {
+            return;
+        }
+        if (currentMethod == NULL || !currentMethod->methodDecl->returnType->equalOrIsSuperOf(exp->type)) {
             exp->reportTypeCheckError("Return type does not match");
         }
     }
@@ -186,32 +242,24 @@ namespace AST {
         return true;
     }
 
-    StatementList::StatementList() {
-        statement = NULL;
-        next = NULL;
-    }
-
-    StatementList::StatementList(Statement *statement, StatementList *next) {
-        this->statement = statement;
-        this->next = next;
-    }
-
     StatementList::~StatementList() {
-        delete statement;
-        delete next;
+        for (auto statement : list) {
+            delete statement;
+        }
     }
 
     void StatementList::execute() {
-        if (statement != NULL) {
+        for (auto statement : list) {
             statement->execute();
-            next->execute();
+            if (returned) {
+                break;
+            }
         }
     }
 
     void StatementList::typecheck() {
-        if (statement != NULL) {
+        for (auto statement : list) {
             statement->typecheck();
-            next->typecheck();
         }
     }
 

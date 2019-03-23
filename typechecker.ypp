@@ -66,7 +66,7 @@ MethodDeclList: MethodDeclList MethodDecl  { ((AST::MethodDeclList*)$1)->list.pu
 ;
 MethodDecl: PUBLIC Type Identifier '(' FormalList ')' '{' VarDeclList StatementList '}'  { if (!methodReturnCheck((AST::StatementList*)$9)) YYABORT; $$ = new AST::MethodDecl(yylineno, (AST::Type*)$2, (AST::Identifier*)$3, (AST::VarDeclList*)$5, (AST::VarDeclList*)$8, (AST::StatementList*)$9); }
 ;
-FormalList: Type Identifier FormalRestList  { ((AST::VarDeclList*)$3)->list.push_back(new AST::VarDecl((AST::Type*)$1, (AST::Identifier*)$2)); $$ = $3; }
+FormalList: Type Identifier FormalRestList  { ((AST::VarDeclList*)$3)->list.push_front(new AST::VarDecl((AST::Type*)$1, (AST::Identifier*)$2)); $$ = $3; }
 |  { $$ = new AST::VarDeclList(); }
 ;
 FormalRestList: FormalRestList FormalRest  { ((AST::VarDeclList*)$1)->list.push_back((AST::VarDecl*)$2); $$ = $1; }
@@ -81,7 +81,7 @@ PrimeType: INT  { $$ = new AST::Type(AST::integerType); }
 Type: PrimeType  { $$ = $1; }
 | Type LRSQUARE  { ((AST::Type*)$1)->arrayDimension += 1; $$ = $1; }
 ;
-StatementList: Statement StatementList  { $$ = new AST::StatementList((AST::Statement*)$1, (AST::StatementList*)$2); }
+StatementList: Statement StatementList  { ((AST::StatementList*)$2)->list.push_front((AST::Statement*)$1); $$ = $2; }
 |  { $$ = new AST::StatementList(); }
 ;
 Statement: '{' StatementList '}'  { $$ = new AST::StatementBlock((AST::StatementList*)$2); }
@@ -96,7 +96,7 @@ Statement: '{' StatementList '}'  { $$ = new AST::StatementBlock((AST::Statement
 | RETURN Exp ';'  { $$ = new AST::Return((AST::Exp*)$2); }
 ;
 Index: '[' Exp ']'  { $$ = new AST::Index(yylineno, NULL, (AST::Exp*)$2); }
-| Index '[' Exp ']'  { $$ = new AST::Index(yylineno, (AST::Index*)$1, (AST::Exp*)$3); }
+| '[' Exp ']' Index  { $$ = new AST::Index(yylineno, (AST::Index*)$4, (AST::Exp*)$2); }
 ;
 Exp: Exp '+' Exp  { $$ = new AST::Add(yylineno, (AST::Exp*)$1, (AST::Exp*)$3); }
 | Exp '-' Exp  { $$ = new AST::Minus(yylineno, (AST::Exp*)$1, (AST::Exp*)$3); }
@@ -115,7 +115,7 @@ Exp: Exp '+' Exp  { $$ = new AST::Add(yylineno, (AST::Exp*)$1, (AST::Exp*)$3); }
 | '!' Exp  { $$ = new AST::Not(yylineno, (AST::Exp*)$2); }
 | '(' Exp ')'  { $$ = $2; }
 | Identifier Index  { $$ = new AST::IdIndexLength(yylineno, (AST::Identifier*)$1, (AST::Index*)$2, false); }
-| Identifier '.' LENGTH  { $$ = new AST::IdIndexLength(yylineno, (AST::Identifier*)$1, new AST::Index(yylineno, NULL, NULL), true); }
+| Identifier '.' LENGTH  { $$ = new AST::IdIndexLength(yylineno, (AST::Identifier*)$1, NULL, true); }
 | Identifier Index '.' LENGTH  { $$ = new AST::IdIndexLength(yylineno, (AST::Identifier*)$1, (AST::Index*)$2, true); }
 | INTEGER_LITERAL  { $$ = new AST::Integer(yylineno, $1); }
 | BOOLEAN_LITERAL  { $$ = new AST::Boolean(yylineno, $1); }
@@ -129,7 +129,7 @@ Object: THIS  { $$ = new AST::ThisObject(yylineno); }
 | NEW Identifier '(' ')'  { $$ = new AST::NewClassObject(yylineno, (AST::Identifier*)$2); }
 | NEW PrimeType Index  { $$ = new AST::NewArrayObject(yylineno, (AST::Type*)$2, (AST::Index*)$3); }
 ;
-ExpList: Exp ExpRestList  { ((AST::ExpList*)$2)->list.push_back((AST::Exp*)$1); $$ = $2; }
+ExpList: Exp ExpRestList  { ((AST::ExpList*)$2)->list.push_front((AST::Exp*)$1); $$ = $2; }
 |  { $$ = new AST::ExpList(); }
 ;
 ExpRestList: ExpRestList ExpRest  { ((AST::ExpList*)$1)->list.push_back((AST::Exp*)$2); $$ = $1; }
@@ -165,12 +165,8 @@ int main(int argc, char* argv[])
 }
 
 bool methodReturnCheck(AST::StatementList *statementList) {
-    AST::Statement *lastStatement = NULL;
-    while (statementList->statement != NULL) {
-        lastStatement = statementList->statement;
-        statementList = statementList->next;
-    }
-    if (lastStatement == NULL || !lastStatement->isReturn()) {
+    auto it = statementList->list.end();
+    if (statementList->list.empty() || !(*--it)->isReturn()) {
         // Method does not end with return statement
         yyerror("Syntax error");
         return false;

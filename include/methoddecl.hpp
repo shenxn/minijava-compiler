@@ -9,6 +9,8 @@
 
 namespace AST {
 
+    class ExpList;
+
     class MethodDecl: public Node {
         public:
             Type *returnType;
@@ -22,6 +24,8 @@ namespace AST {
             ~MethodDecl();
 
             void execute();
+
+            void execute(ExpList *paramList);
 
             void typecheck();
 

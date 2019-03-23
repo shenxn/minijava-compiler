@@ -1,5 +1,6 @@
 #include "mainclass.hpp"
 #include "symboltable.hpp"
+#include "stack.hpp"
 
 namespace AST {
 
@@ -17,6 +18,7 @@ namespace AST {
 
     void MainClass::execute() {
         statement->execute();
+        Stack::clearStack();
     }
 
     void MainClass::typecheck() {

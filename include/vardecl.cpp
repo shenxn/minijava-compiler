@@ -1,5 +1,6 @@
 #include "vardecl.hpp"
 #include "symboltable.hpp"
+#include "stack.hpp"
 
 namespace AST {
 
@@ -18,9 +19,7 @@ namespace AST {
         delete id;
     }
 
-    void VarDecl::execute() {
-        // Nothing to execute
-    }
+    void VarDecl::execute() {}
 
     void VarDecl::typecheck() {
         VarItem *varItem = varTable->find(id->s)->second;
@@ -65,7 +64,7 @@ namespace AST {
             return false;
         }
         for (auto listIt = list.begin(), bListIt = b->list.begin(); listIt != list.end(); listIt++, bListIt++) {
-            if (!(*listIt)->type->equal((*bListIt)->type)) {
+            if (!(*listIt)->type->equalOrIsSuperOf((*bListIt)->type, true)) {
                 return false;
             }
         }
@@ -78,9 +77,10 @@ namespace AST {
         }
         auto expIt = expList->list.begin();
         for (auto varDecl : list) {
-            if (!varDecl->type->equal((*expIt)->type)) {
+            if (!varDecl->type->equalOrIsSuperOf((*expIt)->type)) {
                 return false;
             }
+            expIt++;
         }
         return true;
     }

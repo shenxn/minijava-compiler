@@ -1,3 +1,4 @@
+#include <cstring>
 #include "identifier.hpp"
 #include "symboltable.hpp"
 #include "type.hpp"
@@ -22,5 +23,9 @@ namespace AST {
     void Identifier::execute() {}
 
     void Identifier::typecheck() {}
+
+    bool Identifier::equal(Identifier *b) {
+        return strcmp(s, b->s) == 0;
+    }
 
 }

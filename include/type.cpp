@@ -36,16 +36,25 @@ namespace AST {
         }
     }
 
-    bool Type::equal(Type *b) {
+    bool Type::equalOrIsSuperOf(Type *b, bool isExact) {
         if (type != b->type) {
             return false;
         }
 
-        if (type == classType && !classId->equal(b->classId)) {
+        if (arrayDimension != b->arrayDimension) {
             return false;
         }
 
-        if (arrayDimension != b->arrayDimension) {
+        if (type == classType) {
+            if (isExact) {
+                return classId->id->equal(b->classId->id);
+            } else {
+                for (auto classItem = b->classId->classItem; classItem != NULL; classItem = classItem->parent) {
+                    if (classId->id->equal(classItem->classDecl->id)) {
+                        return true;
+                    }
+                }
+            }
             return false;
         }
 

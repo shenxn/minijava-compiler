@@ -20,6 +20,8 @@ namespace AST {
             void execute();
 
             void typecheck();
+
+            bool equal(Identifier *b);
     };
 
 }

@@ -17,8 +17,8 @@ namespace AST {
     }
 
     void Program::typecheck() {
-        mainClass->typecheck();
         buildClassInher();
+        mainClass->typecheck();
         classDeclList->typecheck();
     }
 

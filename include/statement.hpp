@@ -1,5 +1,6 @@
 #pragma once
 
+#include <list>
 #include <cstdio>
 #include <cstdlib>
 #include "node.hpp"
@@ -111,12 +112,7 @@ namespace AST {
 
     class StatementList: public Node {
         public:
-            Statement *statement;
-            StatementList *next;
-
-            StatementList();
-
-            StatementList(Statement *statement, StatementList *next);
+            std::list <Statement*> list;
 
             ~StatementList();
 

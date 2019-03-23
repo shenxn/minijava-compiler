@@ -1,5 +1,6 @@
 #include "methoddecl.hpp"
 #include "symboltable.hpp"
+#include "exp.hpp"
 
 namespace AST {
 
@@ -19,7 +20,27 @@ namespace AST {
         delete statementList;
     }
 
-    void MethodDecl::execute() {}
+    void MethodDecl::execute() {
+        // Not used
+    }
+
+    void MethodDecl::execute(ExpList *paramList) {
+        Stack::_methodStack.push(new StackItem());
+        auto paramIt = paramList->list.begin();
+        for (auto varDecl : formalList->list) {
+            VarValue *varValue = new VarValue;
+            *varValue = (*paramIt)->value;
+            methodStack->variableMap[varDecl->id->s] = varValue;
+            paramIt++;
+        }
+        for (auto varDecl : varDeclList->list) {
+            varDecl->execute();
+            methodStack->variableMap[varDecl->id->s] = new VarValue;
+        }
+        statementList->execute();
+        returned = false;
+        Stack::_methodStack.pop();
+    }
 
     void MethodDecl::typecheck() {
         currentMethod = currentClass->methodTable.find(methodId->s)->second->find(formalList);
@@ -37,11 +58,12 @@ namespace AST {
                 continue;
             }
             MethodItem *parentMethod = parentMethodIt->second->find(formalList);
-            if (parentMethod != NULL && !parentMethod->methodDecl->returnType->equal(returnType)) {
+            if (parentMethod != NULL && !parentMethod->methodDecl->returnType->equalOrIsSuperOf(returnType, true)) {
                 methodId->reportTypeCheckError("Invalid override (different return type)");
             }
         }
 
+        returnType->typecheck();
         formalList->typecheck();
         varDeclList->typecheck();
         statementList->typecheck();

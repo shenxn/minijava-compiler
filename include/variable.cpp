@@ -15,6 +15,8 @@ namespace AST {
     void Variable::execute() {}
 
     void Variable::typecheck() {
+        // TODO: check if initialized
+
         if (currentMethod != NULL) {
             // Not main class
 
@@ -34,6 +36,14 @@ namespace AST {
         }
 
         id->reportTypeCheckError("Undefined variable");
+    }
+
+    VarValue *Variable::find() {
+        auto it = methodStack->variableMap.find(id->s);
+        if (it == methodStack->variableMap.end()) {
+            it = classStack->variableMap.find(id->s);
+        }
+        return it->second;
     }
 
 }

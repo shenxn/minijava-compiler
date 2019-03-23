@@ -5,6 +5,7 @@
 #include "type.hpp"
 #include "variable.hpp"
 #include "symboltabletype.hpp"
+#include "stack.hpp"
 
 namespace AST {
 
@@ -13,7 +14,7 @@ namespace AST {
     class Exp: public Node {
         public:
             Type *type = NULL;
-            int value;
+            VarValue value;
             bool _isValid = true;
 
             Exp(int lineno);
@@ -276,7 +277,7 @@ namespace AST {
             ~IdIndexLength();
 
             void execute();
-
+            
             void typecheck();
 
             bool isValid();
@@ -295,8 +296,6 @@ namespace AST {
 
     class NewClassObject: public Exp {
         public:
-            Class *classId;
-
             NewClassObject(int lineno, Identifier *classId);
 
             ~NewClassObject();
@@ -320,6 +319,8 @@ namespace AST {
             void execute();
 
             void typecheck();
+
+            Array *newArray(Index *subIndex);
 
             bool isValid();
     };

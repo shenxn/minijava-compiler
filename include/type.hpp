@@ -34,7 +34,7 @@ namespace AST {
 
             void typecheck();
 
-            bool equal(Type *b);
+            bool equalOrIsSuperOf(Type *b, bool exact = false);
 
             bool isInt();
 

@@ -2,6 +2,7 @@
 
 #include "node.hpp"
 #include "identifier.hpp"
+#include "stack.hpp"
 
 namespace AST {
 
@@ -17,6 +18,8 @@ namespace AST {
             void execute();
 
             void typecheck();
+
+            VarValue *find();
     };
 
 }

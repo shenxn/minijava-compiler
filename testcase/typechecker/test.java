@@ -73,6 +73,7 @@ class classB {
         x = 1;
         y[0] = 5;
         x[3] = 2;
+        y = 1 && 1;
 
         return 1;
     }

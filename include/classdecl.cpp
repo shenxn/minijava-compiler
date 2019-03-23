@@ -11,6 +11,7 @@ namespace AST {
 
         if (TableStatus::classTable.find(id->s) == TableStatus::classTable.end()) {
             // Ignore duplicate declaration
+            
             currentClass = new ClassItem(this);
             TableStatus::classTable[id->s] = currentClass;
 

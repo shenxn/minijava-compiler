@@ -2,7 +2,7 @@
 
 #include <cstdio>
 
-#define DETAIL_REPORT
+// #define DETAIL_REPORT
 
 namespace AST {
 

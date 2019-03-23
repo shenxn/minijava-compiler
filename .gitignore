@@ -1,8 +1,9 @@
 .vscode
-typechecker
+/typechecker
 lex.yy.c
 lex.yy.o
 typechecker.dot
 typechecker.output
 typechecker.tab.cpp
 typechecker.tab.hpp
+*.class

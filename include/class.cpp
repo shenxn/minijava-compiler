@@ -1,4 +1,3 @@
-#include <cstring>
 #include "class.hpp"
 #include "symboltable.hpp"
 
@@ -21,10 +20,6 @@ namespace AST {
         } else {
             classItem = it->second;
         }
-    }
-
-    bool Class::equal(Class *b) {
-        return strcmp(id->s, b->id->s) == 0;
     }
 
     Class *Class::copy(Class *classId) {

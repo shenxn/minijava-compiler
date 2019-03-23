@@ -20,7 +20,12 @@ namespace AST {
         delete this->exp;
     }
 
-    void Index::execute() {}
+    void Index::execute() {
+        exp->execute();
+        if (subIndex != NULL) {
+            subIndex->execute();
+        }
+    }
 
     void Index::typecheck() {
         if (subIndex != NULL) {

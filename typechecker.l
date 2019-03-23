@@ -18,11 +18,7 @@ lrsquare    \[{blank}?\]
 
 {linecmt}   ;
 {comment}   ;
-{string}    {
-        yylval.stringValue = strdup(yytext) + 1;
-        yylval.stringValue[strlen(yytext) - 2] = '\0';
-        return STRING_LITERAL;
-    }
+{string}    { yylval.stringValue = strdup(yytext); return STRING_LITERAL; }
 {blank}     ;
 
 \+\+        return PLUSPLUS;

@@ -19,8 +19,6 @@ namespace AST {
 
             void typecheck();
 
-            bool equal(Class *b);
-
             static Class *copy(Class *classId);
     };
 

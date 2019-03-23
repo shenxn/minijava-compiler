@@ -1,10 +1,10 @@
-class NumberDemo {
+class p_numbers {
 	public static void main(String [] a) {
         {
 		System.out.println("10 choose 4 is ");
-		System.out.println(new Numbers().choose(10, 4));
+		//System.out.println(new Numbers().choose(10, 4));
 		System.out.println("\nGCD of 84, 132 is ");
-		System.out.println(new Numbers().gcd(84, 132));
+		System.out.println(new Numbers().gcd(2035616, 64));
         }
 	}
 }

@@ -41,7 +41,11 @@ namespace AST {
         }
     }
 
-    void ExpList::execute() {}
+    void ExpList::execute() {
+        for (auto exp : list) {
+            exp->execute();
+        }
+    }
 
     void ExpList::typecheck() {
         for (auto exp : list) {
@@ -55,7 +59,7 @@ namespace AST {
     }
 
     void Integer::execute() {
-        value = i;
+        value.intVal = i;
     }
 
     void Integer::typecheck() {}
@@ -66,7 +70,7 @@ namespace AST {
     }
 
     void Boolean::execute() {
-        value = b;
+        value.boolVal = b;
     }
 
     void Boolean::typecheck() {}
@@ -150,7 +154,7 @@ namespace AST {
     void Add::execute() {
         a->execute();
         b->execute();
-        value = a->value + b->value;
+        value.intVal = a->value.intVal + b->value.intVal;
     }
 
     Minus::Minus(int lineno, Exp *a, Exp *b) : IntBinaryExp(lineno, a, b) {}
@@ -158,7 +162,7 @@ namespace AST {
     void Minus::execute() {
         a->execute();
         b->execute();
-        value = a->value - b->value;
+        value.intVal = a->value.intVal - b->value.intVal;
     }
 
     Multi::Multi(int lineno, Exp *a, Exp *b) : IntBinaryExp(lineno, a, b) {};
@@ -166,7 +170,7 @@ namespace AST {
     void Multi::execute() {
         a->execute();
         b->execute();
-        value = a->value * b->value;
+        value.intVal = a->value.intVal * b->value.intVal;
     }
 
     Divide::Divide(int lineno, Exp *a, Exp *b) : IntBinaryExp(lineno, a, b) {};
@@ -174,7 +178,7 @@ namespace AST {
     void Divide::execute() {
         a->execute();
         b->execute();
-        value = a->value / b->value;
+        value.intVal = a->value.intVal / b->value.intVal;
     }
 
     And::And(int lineno, Exp *a, Exp *b) : BoolBinaryExp(lineno, a, b) {};
@@ -182,7 +186,7 @@ namespace AST {
     void And::execute() {
         a->execute();
         b->execute();
-        value = a->value && b->value;
+        value.boolVal = a->value.boolVal && b->value.boolVal;
     }
 
     Or::Or(int lineno, Exp *a, Exp *b) : BoolBinaryExp(lineno, a, b) {};
@@ -190,7 +194,7 @@ namespace AST {
     void Or::execute() {
         a->execute();
         b->execute();
-        value = a->value || b->value;
+        value.boolVal = a->value.boolVal || b->value.boolVal;
     }
 
     Less::Less(int lineno, Exp *a, Exp *b) : CompareBinaryExp(lineno, a, b) {};
@@ -198,7 +202,7 @@ namespace AST {
     void Less::execute() {
         a->execute();
         b->execute();
-        value = a->value < b->value;
+        value.intVal = a->value.intVal < b->value.intVal;
     }
 
     Greater::Greater(int lineno, Exp *a, Exp *b) : CompareBinaryExp(lineno, a, b) {};
@@ -206,7 +210,7 @@ namespace AST {
     void Greater::execute() {
         a->execute();
         b->execute();
-        value = a->value > b->value;
+        value.intVal = a->value.intVal > b->value.intVal;
     }
 
     LessEqual::LessEqual(int lineno, Exp *a, Exp *b) : CompareBinaryExp(lineno, a, b) {};
@@ -214,7 +218,7 @@ namespace AST {
     void LessEqual::execute() {
         a->execute();
         b->execute();
-        value = a->value <= b->value;
+        value.intVal = a->value.intVal <= b->value.intVal;
     }
 
     GreaterEqual::GreaterEqual(int lineno, Exp *a, Exp *b) : CompareBinaryExp(lineno, a, b) {};
@@ -222,7 +226,7 @@ namespace AST {
     void GreaterEqual::execute() {
         a->execute();
         b->execute();
-        value = a->value >= b->value;
+        value.intVal = a->value.intVal >= b->value.intVal;
     }
 
     Equal::Equal(int lineno, Exp *a, Exp *b) : EqualityBinaryExp(lineno, a, b) {};
@@ -230,7 +234,11 @@ namespace AST {
     void Equal::execute() {
         a->execute();
         b->execute();
-        value = a->value == b->value;
+        if (type->isInt()) {
+            value.boolVal = a->value.intVal == b->value.intVal;
+        } else {
+            value.boolVal = a->value.boolVal == b->value.boolVal;
+        }
     }
 
     NotEqual::NotEqual(int lineno, Exp *a, Exp *b) : EqualityBinaryExp(lineno, a, b) {};
@@ -238,7 +246,11 @@ namespace AST {
     void NotEqual::execute() {
         a->execute();
         b->execute();
-        value = a->value != b->value;
+        if (type->isInt()) {
+            value.boolVal = a->value.intVal != b->value.intVal;
+        } else {
+            value.boolVal = a->value.boolVal != b->value.boolVal;
+        }
     }
 
     UnaryExp::UnaryExp(int lineno, Exp *a) : Exp(lineno) {
@@ -275,7 +287,7 @@ namespace AST {
 
     void Negative::execute() {
         a->execute();
-        value = -a->value;
+        value.intVal = -a->value.intVal;
     }
     
     Not::Not(int lineno, Exp *a) : UnaryExp(lineno, a) {
@@ -284,7 +296,7 @@ namespace AST {
 
     void Not::execute() {
         a->execute();
-        value = !a->value;
+        value.boolVal = !a->value.boolVal;
     }
 
     void Not::typecheck() {
@@ -307,7 +319,13 @@ namespace AST {
     }
 
     void MethodCall::execute() {
-        // TODO
+        // TODO: vtable
+        object->execute();
+        paramList->execute();
+        Stack::_classStack.push(object->value.classVal);
+        methodItem->methodDecl->execute(paramList);
+        Stack::_classStack.pop();
+        value = returnValue;
     }
 
     void MethodCall::typecheck() {
@@ -321,6 +339,7 @@ namespace AST {
             return;
         }
 
+        paramList->typecheck();
         for (auto it = object->type->classId->classItem; it != NULL; it = it->parent) {
             auto methodIt = it->methodTable.find(methodId->s);
             if (methodIt != it->methodTable.end()) {
@@ -352,7 +371,21 @@ namespace AST {
     }
 
     void IdIndexLength::execute() {
-        // TODO
+        id->execute();
+        if (index != NULL) {
+            index->execute();
+        }
+        Index *subIndex = index;
+        VarValue subValue = id->value;
+        while (subIndex != NULL) {
+            subValue = subValue.arrayVal->value[subIndex->exp->value.intVal];
+            subIndex = subIndex->subIndex;
+        }
+        if (isLength) {
+            value.intVal = subValue.arrayVal->length;
+        } else {
+            value = subValue;
+        }
     }
 
     void IdIndexLength::typecheck() {
@@ -363,8 +396,11 @@ namespace AST {
         }
 
         Type *varType = Type::copy(id->type);
-        varType->arrayDimension -= index->dimension;
-        index->typecheck();
+        varType->typecheck();
+        if (index != NULL) {
+            index->typecheck();
+            varType->arrayDimension -= index->dimension;
+        }
         if (varType->arrayDimension < 0) {
             reportTypeCheckError("Index operator on non-array variable");
         }
@@ -394,7 +430,7 @@ namespace AST {
     }
 
     void IdObject::execute() {
-        // TODO
+        value = *var->find();
     }
 
     void IdObject::typecheck() {
@@ -409,7 +445,7 @@ namespace AST {
     ThisObject::ThisObject(int lineno) : Exp(lineno) {}
 
     void ThisObject::execute() {
-        // TODO
+        value.classVal = classStack;
     }
 
     void ThisObject::typecheck() {
@@ -427,30 +463,46 @@ namespace AST {
     }
 
     NewClassObject::NewClassObject(int lineno, Identifier *classId) : Exp(lineno) {
-        this->classId = new Class(lineno, classId);
+        this->type = new Type(lineno, classId);
     }
 
     NewClassObject::~NewClassObject() {
-        delete this->classId;
+        delete type;
     }
 
     void NewClassObject::execute() {
-        // TODO
+        value.classVal = new StackItem();
+        for (ClassItem *classItem = type->classId->classItem; classItem != NULL; classItem = classItem->parent) {
+            for (auto varDecl : classItem->classDecl->varDeclList->list) {
+                if (value.classVal->variableMap.find(varDecl->id->s) == value.classVal->variableMap.end()) {
+                    VarValue *varValue = new VarValue;
+
+                    // Initialize
+                    if (varDecl->type->isInt()) {
+                        varValue->intVal = 0;
+                    } else if (varDecl->type->isBool()) {
+                        varValue->boolVal = 0;
+                    } else if (varDecl->type->isClass()) {
+                        varValue->classVal = NULL;
+                    } else if (varDecl->type->isArray()) {
+                        varValue->arrayVal = NULL;
+                    }
+
+                    value.classVal->variableMap[varDecl->id->s] = varValue;
+                }
+            }
+        }
     }
 
     void NewClassObject::typecheck() {
-        this->classId->typecheck();
-
-        if (classId->classItem == NULL) {
+        type->typecheck();
+        if (!type->isValid) {
             return;
         }
-
-        type = new Type(lineno, Identifier::copy(this->classId->classItem->classDecl->id));
-        type->typecheck();
     }
 
     bool NewClassObject::isValid() {
-        return _isValid && this->classId->classItem != NULL;
+        return _isValid && type->isValid;
     }
 
     NewArrayObject::NewArrayObject(int lineno, Type *primeType, Index *index) : Exp(lineno) {
@@ -464,7 +516,18 @@ namespace AST {
     }
 
     void NewArrayObject::execute() {
-        // TODO
+        index->execute();
+        value.arrayVal = newArray(index);
+    }
+
+    Array *NewArrayObject::newArray(Index *subIndex) {
+        Array *array = new Array(subIndex->exp->value.intVal);
+        if (subIndex->subIndex != NULL) {
+            for (int i = 0; i < subIndex->exp->value.intVal; i++) {
+                array->value[i].arrayVal = newArray(subIndex->subIndex);
+            }
+        }
+        return array;
     }
 
     void NewArrayObject::typecheck() {
@@ -473,6 +536,7 @@ namespace AST {
 
         type = Type::copy(primeType);
         type->arrayDimension = index->dimension;
+        type->classId = primeType->classId;
     }
 
     bool NewArrayObject::isValid() {
