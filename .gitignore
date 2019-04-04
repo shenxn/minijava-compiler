@@ -1,9 +1,9 @@
 .vscode
-/typechecker
+/mjavac
 lex.yy.c
 lex.yy.o
-typechecker.dot
-typechecker.output
-typechecker.tab.cpp
-typechecker.tab.hpp
+mjavac.dot
+mjavac.output
+mjavac.tab.cpp
+mjavac.tab.hpp
 *.class
