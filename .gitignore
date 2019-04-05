@@ -7,3 +7,4 @@ mjavac.output
 mjavac.tab.cpp
 mjavac.tab.hpp
 *.class
+*.s

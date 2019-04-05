@@ -1,3 +1,4 @@
+#include <cstdio>
 #include "mainclass.hpp"
 #include "symboltable.hpp"
 #include "stack.hpp"
@@ -19,6 +20,15 @@ namespace AST {
     void MainClass::execute() {
         statement->execute();
         Stack::clearStack();
+    }
+
+    void MainClass::compile() {
+        printf(".global main\n");
+        printf(".balign 4\n");
+        printf("main:\n");
+        printf("\tpush {lr}\n");
+        statement->compile();
+        printf("\tpop {pc}\n");
     }
 
     void MainClass::typecheck() {

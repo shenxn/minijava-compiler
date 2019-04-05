@@ -23,6 +23,10 @@ namespace AST {
         statementList->typecheck();
     }
 
+    void StatementBlock::compile() {
+        statementList->compile();
+    }
+
     IfElse::IfElse(Exp *exp, Statement *ifStatement, Statement *elseStatement) {
         this->exp = exp;
         this->ifStatement = ifStatement;
@@ -54,6 +58,10 @@ namespace AST {
         elseStatement->typecheck();
     }
 
+    void IfElse::compile() {
+        // TODO
+    }
+
     While::While(Exp *exp, Statement *statement) {
         this->exp = exp;
         this->statement = statement;
@@ -79,6 +87,10 @@ namespace AST {
         }
 
         statement->typecheck();
+    }
+
+    void While::compile() {
+        // TODO
     }
 
     Print::Print(char *s, bool isNewLine = false) {
@@ -146,6 +158,54 @@ namespace AST {
         }
     }
 
+    void Print::compile() {
+        if (isString) {
+            // int length = strlen(value.s);
+            // char *s = new char[length];
+            // int writePos = 0;
+            // bool escaped = false;
+            // for (int i = 1; i < length - 1; i++) {
+            //     if (escaped) {
+            //         escaped = false;
+            //         switch (value.s[i]) {
+            //             case 'b':
+            //                 s[writePos++] = '\b';
+            //                 break;
+            //             case 'n':
+            //                 s[writePos++] = '\n';
+            //                 break;
+            //             case 't':
+            //                 s[writePos++] = '\t';
+            //                 break;
+            //             case '"':
+            //                 s[writePos++] = '"';
+            //                 break;
+            //             case '\\':
+            //                 s[writePos++] = '\\';
+            //                 break;
+            //         }
+            //     } else {
+            //         if (value.s[i] == '\\') {
+            //             escaped = true;
+            //         } else {
+            //             s[writePos++] = value.s[i];
+            //         }
+            //     }
+            // }
+            // s[writePos] = '\0';
+            // printf("%s", s);
+        } else {
+            // value.e->compile(file); // result is at r4
+            printf("\tldr r0, =_string_printint\n");
+            printf("\tmov r1, #1\n"); // TODO: replace with real value
+            printf("\tbl printf\n");
+        }
+        if (isNewLine) {
+            printf("\tldr r0, =_string_println\n");
+            printf("\tbl printf\n");
+        }
+    }
+
     void Print::typecheck() {
         this->isString;
         if (!isString) {
@@ -210,6 +270,10 @@ namespace AST {
         }
     }
 
+    void VarAssign::compile() {
+        // TODO
+    }
+
     Return::Return(Exp *exp) {
         this->exp = exp;
     }
@@ -242,6 +306,10 @@ namespace AST {
         return true;
     }
 
+    void Return::compile() {
+        // TODO
+    }
+
     StatementList::~StatementList() {
         for (auto statement : list) {
             delete statement;
@@ -260,6 +328,12 @@ namespace AST {
     void StatementList::typecheck() {
         for (auto statement : list) {
             statement->typecheck();
+        }
+    }
+
+    void StatementList::compile() {
+        for (auto statement : list) {
+            statement->compile();
         }
     }
 

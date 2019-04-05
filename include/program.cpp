@@ -22,4 +22,8 @@ namespace AST {
         classDeclList->typecheck();
     }
 
+    void Program::compile() {
+        mainClass->compile();
+    }
+
 }

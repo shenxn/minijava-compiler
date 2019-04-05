@@ -18,6 +18,8 @@ namespace AST {
 
             void execute();
 
+            void compile();
+
             void typecheck();
     };
 

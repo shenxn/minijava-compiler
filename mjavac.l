@@ -1,5 +1,5 @@
 %{
-#include "typechecker.tab.hpp"
+#include "mjavac.tab.hpp"
 %}
 
 %option yylineno

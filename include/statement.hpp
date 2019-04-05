@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdio>
 #include <list>
 #include <cstdio>
 #include <cstdlib>
@@ -14,6 +15,8 @@ namespace AST {
     class Statement: public Node {
         public:
             virtual bool isReturn();
+
+            virtual void compile() = 0; // TODO: to be replaced
     };
 
     class StatementBlock: public Statement {
@@ -27,6 +30,8 @@ namespace AST {
             void execute();
 
             void typecheck();
+
+            void compile();
     };
 
     class IfElse: public Statement {
@@ -42,6 +47,8 @@ namespace AST {
             void execute();
 
             void typecheck();
+
+            void compile();
     };
 
     class While: public Statement {
@@ -56,6 +63,8 @@ namespace AST {
             void execute();
 
             void typecheck();
+
+            void compile();
     };
 
     union printValue {
@@ -78,6 +87,8 @@ namespace AST {
             void execute();
 
             void typecheck();
+
+            void compile();
     };
 
     class VarAssign: public Statement {
@@ -93,6 +104,8 @@ namespace AST {
             void execute();
 
             void typecheck();
+
+            void compile();
     };
 
     class Return: public Statement {
@@ -108,6 +121,8 @@ namespace AST {
             void typecheck();
 
             bool isReturn();
+
+            void compile();
     };
 
     class StatementList: public Node {
@@ -119,6 +134,8 @@ namespace AST {
             void execute();
 
             void typecheck();
+
+            void compile();
     };
 
 }

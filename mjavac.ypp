@@ -5,6 +5,7 @@
 
 #include "include/ast.hpp"
 #include "include/symboltable.hpp"
+#include "include/asm.hpp"
 
 extern "C" {
     extern int yydebug;
@@ -152,13 +153,15 @@ int main(int argc, char* argv[])
     if (root != NULL) {
         root->typecheck();
         if (AST::Node::countTypeCheckError == 0) {
-            root->execute();
+            // root->compile();
+            ASM::compile(argv[1], root);
         }
 #ifdef DETAIL_REPORT
         else {
             printf("Total type error: %d\n", AST::Node::countTypeCheckError);
         }
 #endif
+        delete root;
     }
     cleanupTables();
     return 0;
