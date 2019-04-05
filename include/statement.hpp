@@ -77,6 +77,7 @@ namespace AST {
             bool isString;
             bool isNewLine;
             printValue value;
+            int stringLiteralId;
 
             Print(char *s, bool isNewLine);
 

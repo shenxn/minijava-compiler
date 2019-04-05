@@ -1,5 +1,6 @@
 #include "statement.hpp"
 #include "symboltable.hpp"
+#include "asm.hpp"
 
 namespace AST {
     
@@ -114,47 +115,23 @@ namespace AST {
     }
 
     void Print::execute() {
+        // TODO: delete
+    }
+
+    void Print::typecheck() {
         if (isString) {
-            int length = strlen(value.s);
-            char *s = new char[length];
-            int writePos = 0;
-            bool escaped = false;
-            for (int i = 1; i < length - 1; i++) {
-                if (escaped) {
-                    escaped = false;
-                    switch (value.s[i]) {
-                        case 'b':
-                            s[writePos++] = '\b';
-                            break;
-                        case 'n':
-                            s[writePos++] = '\n';
-                            break;
-                        case 't':
-                            s[writePos++] = '\t';
-                            break;
-                        case '"':
-                            s[writePos++] = '"';
-                            break;
-                        case '\\':
-                            s[writePos++] = '\\';
-                            break;
-                    }
-                } else {
-                    if (value.s[i] == '\\') {
-                        escaped = true;
-                    } else {
-                        s[writePos++] = value.s[i];
-                    }
-                }
-            }
-            s[writePos] = '\0';
-            printf("%s", s);
+            /* Add string literal into list */
+            ASM::stringLiterals.push_back(value.s);
+            stringLiteralId = ASM::stringLiterals.size() - 1;
         } else {
-            value.e->execute();
-            printf("%d", value.e->value.intVal);
-        }
-        if (isNewLine) {
-            printf("\n");
+            value.e->typecheck();
+            if (!value.e->isValid()) {
+                return;
+            }
+            if (!value.e->isInt()) {
+        this->isString;
+                value.e->reportTypeCheckError("Print parameter is neither int nor string literal");
+            }
         }
     }
 
@@ -194,28 +171,16 @@ namespace AST {
             // }
             // s[writePos] = '\0';
             // printf("%s", s);
+            printf("\tldr r0, =_string_literal_%d\n", stringLiteralId);
         } else {
             // value.e->compile(file); // result is at r4
             printf("\tldr r0, =_string_printint\n");
             printf("\tmov r1, #1\n"); // TODO: replace with real value
-            printf("\tbl printf\n");
         }
+        printf("\tbl printf\n");
         if (isNewLine) {
             printf("\tldr r0, =_string_println\n");
             printf("\tbl printf\n");
-        }
-    }
-
-    void Print::typecheck() {
-        this->isString;
-        if (!isString) {
-            this->value.e->typecheck();
-            if (!this->value.e->isValid()) {
-                return;
-            }
-            if (!this->value.e->isInt()) {
-                this->value.e->reportTypeCheckError("Print parameter is neither int nor string literal");
-            }
         }
     }
 

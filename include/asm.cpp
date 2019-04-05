@@ -4,6 +4,8 @@
 #include "asm.hpp"
 #include "program.hpp"
 
+std::list<char*> ASM::stringLiterals;
+
 void ASM::compile(char *programFileName, AST::Program *root) {
     size_t programNameLength = strlen(programFileName - 5);
     char *fileName = (char*)malloc(programNameLength + 3);
@@ -23,6 +25,12 @@ void ASM::compile(char *programFileName, AST::Program *root) {
     /* defining strings */
     printf("_string_printint: .asciz \"%%d\"\n");
     printf("_string_println: .asciz \"\\n\"\n");
+
+    /* defining string literals */
+    int stringLiteralId = 0;
+    for (auto stringLiteral : stringLiterals) {
+        printf("_string_literal_%d: .asciz %s\n", stringLiteralId++, stringLiteral);
+    }
 
     root->compile();
 

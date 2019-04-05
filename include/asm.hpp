@@ -1,8 +1,12 @@
+#include <list>
+
 namespace AST {
     class Program;
 };
 
 class ASM {
     public:
-        static void compile(char *programName, AST::Program *root);
+        static std::list<char*> stringLiterals;
+
+        static void compile(char *programFileName, AST::Program *root);
 };
