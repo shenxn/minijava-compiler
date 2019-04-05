@@ -23,6 +23,8 @@ namespace AST {
 
             virtual bool isValid();
 
+            virtual void compile() = 0; // TODO: to be replaced
+
             bool isInt();
 
             bool isBool();
@@ -54,6 +56,8 @@ namespace AST {
             void execute();
 
             void typecheck();
+
+            void compile();
     };
 
     class Boolean: public Exp {
@@ -65,6 +69,8 @@ namespace AST {
             void execute();
 
             void typecheck();
+
+            void compile();
     };
 
     class BinaryExp: public Exp {
@@ -112,6 +118,8 @@ namespace AST {
             Add(int lineno, Exp *a, Exp *b);
 
             void execute();
+
+            void compile();
     };
 
     class Minus: public IntBinaryExp {
@@ -119,6 +127,8 @@ namespace AST {
             Minus(int lineno, Exp *a, Exp *b);
 
             void execute();
+
+            void compile();
     };
 
     class Multi: public IntBinaryExp {
@@ -126,6 +136,8 @@ namespace AST {
             Multi(int lineno, Exp *a, Exp *b);
 
             void execute();
+
+            void compile();
     };
 
     class Divide: public IntBinaryExp {
@@ -133,6 +145,8 @@ namespace AST {
             Divide(int lineno, Exp *a, Exp *b);
 
             void execute();
+
+            void compile();
     };
 
     class And: public BoolBinaryExp {
@@ -140,6 +154,8 @@ namespace AST {
             And(int lineno, Exp *a, Exp *b);
 
             void execute();
+
+            void compile();
     };
 
     class Or: public BoolBinaryExp {
@@ -147,6 +163,8 @@ namespace AST {
             Or(int lineno, Exp *a, Exp *b);
 
             void execute();
+
+            void compile();
     };
 
     class Less: public CompareBinaryExp {
@@ -154,6 +172,8 @@ namespace AST {
             Less(int lineno, Exp *a, Exp *b);
 
             void execute();
+
+            void compile();
     };
 
     class Greater: public CompareBinaryExp {
@@ -161,6 +181,8 @@ namespace AST {
             Greater(int lineno, Exp *a, Exp *b);
 
             void execute();
+
+            void compile();
     };
 
     class LessEqual: public CompareBinaryExp {
@@ -168,6 +190,8 @@ namespace AST {
             LessEqual(int lineno, Exp *a, Exp *b);
 
             void execute();
+
+            void compile();
     };
 
     class GreaterEqual: public CompareBinaryExp {
@@ -175,6 +199,8 @@ namespace AST {
             GreaterEqual(int lineno, Exp *a, Exp *b);
 
             void execute();
+
+            void compile();
     };
 
     class Equal: public EqualityBinaryExp {
@@ -182,6 +208,8 @@ namespace AST {
             Equal(int lineno, Exp *a, Exp *b);
 
             void execute();
+
+            void compile();
     };
 
     class NotEqual: public EqualityBinaryExp {
@@ -189,6 +217,8 @@ namespace AST {
             NotEqual(int lineno, Exp *a, Exp *b);
 
             void execute();
+
+            void compile();
     };
 
     class UnaryExp: public Exp {
@@ -214,6 +244,8 @@ namespace AST {
             Positive(int lineno, Exp *a);
 
             void execute();
+
+            void compile();
     };
 
     class Negative: public IntUnaryExp {
@@ -221,6 +253,8 @@ namespace AST {
             Negative(int lineno, Exp *a);
 
             void execute();
+
+            void compile();
     };
 
     class Not: public UnaryExp {
@@ -230,6 +264,8 @@ namespace AST {
             void execute();
 
             void typecheck();
+
+            void compile();
     };
 
     class MethodCall: public Exp {
@@ -249,6 +285,8 @@ namespace AST {
             void typecheck();
 
             bool isValid();
+
+            void compile();
     };
 
     class IdObject: public Exp {
@@ -264,6 +302,8 @@ namespace AST {
             void typecheck();
 
             bool isValid();
+
+            void compile();
     };
 
     class IdIndexLength: public Exp {
@@ -281,6 +321,8 @@ namespace AST {
             void typecheck();
 
             bool isValid();
+
+            void compile();
     };
 
     class ThisObject: public Exp {
@@ -292,6 +334,8 @@ namespace AST {
             void typecheck();
 
             bool isValid();
+
+            void compile();
     };
 
     class NewClassObject: public Exp {
@@ -305,6 +349,8 @@ namespace AST {
             void typecheck();
 
             bool isValid();
+
+            void compile();
     };
 
     class NewArrayObject: public Exp {
@@ -323,6 +369,8 @@ namespace AST {
             Array *newArray(Index *subIndex);
 
             bool isValid();
+
+            void compile();
     };
 
 }

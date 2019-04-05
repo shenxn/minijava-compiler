@@ -64,6 +64,10 @@ namespace AST {
 
     void Integer::typecheck() {}
 
+    void Integer::compile() {
+        printf("\tmov r4, #%d\n", i);
+    }
+
     Boolean::Boolean(int lineno, bool b) : Exp(lineno) {
         this->type = new Type(booleanType);
         this->b = b;
@@ -74,6 +78,10 @@ namespace AST {
     }
 
     void Boolean::typecheck() {}
+
+    void Boolean::compile() {
+        // TODO
+    }
 
     BinaryExp::BinaryExp(int lineno, Exp *a, Exp *b) : Exp(lineno) {
         this->a = a;
@@ -157,12 +165,20 @@ namespace AST {
         value.intVal = a->value.intVal + b->value.intVal;
     }
 
+    void Add::compile() {
+        // TODO
+    }
+
     Minus::Minus(int lineno, Exp *a, Exp *b) : IntBinaryExp(lineno, a, b) {}
 
     void Minus::execute() {
         a->execute();
         b->execute();
         value.intVal = a->value.intVal - b->value.intVal;
+    }
+
+    void Minus::compile() {
+        // TODO
     }
 
     Multi::Multi(int lineno, Exp *a, Exp *b) : IntBinaryExp(lineno, a, b) {};
@@ -173,12 +189,20 @@ namespace AST {
         value.intVal = a->value.intVal * b->value.intVal;
     }
 
+    void Multi::compile() {
+        // TODO
+    }
+
     Divide::Divide(int lineno, Exp *a, Exp *b) : IntBinaryExp(lineno, a, b) {};
 
     void Divide::execute() {
         a->execute();
         b->execute();
         value.intVal = a->value.intVal / b->value.intVal;
+    }
+
+    void Divide::compile() {
+        // TODO
     }
 
     And::And(int lineno, Exp *a, Exp *b) : BoolBinaryExp(lineno, a, b) {};
@@ -189,12 +213,20 @@ namespace AST {
         value.boolVal = a->value.boolVal && b->value.boolVal;
     }
 
+    void And::compile() {
+        // TODO
+    }
+
     Or::Or(int lineno, Exp *a, Exp *b) : BoolBinaryExp(lineno, a, b) {};
 
     void Or::execute() {
         a->execute();
         b->execute();
         value.boolVal = a->value.boolVal || b->value.boolVal;
+    }
+
+    void Or::compile() {
+        // TODO
     }
 
     Less::Less(int lineno, Exp *a, Exp *b) : CompareBinaryExp(lineno, a, b) {};
@@ -205,12 +237,20 @@ namespace AST {
         value.intVal = a->value.intVal < b->value.intVal;
     }
 
+    void Less::compile() {
+        // TODO
+    }
+
     Greater::Greater(int lineno, Exp *a, Exp *b) : CompareBinaryExp(lineno, a, b) {};
 
     void Greater::execute() {
         a->execute();
         b->execute();
         value.intVal = a->value.intVal > b->value.intVal;
+    }
+
+    void Greater::compile() {
+        // TODO
     }
 
     LessEqual::LessEqual(int lineno, Exp *a, Exp *b) : CompareBinaryExp(lineno, a, b) {};
@@ -221,12 +261,20 @@ namespace AST {
         value.intVal = a->value.intVal <= b->value.intVal;
     }
 
+    void LessEqual::compile() {
+        // TODO
+    }
+
     GreaterEqual::GreaterEqual(int lineno, Exp *a, Exp *b) : CompareBinaryExp(lineno, a, b) {};
 
     void GreaterEqual::execute() {
         a->execute();
         b->execute();
         value.intVal = a->value.intVal >= b->value.intVal;
+    }
+
+    void GreaterEqual::compile() {
+        // TODO
     }
 
     Equal::Equal(int lineno, Exp *a, Exp *b) : EqualityBinaryExp(lineno, a, b) {};
@@ -241,6 +289,10 @@ namespace AST {
         }
     }
 
+    void Equal::compile() {
+        // TODO
+    }
+
     NotEqual::NotEqual(int lineno, Exp *a, Exp *b) : EqualityBinaryExp(lineno, a, b) {};
 
     void NotEqual::execute() {
@@ -251,6 +303,10 @@ namespace AST {
         } else {
             value.boolVal = a->value.boolVal != b->value.boolVal;
         }
+    }
+
+    void NotEqual::compile() {
+        // TODO
     }
 
     UnaryExp::UnaryExp(int lineno, Exp *a) : Exp(lineno) {
@@ -283,11 +339,19 @@ namespace AST {
         value = a->value;
     }
 
+    void Positive::compile() {
+        // TODO
+    }
+
     Negative::Negative(int lineno, Exp *a) : IntUnaryExp(lineno, a) {}
 
     void Negative::execute() {
         a->execute();
         value.intVal = -a->value.intVal;
+    }
+
+    void Negative::compile() {
+        // TODO
     }
     
     Not::Not(int lineno, Exp *a) : UnaryExp(lineno, a) {
@@ -304,6 +368,10 @@ namespace AST {
         if (!a->isBool()) {
             reportTypeCheckError("Incorrect oprand type for bool uniary operation");
         }
+    }
+
+    void Not::compile() {
+        // TODO
     }
 
     MethodCall::MethodCall(int lineno, Exp *object, Identifier *methodId, ExpList *paramList) : Exp(lineno) {
@@ -357,6 +425,10 @@ namespace AST {
 
     bool MethodCall::isValid() {
         return methodItem != NULL;
+    }
+
+    void MethodCall::compile() {
+        // TODO
     }
 
     IdIndexLength::IdIndexLength(int lineno, Identifier* id, Index *index, bool isLength) : Exp(lineno) {
@@ -421,6 +493,10 @@ namespace AST {
         return _isValid && id->isValid();
     }
 
+    void IdIndexLength::compile() {
+        // TODO
+    }
+
     IdObject::IdObject(int lineno, Identifier *id) : Exp(lineno) {
         this->var = new Variable(id);
     }
@@ -442,6 +518,10 @@ namespace AST {
         return _isValid && var->type != NULL && var->type->isValid;
     }
 
+    void IdObject::compile() {
+        // TODO
+    }
+
     ThisObject::ThisObject(int lineno) : Exp(lineno) {}
 
     void ThisObject::execute() {
@@ -460,6 +540,10 @@ namespace AST {
 
     bool ThisObject::isValid() {
         return _isValid && type->isValid;
+    }
+
+    void ThisObject::compile() {
+        // TODO
     }
 
     NewClassObject::NewClassObject(int lineno, Identifier *classId) : Exp(lineno) {
@@ -505,6 +589,10 @@ namespace AST {
         return _isValid && type->isValid;
     }
 
+    void NewClassObject::compile() {
+        // TODO
+    }
+
     NewArrayObject::NewArrayObject(int lineno, Type *primeType, Index *index) : Exp(lineno) {
         this->primeType = primeType;
         this->index = index;
@@ -541,6 +629,10 @@ namespace AST {
 
     bool NewArrayObject::isValid() {
         return _isValid && type->isValid;
+    }
+
+    void NewArrayObject::compile() {
+        // TODO
     }
 
 }

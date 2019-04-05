@@ -173,9 +173,9 @@ namespace AST {
             // printf("%s", s);
             printf("\tldr r0, =_string_literal_%d\n", stringLiteralId);
         } else {
-            // value.e->compile(file); // result is at r4
+            value.e->compile(); // result is at r4
             printf("\tldr r0, =_string_printint\n");
-            printf("\tmov r1, #1\n"); // TODO: replace with real value
+            printf("\tmov r1, r4\n");
         }
         printf("\tbl printf\n");
         if (isNewLine) {
