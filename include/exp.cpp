@@ -65,7 +65,7 @@ namespace AST {
     void Integer::typecheck() {}
 
     void Integer::compile() {
-        printf("\tmov r4, #%d\n", i);
+        printf("\tmov r1, #%d\n", i);
     }
 
     Boolean::Boolean(int lineno, bool b) : Exp(lineno) {
@@ -166,7 +166,11 @@ namespace AST {
     }
 
     void Add::compile() {
-        // TODO
+        a->compile();
+        printf("\tpush {r1}\n");
+        b->compile();
+        printf("\tpop {r2}\n");
+        printf("\tadd r1, r2\n");
     }
 
     Minus::Minus(int lineno, Exp *a, Exp *b) : IntBinaryExp(lineno, a, b) {}
@@ -178,7 +182,12 @@ namespace AST {
     }
 
     void Minus::compile() {
-        // TODO
+        a->compile();
+        printf("\tpush {r1}\n");
+        b->compile();
+        printf("\tpop {r2}\n");
+        printf("\tsub r2, r1\n");
+        printf("\tmov r1, r2\n");
     }
 
     Multi::Multi(int lineno, Exp *a, Exp *b) : IntBinaryExp(lineno, a, b) {};
@@ -190,7 +199,11 @@ namespace AST {
     }
 
     void Multi::compile() {
-        // TODO
+        a->compile();
+        printf("\tpush {r1}\n");
+        b->compile();
+        printf("\tpop {r2}\n");
+        printf("\tmul r1, r2\n");
     }
 
     Divide::Divide(int lineno, Exp *a, Exp *b) : IntBinaryExp(lineno, a, b) {};
