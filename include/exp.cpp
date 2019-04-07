@@ -80,7 +80,7 @@ namespace AST {
     void Boolean::typecheck() {}
 
     void Boolean::compile() {
-        // TODO
+        printf("\tmov r1, #%d\n", b ? 1 : 0);
     }
 
     BinaryExp::BinaryExp(int lineno, Exp *a, Exp *b) : Exp(lineno) {

@@ -6,6 +6,8 @@
 
 std::list<char*> ASM::stringLiterals;
 
+int ASM::ifStatementCount = 0;
+
 void ASM::compile(char *programFileName, AST::Program *root) {
     size_t programNameLength = strlen(programFileName - 5);
     char *fileName = (char*)malloc(programNameLength + 3);

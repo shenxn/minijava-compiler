@@ -57,10 +57,19 @@ namespace AST {
 
         ifStatement->typecheck();
         elseStatement->typecheck();
+
+        ifStatementId = ASM::ifStatementCount++;
     }
 
     void IfElse::compile() {
-        // TODO
+        exp->compile();
+        printf("\tcmp r1, #0\n");
+        printf("\tbeq _if_statement_%d_else\n", ifStatementId);
+        ifStatement->compile();
+        printf("\tb _if_statement_%d_end\n", ifStatementId);
+        printf("_if_statement_%d_else:\n", ifStatementId);
+        elseStatement->compile();
+        printf("_if_statement_%d_end:\n", ifStatementId);
     }
 
     While::While(Exp *exp, Statement *statement) {
@@ -137,40 +146,6 @@ namespace AST {
 
     void Print::compile() {
         if (isString) {
-            // int length = strlen(value.s);
-            // char *s = new char[length];
-            // int writePos = 0;
-            // bool escaped = false;
-            // for (int i = 1; i < length - 1; i++) {
-            //     if (escaped) {
-            //         escaped = false;
-            //         switch (value.s[i]) {
-            //             case 'b':
-            //                 s[writePos++] = '\b';
-            //                 break;
-            //             case 'n':
-            //                 s[writePos++] = '\n';
-            //                 break;
-            //             case 't':
-            //                 s[writePos++] = '\t';
-            //                 break;
-            //             case '"':
-            //                 s[writePos++] = '"';
-            //                 break;
-            //             case '\\':
-            //                 s[writePos++] = '\\';
-            //                 break;
-            //         }
-            //     } else {
-            //         if (value.s[i] == '\\') {
-            //             escaped = true;
-            //         } else {
-            //             s[writePos++] = value.s[i];
-            //         }
-            //     }
-            // }
-            // s[writePos] = '\0';
-            // printf("%s", s);
             printf("\tldr r0, =_string_literal_%d\n", stringLiteralId);
         } else {
             value.e->compile(); // result is at r1

@@ -8,5 +8,7 @@ class ASM {
     public:
         static std::list<char*> stringLiterals;
 
+        static int ifStatementCount;
+
         static void compile(char *programFileName, AST::Program *root);
 };
