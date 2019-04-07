@@ -94,6 +94,8 @@ namespace AST {
 
     class BoolBinaryExp: public BinaryExp {
         public:
+            int boolBinaryExpId;
+
             BoolBinaryExp(int lineno, Exp *a, Exp *b);
 
             void typecheck();

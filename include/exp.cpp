@@ -1,6 +1,7 @@
 #include "exp.hpp"
 #include "index.hpp"
 #include "symboltable.hpp"
+#include "asm.hpp"
 
 namespace AST {
 
@@ -117,6 +118,8 @@ namespace AST {
     }
 
     void BoolBinaryExp::typecheck() {
+        boolBinaryExpId = ASM::boolBinaryExpCount++;
+
         a->typecheck();
         b->typecheck();
         if (!a->isValid() || !b->isValid()) {
@@ -227,7 +230,14 @@ namespace AST {
     }
 
     void And::compile() {
-        // TODO
+        a->compile();
+        printf("\tcmp r1, #0\n");  // logic shortcut
+        printf("\tbeq _bool_binary_exp_%d_shortcut\n", boolBinaryExpId);
+        printf("\tpush {r1}\n");
+        b->compile();
+        printf("\tpop {r2}\n");
+        printf("\tand r1, r2\n");
+        printf("_bool_binary_exp_%d_shortcut:\n", boolBinaryExpId);
     }
 
     Or::Or(int lineno, Exp *a, Exp *b) : BoolBinaryExp(lineno, a, b) {};
@@ -239,7 +249,14 @@ namespace AST {
     }
 
     void Or::compile() {
-        // TODO
+        a->compile();
+        printf("\tcmp r1, #1\n");  // logic shortcut
+        printf("\tbeq _bool_binary_exp_%d_shortcut\n", boolBinaryExpId);
+        printf("\tpush {r1}\n");
+        b->compile();
+        printf("\tpop {r2}\n");
+        printf("\torr r1, r2\n");
+        printf("_bool_binary_exp_%d_shortcut:\n", boolBinaryExpId);
     }
 
     Less::Less(int lineno, Exp *a, Exp *b) : CompareBinaryExp(lineno, a, b) {};
@@ -384,7 +401,8 @@ namespace AST {
     }
 
     void Not::compile() {
-        // TODO
+        a->compile();
+        printf("\tEOR r1, #1\n");
     }
 
     MethodCall::MethodCall(int lineno, Exp *object, Identifier *methodId, ExpList *paramList) : Exp(lineno) {

@@ -8,9 +8,9 @@ class MainClass {
             System.out.println(3 - 4 * 2);
             System.out.print("(3 - 4) * 2 = ");
             System.out.println((3 - 4) * 2);
-            if (true) {
+            if (!true || true) {
                 System.out.print("true - ");
-                if (false) {
+                if (!(false || false) && true) {
                     System.out.println("true");
                 } else {
                     System.out.println("false");

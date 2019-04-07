@@ -10,5 +10,7 @@ class ASM {
 
         static int ifStatementCount;
 
+        static int boolBinaryExpCount;
+
         static void compile(char *programFileName, AST::Program *root);
 };

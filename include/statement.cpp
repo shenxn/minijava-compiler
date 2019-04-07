@@ -50,6 +50,8 @@ namespace AST {
     }
 
     void IfElse::typecheck() {
+        ifStatementId = ASM::ifStatementCount++;
+
         exp->typecheck();
         if (!exp->isBool()) {
             exp->reportTypeCheckError("If expression is not boolean");
@@ -57,8 +59,6 @@ namespace AST {
 
         ifStatement->typecheck();
         elseStatement->typecheck();
-
-        ifStatementId = ASM::ifStatementCount++;
     }
 
     void IfElse::compile() {
