@@ -118,7 +118,7 @@ namespace AST {
     }
 
     void BoolBinaryExp::typecheck() {
-        boolBinaryExpId = ASM::boolBinaryExpCount++;
+        expId = ASM::expCount++;
 
         a->typecheck();
         b->typecheck();
@@ -135,6 +135,8 @@ namespace AST {
     }
 
     void CompareBinaryExp::typecheck() {
+        expId = ASM::expCount++;
+
         a->typecheck();
         b->typecheck();
         if (!a->isValid() || !b->isValid()) {
@@ -150,6 +152,8 @@ namespace AST {
     }
 
     void EqualityBinaryExp::typecheck() {
+        expId = ASM::expCount++;
+
         a->typecheck();
         b->typecheck();
         if (!a->isValid() || !b->isValid()) {
@@ -172,8 +176,8 @@ namespace AST {
         a->compile();
         printf("\tpush {r1}\n");
         b->compile();
-        printf("\tpop {r2}\n");
-        printf("\tadd r1, r2\n");
+        printf("\tpop {r0}\n");
+        printf("\tadd r1, r0\n");
     }
 
     Minus::Minus(int lineno, Exp *a, Exp *b) : IntBinaryExp(lineno, a, b) {}
@@ -188,9 +192,9 @@ namespace AST {
         a->compile();
         printf("\tpush {r1}\n");
         b->compile();
-        printf("\tpop {r2}\n");
-        printf("\tsub r2, r1\n");
-        printf("\tmov r1, r2\n");
+        printf("\tpop {r0}\n");
+        printf("\tsub r0, r1\n");
+        printf("\tmov r1, r0\n");
     }
 
     Multi::Multi(int lineno, Exp *a, Exp *b) : IntBinaryExp(lineno, a, b) {};
@@ -205,8 +209,8 @@ namespace AST {
         a->compile();
         printf("\tpush {r1}\n");
         b->compile();
-        printf("\tpop {r2}\n");
-        printf("\tmul r1, r2\n");
+        printf("\tpop {r0}\n");
+        printf("\tmul r1, r0\n");
     }
 
     Divide::Divide(int lineno, Exp *a, Exp *b) : IntBinaryExp(lineno, a, b) {};
@@ -232,12 +236,12 @@ namespace AST {
     void And::compile() {
         a->compile();
         printf("\tcmp r1, #0\n");  // logic shortcut
-        printf("\tbeq _bool_binary_exp_%d_shortcut\n", boolBinaryExpId);
+        printf("\tbeq _exp_%d_shortcut\n", expId);
         printf("\tpush {r1}\n");
         b->compile();
-        printf("\tpop {r2}\n");
-        printf("\tand r1, r2\n");
-        printf("_bool_binary_exp_%d_shortcut:\n", boolBinaryExpId);
+        printf("\tpop {r0}\n");
+        printf("\tand r1, r0\n");
+        printf("_exp_%d_shortcut:\n", expId);
     }
 
     Or::Or(int lineno, Exp *a, Exp *b) : BoolBinaryExp(lineno, a, b) {};
@@ -251,12 +255,12 @@ namespace AST {
     void Or::compile() {
         a->compile();
         printf("\tcmp r1, #1\n");  // logic shortcut
-        printf("\tbeq _bool_binary_exp_%d_shortcut\n", boolBinaryExpId);
+        printf("\tbeq _exp_%d_shortcut\n", expId);
         printf("\tpush {r1}\n");
         b->compile();
-        printf("\tpop {r2}\n");
-        printf("\torr r1, r2\n");
-        printf("_bool_binary_exp_%d_shortcut:\n", boolBinaryExpId);
+        printf("\tpop {r0}\n");
+        printf("\torr r1, r0\n");
+        printf("_exp_%d_shortcut:\n", expId);
     }
 
     Less::Less(int lineno, Exp *a, Exp *b) : CompareBinaryExp(lineno, a, b) {};
@@ -268,7 +272,17 @@ namespace AST {
     }
 
     void Less::compile() {
-        // TODO
+        a->compile();
+        printf("\tpush {r1}\n");
+        b->compile();
+        printf("\tpop {r0}\n");
+        printf("\tcmp r1, r0\n");
+        printf("\tbgt _exp_%d_less\n", expId);
+        printf("\tmov r1, #0\n");
+        printf("\tb _exp_%d_end\n", expId);
+        printf("_exp_%d_less:\n", expId);
+        printf("\tmov r1, #1\n");
+        printf("_exp_%d_end:\n", expId);
     }
 
     Greater::Greater(int lineno, Exp *a, Exp *b) : CompareBinaryExp(lineno, a, b) {};
@@ -280,7 +294,17 @@ namespace AST {
     }
 
     void Greater::compile() {
-        // TODO
+        a->compile();
+        printf("\tpush {r1}\n");
+        b->compile();
+        printf("\tpop {r0}\n");
+        printf("\tcmp r1, r0\n");
+        printf("\tblt _exp_%d_greater\n", expId);
+        printf("\tmov r1, #0\n");
+        printf("\tb _exp_%d_end\n", expId);
+        printf("_exp_%d_greater:\n", expId);
+        printf("\tmov r1, #1\n");
+        printf("_exp_%d_end:\n", expId);
     }
 
     LessEqual::LessEqual(int lineno, Exp *a, Exp *b) : CompareBinaryExp(lineno, a, b) {};
@@ -292,7 +316,17 @@ namespace AST {
     }
 
     void LessEqual::compile() {
-        // TODO
+        a->compile();
+        printf("\tpush {r1}\n");
+        b->compile();
+        printf("\tpop {r0}\n");
+        printf("\tcmp r1, r0\n");
+        printf("\tbge _exp_%d_lesseq\n", expId);
+        printf("\tmov r1, #0\n");
+        printf("\tb _exp_%d_end\n", expId);
+        printf("_exp_%d_lesseq:\n", expId);
+        printf("\tmov r1, #1\n");
+        printf("_exp_%d_end:\n", expId);
     }
 
     GreaterEqual::GreaterEqual(int lineno, Exp *a, Exp *b) : CompareBinaryExp(lineno, a, b) {};
@@ -304,7 +338,17 @@ namespace AST {
     }
 
     void GreaterEqual::compile() {
-        // TODO
+        a->compile();
+        printf("\tpush {r1}\n");
+        b->compile();
+        printf("\tpop {r0}\n");
+        printf("\tcmp r1, r0\n");
+        printf("\tble _exp_%d_greatereq\n", expId);
+        printf("\tmov r1, #0\n");
+        printf("\tb _exp_%d_end\n", expId);
+        printf("_exp_%d_greatereq:\n", expId);
+        printf("\tmov r1, #1\n");
+        printf("_exp_%d_end:\n", expId);
     }
 
     Equal::Equal(int lineno, Exp *a, Exp *b) : EqualityBinaryExp(lineno, a, b) {};
@@ -320,7 +364,17 @@ namespace AST {
     }
 
     void Equal::compile() {
-        // TODO
+        a->compile();
+        printf("\tpush {r1}\n");
+        b->compile();
+        printf("\tpop {r0}\n");
+        printf("\tcmp r1, r0\n");
+        printf("\tbeq _exp_%d_equal\n", expId);
+        printf("\tmov r1, #0\n");
+        printf("\tb _exp_%d_end\n", expId);
+        printf("_exp_%d_equal:\n", expId);
+        printf("\tmov r1, #1\n");
+        printf("_exp_%d_end:\n", expId);
     }
 
     NotEqual::NotEqual(int lineno, Exp *a, Exp *b) : EqualityBinaryExp(lineno, a, b) {};
@@ -336,7 +390,17 @@ namespace AST {
     }
 
     void NotEqual::compile() {
-        // TODO
+        a->compile();
+        printf("\tpush {r1}\n");
+        b->compile();
+        printf("\tpop {r0}\n");
+        printf("\tcmp r1, r0\n");
+        printf("\tbeq _exp_%d_equal\n", expId);
+        printf("\tmov r1, #1\n");
+        printf("\tb _exp_%d_end\n", expId);
+        printf("_exp_%d_equal:\n", expId);
+        printf("\tmov r1, #0\n");
+        printf("_exp_%d_end:\n", expId);
     }
 
     UnaryExp::UnaryExp(int lineno, Exp *a) : Exp(lineno) {
@@ -370,7 +434,7 @@ namespace AST {
     }
 
     void Positive::compile() {
-        // TODO
+        a->compile();
     }
 
     Negative::Negative(int lineno, Exp *a) : IntUnaryExp(lineno, a) {}
@@ -381,7 +445,10 @@ namespace AST {
     }
 
     void Negative::compile() {
-        // TODO
+        a->compile();
+        printf("\tmov r0, #0\n");
+        printf("\tsub r0, r1\n");
+        printf("\tmov r1, r0\n");
     }
     
     Not::Not(int lineno, Exp *a) : UnaryExp(lineno, a) {

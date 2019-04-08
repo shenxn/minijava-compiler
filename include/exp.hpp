@@ -94,7 +94,7 @@ namespace AST {
 
     class BoolBinaryExp: public BinaryExp {
         public:
-            int boolBinaryExpId;
+            int expId;
 
             BoolBinaryExp(int lineno, Exp *a, Exp *b);
 
@@ -103,6 +103,8 @@ namespace AST {
 
     class CompareBinaryExp: public BinaryExp {
         public:
+            int expId;
+
             CompareBinaryExp(int lineno, Exp *a, Exp *b);
 
             void typecheck();
@@ -110,6 +112,8 @@ namespace AST {
 
     class EqualityBinaryExp: public BinaryExp {
         public:
+            int expId;
+
             EqualityBinaryExp(int lineno, Exp *a, Exp *b);
 
             void typecheck();

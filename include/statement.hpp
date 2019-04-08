@@ -39,7 +39,8 @@ namespace AST {
             Exp *exp;
             Statement *ifStatement;
             Statement *elseStatement;
-            int ifStatementId;
+            
+            int statementId;
 
             IfElse(Exp *exp, Statement *ifStatement, Statement *elseStatement);
 

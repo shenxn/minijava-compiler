@@ -50,7 +50,7 @@ namespace AST {
     }
 
     void IfElse::typecheck() {
-        ifStatementId = ASM::ifStatementCount++;
+        statementId = ASM::statementCount++;
 
         exp->typecheck();
         if (!exp->isBool()) {
@@ -64,12 +64,12 @@ namespace AST {
     void IfElse::compile() {
         exp->compile();
         printf("\tcmp r1, #0\n");
-        printf("\tbeq _if_statement_%d_else\n", ifStatementId);
+        printf("\tbeq _statement_%d_else\n", statementId);
         ifStatement->compile();
-        printf("\tb _if_statement_%d_end\n", ifStatementId);
-        printf("_if_statement_%d_else:\n", ifStatementId);
+        printf("\tb _statement_%d_end\n", statementId);
+        printf("_statement_%d_else:\n", statementId);
         elseStatement->compile();
-        printf("_if_statement_%d_end:\n", ifStatementId);
+        printf("_statement_%d_end:\n", statementId);
     }
 
     While::While(Exp *exp, Statement *statement) {

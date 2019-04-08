@@ -6,9 +6,9 @@
 
 std::list<char*> ASM::stringLiterals;
 
-int ASM::ifStatementCount = 0;
+int ASM::statementCount = 0;
 
-int ASM::boolBinaryExpCount = 0;
+int ASM::expCount = 0;
 
 void ASM::compile(char *programFileName, AST::Program *root) {
     size_t programNameLength = strlen(programFileName - 5);
