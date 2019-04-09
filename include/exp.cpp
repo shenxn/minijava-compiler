@@ -528,7 +528,31 @@ namespace AST {
     void MethodCall::compile() {
         // TODO: vtable
         // TODO: compile object
-        // TODO: params
+        
+        if (!paramList->list.empty()) {
+            printf("\tsub sp, #%lu\n", 4 * paramList->list.size());  // Make space for parameters
+            int stackOffset = 0;
+            for (auto param : paramList->list) {
+                param->compile();
+                printf("\tstr r1, [ sp, #%d ]\n", stackOffset);
+                stackOffset += 4;
+            }
+            switch (paramList->list.size()) {
+                case 1:
+                    printf("\tpop {r0}\n");
+                    break;
+                case 2:
+                    printf("\tpop {r0-r1}\n");
+                    break;
+                case 3:
+                    printf("\tpop {r0-r2}\n");
+                    break;
+                default:
+                    printf("\tpop {r0-r3}\n");
+                    break;
+            }
+        }
+
         printf("\tbl _method_%d\n", methodItem->methodDecl->methodId);
     }
 
@@ -620,7 +644,7 @@ namespace AST {
     }
 
     void IdObject::compile() {
-        printf("\tldr r1, [ fp, #-%d ]\n" ,var->varDecl()->stackOffset);
+        printf("\tldr r1, [ fp, #%d ]\n" ,var->varDecl()->stackOffset);
     }
 
     ThisObject::ThisObject(int lineno) : Exp(lineno) {}

@@ -79,23 +79,23 @@ class MainClass {
             } else {
                 System.out.println("false");
             }
-            System.out.println(new HelloClass().hello());
+            System.out.println(new HelloClass().hello(1, 2));
         }
 	}
 
 }
 
 class HelloClass {
-    public int hello() {
+    public int hello(int p1, int p2) {
         int x;
-        x = new HelloClass().hello2();
+        x = new HelloClass().hello2(1, 2, 3, 4, 5, false);
         System.out.println(x);
         System.out.println("Hello from HelloClass::hello()");
         System.out.print("Return value is ");
         return -1;
     }
 
-    public int hello2() {
+    public int hello2(int p1, int p2, int p3, int p4, int p5, boolean p6) {
         int x;
         int y;
         x = 100;
@@ -103,6 +103,22 @@ class HelloClass {
         System.out.print("x * (x + y) - y = (10792) ");
         System.out.println(x * (x + y) - y);
         System.out.println("Hello from HelloClass::hello2()");
+        System.out.print("p1 = ");
+        System.out.println(p1);
+        System.out.print("p2 = ");
+        System.out.println(p2);
+        System.out.print("p3 = ");
+        System.out.println(p3);
+        System.out.print("p4 = ");
+        System.out.println(p4);
+        System.out.print("p5 = ");
+        System.out.println(p5);
+        System.out.print("p6 = ");
+        if (p6) {
+            System.out.println("true");
+        } else {
+            System.out.println("false");
+        }
         System.out.print("Return value is ");
         return y;
     }

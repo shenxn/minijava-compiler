@@ -7,8 +7,6 @@
 #include "include/symboltable.hpp"
 #include "include/asm.hpp"
 
-#define DETAIL_REPORT
-
 extern "C" {
     extern int yydebug;
     extern FILE *yyin;

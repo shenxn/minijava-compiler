@@ -215,7 +215,7 @@ namespace AST {
     void VarAssign::compile() {
         // TODO: index
         exp->compile();
-        printf("\tstr r1, [ fp, #-%d ]\n", var->varDecl()->stackOffset);
+        printf("\tstr r1, [ fp, #%d ]\n", var->varDecl()->stackOffset);
     }
 
     Return::Return(Exp *exp) {
@@ -252,9 +252,19 @@ namespace AST {
 
     void Return::compile() {
         exp->compile();
+
+        /* restore stack point, frame point, and link */
         printf("\tmov sp, fp\n");
         printf("\tpop {fp}\n");
-        printf("\tpop {pc}\n");
+        printf("\tpop {lr}\n");
+
+        /* pop params */
+        if (!ASM::methodDecl->formalList->list.empty()) {
+            printf("\tadd sp, #%lu\n", 4 * ASM::methodDecl->formalList->list.size());
+        }
+
+        /* restore program counter from link */
+        printf("\tmov pc, lr\n");
     }
 
     StatementList::~StatementList() {

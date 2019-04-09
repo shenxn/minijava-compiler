@@ -23,8 +23,6 @@ namespace AST {
 
             int methodId;
 
-            size_t variableSize;
-
             std::map<std::string, VarDecl*> varTable;  // TODO: typedef VarTable
 
             MethodDecl(int lineno, Type *returnType, Identifier *methodId, VarDeclList *formalList, VarDeclList *varDeclList, StatementList *statementList);

@@ -14,11 +14,20 @@ namespace AST {
 
         methodId = ASM::methodCount++;
 
-        int stackOffset = 4;
-        for (auto varDecl : varDeclList->list) {
+        int stackOffset = 8;
+        for (auto varDecl : formalList->list) {
             /* Set stack offset */
             varDecl->stackOffset = stackOffset;
             stackOffset += 4;
+
+            /* Setup var table */
+            varTable[varDecl->id->s] = varDecl;
+        }
+        stackOffset = -4;
+        for (auto varDecl : varDeclList->list) {
+            /* Set stack offset */
+            varDecl->stackOffset = stackOffset;
+            stackOffset -= 4;
 
             /* Setup var table */
             varTable[varDecl->id->s] = varDecl;
@@ -85,10 +94,33 @@ namespace AST {
     void MethodDecl::compile() {
         printf(".global _method_%d\n", methodId);
         printf("_method_%d:\n", methodId);
+
+        /* push params to stack */
+        switch (formalList->list.size()) {
+            case 0:
+                break;
+            case 1:
+                printf("\tpush {r0}\n");
+                break;
+            case 2:
+                printf("\tpush {r0-r1}\n");
+                break;
+            case 3:
+                printf("\tpush {r0-r2}\n");
+                break;
+            default:
+                printf("\tpush {r0-r3}\n");
+        }
+
+        /* save link and frame point */
         printf("\tpush {lr}\n");
         printf("\tpush {fp}\n");
+
+        /* set new frame point */
         printf("\tmov fp, sp\n");
+
         printf("\tsub sp, #%lu\n", 4 * varDeclList->list.size());  // local variables
+
         ASM::methodDecl = this;
         statementList->compile();
     }
