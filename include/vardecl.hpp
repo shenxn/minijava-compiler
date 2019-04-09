@@ -16,6 +16,8 @@ namespace AST {
 
             VarTable *varTable = NULL;
 
+            int stackOffset;
+
             VarDecl();
 
             VarDecl(Type *type, Identifier *id);
@@ -27,6 +29,8 @@ namespace AST {
             void typecheck();
 
             void insert(VarTable *varTable);
+
+            size_t size();
     };
 
     class VarDeclList: public Node {

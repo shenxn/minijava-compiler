@@ -64,6 +64,11 @@ namespace AST {
         methodDeclList->typecheck();
     }
 
+    void ClassDecl::compile() {
+        // TODO: varDecl
+        methodDeclList->compile();
+    }
+
     ClassDeclList::~ClassDeclList() {
         for (auto classDecl : list) {
             delete classDecl;
@@ -75,6 +80,12 @@ namespace AST {
     void ClassDeclList::typecheck() {
         for (auto classDecl : list) {
             classDecl->typecheck();
+        }
+    }
+
+    void ClassDeclList::compile() {
+        for (auto classDecl : list) {
+            classDecl->compile();
         }
     }
 

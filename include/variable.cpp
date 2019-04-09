@@ -1,5 +1,6 @@
 #include "variable.hpp"
 #include "symboltable.hpp"
+#include "asm.hpp"
 
 namespace AST {
 
@@ -44,6 +45,11 @@ namespace AST {
             it = classStack->variableMap.find(id->s);
         }
         return it->second;
+    }
+
+    VarDecl *Variable::varDecl() {
+        // TODO: class vartable
+        return ASM::methodDecl->varTable.find(id->s)->second;
     }
 
 }

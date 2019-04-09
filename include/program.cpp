@@ -24,6 +24,7 @@ namespace AST {
 
     void Program::compile() {
         mainClass->compile();
+        classDeclList->compile();
     }
 
 }

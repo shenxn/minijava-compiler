@@ -32,6 +32,8 @@ namespace AST {
         this->exp = exp;
         this->ifStatement = ifStatement;
         this->elseStatement = elseStatement;
+
+        statementId = ASM::statementCount++;
     }
 
     IfElse::~IfElse() {
@@ -50,8 +52,6 @@ namespace AST {
     }
 
     void IfElse::typecheck() {
-        statementId = ASM::statementCount++;
-
         exp->typecheck();
         if (!exp->isBool()) {
             exp->reportTypeCheckError("If expression is not boolean");
@@ -105,21 +105,33 @@ namespace AST {
 
     Print::Print(char *s, bool isNewLine = false) {
         this->isString = true;
-        this->value.s = s;
         this->isNewLine = isNewLine;
+
+        if (isNewLine) {
+            /* add \n to the end of the string literal */
+            size_t oldLen = strlen(s);
+            char *newS = (char*)malloc(oldLen + 3);
+            strncpy(newS, s, oldLen);
+            newS[oldLen - 1] = '\\';
+            newS[oldLen] = 'n';
+            newS[oldLen + 1] = '"';
+            newS[oldLen + 2] = '\0';
+            free(s);
+            s = newS;
+        }
+        ASM::stringLiterals.push_back(s);
+        stringLiteralId = ASM::stringLiterals.size() - 1;
     }
 
-    Print::Print(Exp *e, bool isNewLine = false) {
+    Print::Print(Exp *exp, bool isNewLine = false) {
         this->isString = false;
-        this->value.e = e;
+        this->exp = exp;
         this->isNewLine = isNewLine;
     }
 
     Print::~Print() {
-        if (isString) {
-            free(value.s);
-        } else {
-            delete value.e;
+        if (!isString) {
+            delete exp;
         }
     }
 
@@ -128,18 +140,13 @@ namespace AST {
     }
 
     void Print::typecheck() {
-        if (isString) {
-            /* Add string literal into list */
-            ASM::stringLiterals.push_back(value.s);
-            stringLiteralId = ASM::stringLiterals.size() - 1;
-        } else {
-            value.e->typecheck();
-            if (!value.e->isValid()) {
+        if (!isString) {
+            exp->typecheck();
+            if (!exp->isValid()) {
                 return;
             }
-            if (!value.e->isInt()) {
-        this->isString;
-                value.e->reportTypeCheckError("Print parameter is neither int nor string literal");
+            if (!exp->isInt()) {
+                exp->reportTypeCheckError("Print parameter is neither int nor string literal");
             }
         }
     }
@@ -148,14 +155,10 @@ namespace AST {
         if (isString) {
             printf("\tldr r0, =_string_literal_%d\n", stringLiteralId);
         } else {
-            value.e->compile(); // result is at r1
-            printf("\tldr r0, =_string_printint\n");
+            exp->compile(); // result is at r1
+            printf("\tldr r0, =%s\n", isNewLine ? "_string_printintln" : "_string_printint");
         }
         printf("\tbl printf\n");
-        if (isNewLine) {
-            printf("\tldr r0, =_string_println\n");
-            printf("\tbl printf\n");
-        }
     }
 
     VarAssign::VarAssign(Identifier *id, Index *index, Exp *exp) {
@@ -210,7 +213,9 @@ namespace AST {
     }
 
     void VarAssign::compile() {
-        // TODO
+        // TODO: index
+        exp->compile();
+        printf("\tstr r1, [ fp, #-%d ]\n", var->varDecl()->stackOffset);
     }
 
     Return::Return(Exp *exp) {
@@ -246,7 +251,10 @@ namespace AST {
     }
 
     void Return::compile() {
-        // TODO
+        exp->compile();
+        printf("\tmov sp, fp\n");
+        printf("\tpop {fp}\n");
+        printf("\tpop {pc}\n");
     }
 
     StatementList::~StatementList() {

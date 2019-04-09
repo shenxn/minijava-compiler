@@ -115,11 +115,11 @@ namespace AST {
 
     BoolBinaryExp::BoolBinaryExp(int lineno, Exp *a, Exp *b) : BinaryExp(lineno, a, b) {
         this->type = new Type(booleanType);
+
+        expId = ASM::expCount++;
     }
 
     void BoolBinaryExp::typecheck() {
-        expId = ASM::expCount++;
-
         a->typecheck();
         b->typecheck();
         if (!a->isValid() || !b->isValid()) {
@@ -132,11 +132,11 @@ namespace AST {
 
     CompareBinaryExp::CompareBinaryExp(int lineno, Exp *a, Exp *b) : BinaryExp(lineno, a, b) {
         this->type = new Type(booleanType);
+        
+        expId = ASM::expCount++;
     }
 
     void CompareBinaryExp::typecheck() {
-        expId = ASM::expCount++;
-
         a->typecheck();
         b->typecheck();
         if (!a->isValid() || !b->isValid()) {
@@ -149,11 +149,11 @@ namespace AST {
 
     EqualityBinaryExp::EqualityBinaryExp(int lineno, Exp *a, Exp *b): BinaryExp(lineno, a, b) {
         this->type = new Type(booleanType);
+        
+        expId = ASM::expCount++;
     }
 
     void EqualityBinaryExp::typecheck() {
-        expId = ASM::expCount++;
-
         a->typecheck();
         b->typecheck();
         if (!a->isValid() || !b->isValid()) {
@@ -526,7 +526,10 @@ namespace AST {
     }
 
     void MethodCall::compile() {
-        // TODO
+        // TODO: vtable
+        // TODO: compile object
+        // TODO: params
+        printf("\tbl _method_%d\n", methodItem->methodDecl->methodId);
     }
 
     IdIndexLength::IdIndexLength(int lineno, Identifier* id, Index *index, bool isLength) : Exp(lineno) {
@@ -617,7 +620,7 @@ namespace AST {
     }
 
     void IdObject::compile() {
-        // TODO
+        printf("\tldr r1, [ fp, #-%d ]\n" ,var->varDecl()->stackOffset);
     }
 
     ThisObject::ThisObject(int lineno) : Exp(lineno) {}

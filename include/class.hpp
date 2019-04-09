@@ -11,6 +11,8 @@ namespace AST {
             Identifier *id;
             ClassItem *classItem = NULL;
 
+            int classId;
+
             Class(int lineno, Identifier *id);
 
             ~Class();

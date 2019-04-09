@@ -19,9 +19,11 @@ namespace AST {
 
             ~ClassDecl();
 
-            virtual void execute();
+            void execute();
 
-            virtual void typecheck();
+            void typecheck();
+
+            void compile();
     };
 
     class ClassDeclList : public Node {
@@ -33,6 +35,8 @@ namespace AST {
             void execute();
 
             void typecheck();
+
+            void compile();
     };
 
 }

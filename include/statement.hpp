@@ -39,7 +39,7 @@ namespace AST {
             Exp *exp;
             Statement *ifStatement;
             Statement *elseStatement;
-            
+
             int statementId;
 
             IfElse(Exp *exp, Statement *ifStatement, Statement *elseStatement);
@@ -69,21 +69,16 @@ namespace AST {
             void compile();
     };
 
-    union printValue {
-        char *s;
-        Exp *e;
-    };
-
     class Print: public Statement {
         public:
             bool isString;
             bool isNewLine;
-            printValue value;
+            Exp *exp;
             int stringLiteralId;
 
             Print(char *s, bool isNewLine);
 
-            Print(Exp *e, bool isNewLine);
+            Print(Exp *exp, bool isNewLine);
 
             ~Print();
 

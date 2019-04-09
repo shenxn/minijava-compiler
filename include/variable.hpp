@@ -5,6 +5,7 @@
 #include "stack.hpp"
 
 namespace AST {
+    class VarDecl;
 
     class Variable: public Node {
         public:
@@ -20,6 +21,8 @@ namespace AST {
             void typecheck();
 
             VarValue *find();
+
+            VarDecl *varDecl();
     };
 
 }

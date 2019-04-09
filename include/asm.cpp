@@ -10,6 +10,10 @@ int ASM::statementCount = 0;
 
 int ASM::expCount = 0;
 
+int ASM::methodCount = 0;
+
+AST::MethodDecl *ASM::methodDecl = NULL;
+
 void ASM::compile(char *programFileName, AST::Program *root) {
     size_t programNameLength = strlen(programFileName - 5);
     char *fileName = (char*)malloc(programNameLength + 3);
@@ -28,7 +32,7 @@ void ASM::compile(char *programFileName, AST::Program *root) {
 
     /* defining strings */
     printf("_string_printint: .asciz \"%%d\"\n");
-    printf("_string_println: .asciz \"\\n\"\n");
+    printf("_string_printintln: .asciz \"%%d\\n\"\n");
 
     /* defining string literals */
     int stringLiteralId = 0;

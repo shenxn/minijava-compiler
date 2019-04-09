@@ -1,6 +1,8 @@
 #pragma once
 
 #include <list>
+#include <map>
+#include <string>
 #include "node.hpp"
 #include "type.hpp"
 #include "identifier.hpp"
@@ -14,10 +16,16 @@ namespace AST {
     class MethodDecl: public Node {
         public:
             Type *returnType;
-            Identifier *methodId;
+            Identifier *id;
             VarDeclList *formalList;
             VarDeclList *varDeclList;
             StatementList *statementList;
+
+            int methodId;
+
+            size_t variableSize;
+
+            std::map<std::string, VarDecl*> varTable;  // TODO: typedef VarTable
 
             MethodDecl(int lineno, Type *returnType, Identifier *methodId, VarDeclList *formalList, VarDeclList *varDeclList, StatementList *statementList);
 
@@ -28,6 +36,8 @@ namespace AST {
             void execute(ExpList *paramList);
 
             void typecheck();
+
+            void compile();
 
             void insert();
     };
@@ -41,6 +51,8 @@ namespace AST {
             void execute();
 
             void typecheck();
+
+            void compile();
     };
 
 }
