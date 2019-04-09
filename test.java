@@ -119,6 +119,18 @@ class HelloClass {
         } else {
             System.out.println("false");
         }
+
+        x = 2;
+        while (x > 5) {
+            System.out.println("Should not print");
+        }
+        while (x > -3) {
+            System.out.print("while loop x = ");
+            System.out.println(x);
+            x = x - 1;
+        }
+
+
         System.out.print("Return value is ");
         return y;
     }

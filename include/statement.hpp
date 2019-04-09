@@ -58,6 +58,8 @@ namespace AST {
             Exp *exp;
             Statement *statement;
 
+            int statementId;
+
             While(Exp *exp, Statement *statement);
 
             ~While();

@@ -75,6 +75,8 @@ namespace AST {
     While::While(Exp *exp, Statement *statement) {
         this->exp = exp;
         this->statement = statement;
+
+        statementId = ASM::statementCount++;
     }
 
     While::~While() {
@@ -100,7 +102,13 @@ namespace AST {
     }
 
     void While::compile() {
-        // TODO
+        printf("_statement_%d_while:\n", statementId);
+        exp->compile();
+        printf("\tcmp r1, #0\n");
+        printf("\tbeq _statement_%d_end\n", statementId);
+        statement->compile();
+        printf("\tb _statement_%d_while\n", statementId);
+        printf("_statement_%d_end:\n", statementId);
     }
 
     Print::Print(char *s, bool isNewLine = false) {
