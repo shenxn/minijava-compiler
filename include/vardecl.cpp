@@ -1,7 +1,6 @@
 #include "vardecl.hpp"
 
 #include "exp.hpp"
-#include "stack.hpp"
 #include "type.hpp"
 
 namespace AST {

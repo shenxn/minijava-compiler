@@ -1,7 +1,6 @@
 #include "mainclass.hpp"
 
 #include <cstdio>
-#include "stack.hpp"
 #include "classdecl.hpp"
 #include "methoddecl.hpp"
 
