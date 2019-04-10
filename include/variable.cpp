@@ -1,6 +1,9 @@
 #include "variable.hpp"
-#include "symboltable.hpp"
+
 #include "asm.hpp"
+#include "classdecl.hpp"
+#include "methoddecl.hpp"
+#include "type.hpp"
 
 namespace AST {
 
@@ -13,23 +16,21 @@ namespace AST {
         delete type;
     }
 
-    void Variable::execute() {}
-
     void Variable::typecheck() {
         // TODO: check if initialized
 
-        if (currentMethod != NULL) {
+        if (MethodDecl::currMethod != NULL) {
             // Not main class
 
-            auto varItem = currentMethod->varTable.find(id->s);
-            if (varItem != currentMethod->varTable.end()) {
+            auto varItem = MethodDecl::currMethod->varMap.find(id->s);
+            if (varItem != MethodDecl::currMethod->varMap.end()) {
                 type = varItem->second->type;
                 return;
             }
 
-            for (auto classItem = currentClass; classItem != NULL; classItem = classItem->parent) {
-                varItem = classItem->varTable.find(id->s);
-                if (varItem != classItem->varTable.end()) {
+            for (auto classDecl = ClassDecl::currClass; classDecl != NULL; classDecl = classDecl->parent) {
+                varItem = classDecl->varMap.find(id->s);
+                if (varItem != classDecl->varMap.end()) {
                     type = varItem->second->type;
                     return;
                 }
@@ -39,17 +40,23 @@ namespace AST {
         id->reportTypeCheckError("Undefined variable");
     }
 
-    VarValue *Variable::find() {
-        auto it = methodStack->variableMap.find(id->s);
-        if (it == methodStack->variableMap.end()) {
-            it = classStack->variableMap.find(id->s);
+    VarDecl *Variable::varDecl(int *offset) {
+        auto varDeclIt = ASM::methodDecl->varMap.find(id->s);
+        if (varDeclIt != ASM::methodDecl->varMap.end()) {
+            *offset = varDeclIt->second->memoryOffset;
+            return varDeclIt->second;
         }
-        return it->second;
-    }
 
-    VarDecl *Variable::varDecl() {
-        // TODO: class vartable
-        return ASM::methodDecl->varTable.find(id->s)->second;
+        *offset = 0;
+        for (auto classDecl = ClassDecl::currClass; classDecl != NULL; classDecl = classDecl->parent) {
+            auto varDeclIt = classDecl->varMap.find(id->s);
+            if (varDeclIt != classDecl->varMap.end()) {
+                *offset += varDeclIt->second->memoryOffset;
+                return varDeclIt->second;
+            }
+            *offset += classDecl->varSize;
+        }
+        return NULL;
     }
 
 }

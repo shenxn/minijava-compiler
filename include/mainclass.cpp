@@ -1,7 +1,9 @@
-#include <cstdio>
 #include "mainclass.hpp"
-#include "symboltable.hpp"
+
+#include <cstdio>
 #include "stack.hpp"
+#include "classdecl.hpp"
+#include "methoddecl.hpp"
 
 namespace AST {
 
@@ -9,17 +11,12 @@ namespace AST {
         this->paramId = paramId;
         this->statement = statement;
 
-        TableStatus::classTable[id->s] = new ClassItem(this);
+        ClassDecl::classTable[id->s] = this;
     }
 
     MainClass::~MainClass() {
         delete paramId;
         delete statement;
-    }
-
-    void MainClass::execute() {
-        statement->execute();
-        Stack::clearStack();
     }
 
     void MainClass::compile() {
@@ -32,8 +29,8 @@ namespace AST {
     }
 
     void MainClass::typecheck() {
-        currentClass = TableStatus::classTable[id->s];
-        currentMethod = NULL;
+        currClass = ClassDecl::classTable[id->s];
+        MethodDecl::currMethod = NULL;
         statement->typecheck();
     }
     

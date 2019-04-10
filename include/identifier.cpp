@@ -1,6 +1,6 @@
-#include <cstring>
 #include "identifier.hpp"
-#include "symboltable.hpp"
+
+#include <cstring>
 #include "type.hpp"
 
 namespace AST {
@@ -19,8 +19,6 @@ namespace AST {
         }
         return new Identifier(id->lineno, strdup(id->s));
     }
-
-    void Identifier::execute() {}
 
     void Identifier::typecheck() {}
 

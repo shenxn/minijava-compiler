@@ -5,8 +5,6 @@
 
 namespace AST {
 
-    class Type;
-
     class Identifier: public Node {
         public:
             char *s;
@@ -16,8 +14,6 @@ namespace AST {
             ~Identifier();
 
             static Identifier *copy(Identifier *id);
-
-            void execute();
 
             void typecheck();
 

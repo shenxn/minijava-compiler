@@ -1,5 +1,5 @@
 #include "type.hpp"
-#include "symboltable.hpp"
+#include "classdecl.hpp"
 
 namespace AST {
 
@@ -32,7 +32,7 @@ namespace AST {
     void Type::typecheck() {
         if (type == classType) {
             classId->typecheck();
-            isValid = classId->classItem != NULL;
+            isValid = classId->classDecl != NULL;
         }
     }
 
@@ -49,8 +49,8 @@ namespace AST {
             if (isExact) {
                 return classId->id->equal(b->classId->id);
             } else {
-                for (auto classItem = b->classId->classItem; classItem != NULL; classItem = classItem->parent) {
-                    if (classId->id->equal(classItem->classDecl->id)) {
+                for (auto classDecl = b->classId->classDecl; classDecl != NULL; classDecl = classDecl->parent) {
+                    if (classId->id->equal(classDecl->id)) {
                         return true;
                     }
                 }

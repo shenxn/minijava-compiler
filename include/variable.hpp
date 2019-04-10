@@ -1,8 +1,7 @@
 #pragma once
 
 #include "node.hpp"
-#include "identifier.hpp"
-#include "stack.hpp"
+#include "typedef.hpp"
 
 namespace AST {
     class VarDecl;
@@ -16,13 +15,9 @@ namespace AST {
 
             ~Variable();
 
-            void execute();
-
             void typecheck();
 
-            VarValue *find();
-
-            VarDecl *varDecl();
+            VarDecl *varDecl(int *offset);
     };
 
 }

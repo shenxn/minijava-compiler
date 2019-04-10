@@ -1,4 +1,7 @@
+#include <cstdio>
 #include "node.hpp"
+
+// #define DETAIL_REPORT
 
 namespace AST {
 

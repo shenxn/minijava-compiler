@@ -1,5 +1,7 @@
 #include "index.hpp"
 
+#include "exp.hpp"
+
 namespace AST {
 
     Index::Index(int lineno, Index *subIndex, Exp *exp) : Node(lineno) {
@@ -20,12 +22,12 @@ namespace AST {
         delete this->exp;
     }
 
-    void Index::execute() {
-        exp->execute();
-        if (subIndex != NULL) {
-            subIndex->execute();
-        }
-    }
+    // void Index::execute() {
+    //     exp->execute();
+    //     if (subIndex != NULL) {
+    //         subIndex->execute();
+    //     }
+    // }
 
     void Index::typecheck() {
         if (subIndex != NULL) {

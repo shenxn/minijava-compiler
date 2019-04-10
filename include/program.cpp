@@ -1,5 +1,7 @@
 #include "program.hpp"
-#include "symboltable.hpp"
+
+#include "classdecl.hpp"
+#include "mainclass.hpp"
 
 namespace AST {
 
@@ -12,12 +14,15 @@ namespace AST {
         delete mainClass;
     }
 
-    void Program::execute() {
-        mainClass->execute();
+    void Program::preTypecheckProcess() {
+        classDeclList->buildParentRelation();
+    }
+
+    void Program::preCompileProcess() {
+        classDeclList->buildMethodSigMap();
     }
 
     void Program::typecheck() {
-        buildClassInher();
         mainClass->typecheck();
         classDeclList->typecheck();
     }

@@ -1,6 +1,13 @@
 #include "statement.hpp"
-#include "symboltable.hpp"
+
+#include <cstring>
 #include "asm.hpp"
+#include "exp.hpp"
+#include "variable.hpp"
+#include "methoddecl.hpp"
+#include "index.hpp"
+#include "type.hpp"
+#include "vardecl.hpp"
 
 namespace AST {
     
@@ -14,10 +21,6 @@ namespace AST {
 
     StatementBlock::~StatementBlock() {
         delete statementList;
-    }
-
-    void StatementBlock::execute() {
-        statementList->execute();
     }
 
     void StatementBlock::typecheck() {
@@ -42,15 +45,6 @@ namespace AST {
         delete elseStatement;
     }
 
-    void IfElse::execute() {
-        exp->execute();
-        if (exp->value.boolVal) {
-            ifStatement->execute();
-        } else {
-            elseStatement->execute();
-        }
-    }
-
     void IfElse::typecheck() {
         exp->typecheck();
         if (!exp->isBool()) {
@@ -63,7 +57,7 @@ namespace AST {
 
     void IfElse::compile() {
         exp->compile();
-        printf("\tcmp r1, #0\n");
+        printf("\tcmp r0, #0\n");
         printf("\tbeq _statement_%d_else\n", statementId);
         ifStatement->compile();
         printf("\tb _statement_%d_end\n", statementId);
@@ -84,14 +78,6 @@ namespace AST {
         delete statement;
     }
 
-    void While::execute() {
-        exp->execute();
-        while (exp->value.boolVal) {
-            statement->execute();
-            exp->execute();
-        }
-    }
-
     void While::typecheck() {
         exp->typecheck();
         if (!exp->isBool()) {
@@ -104,7 +90,7 @@ namespace AST {
     void While::compile() {
         printf("_statement_%d_while:\n", statementId);
         exp->compile();
-        printf("\tcmp r1, #0\n");
+        printf("\tcmp r0, #0\n");
         printf("\tbeq _statement_%d_end\n", statementId);
         statement->compile();
         printf("\tb _statement_%d_while\n", statementId);
@@ -143,10 +129,6 @@ namespace AST {
         }
     }
 
-    void Print::execute() {
-        // TODO: delete
-    }
-
     void Print::typecheck() {
         if (!isString) {
             exp->typecheck();
@@ -163,7 +145,8 @@ namespace AST {
         if (isString) {
             printf("\tldr r0, =_string_literal_%d\n", stringLiteralId);
         } else {
-            exp->compile(); // result is at r1
+            exp->compile();
+            printf("\tmov r1, r0\n");
             printf("\tldr r0, =%s\n", isNewLine ? "_string_printintln" : "_string_printint");
         }
         printf("\tbl printf\n");
@@ -179,20 +162,6 @@ namespace AST {
         delete var;
         delete index;
         delete exp;
-    }
-
-    void VarAssign::execute() {
-        if (index != NULL) {
-            index->execute();
-        }
-        exp->execute();
-        Index *subIndex = index;
-        VarValue *subValue = var->find();
-        while (subIndex != NULL) {
-            subValue = &subValue->arrayVal->value[subIndex->exp->value.intVal];
-            subIndex = subIndex->subIndex;
-        }
-        *subValue = exp->value;
     }
 
     void VarAssign::typecheck() {
@@ -223,7 +192,9 @@ namespace AST {
     void VarAssign::compile() {
         // TODO: index
         exp->compile();
-        printf("\tstr r1, [ fp, #%d ]\n", var->varDecl()->stackOffset);
+        int memoryOffset;
+        auto varDecl = var->varDecl(&memoryOffset);
+        printf("\tstr r0, [ %s, #%d ]\n", varDecl->isLocal ? "fp" : "r4", memoryOffset);
     }
 
     Return::Return(Exp *exp) {
@@ -234,22 +205,16 @@ namespace AST {
         delete exp;
     }
 
-    void Return::execute() {
-        exp->execute();
-        returnValue = exp->value;
-        returned = true;
-    }
-
     void Return::typecheck() {
         exp->typecheck();
         if (!exp->isValid()) {
             return;
         }
 
-        if (currentMethod != NULL && !currentMethod->methodDecl->returnType->isValid) {
+        if (MethodDecl::currMethod != NULL && !MethodDecl::currMethod->returnType->isValid) {
             return;
         }
-        if (currentMethod == NULL || !currentMethod->methodDecl->returnType->equalOrIsSuperOf(exp->type)) {
+        if (MethodDecl::currMethod == NULL || !MethodDecl::currMethod->returnType->equalOrIsSuperOf(exp->type)) {
             exp->reportTypeCheckError("Return type does not match");
         }
     }
@@ -264,7 +229,7 @@ namespace AST {
         /* restore stack point, frame point, and link */
         printf("\tmov sp, fp\n");
         printf("\tpop {fp}\n");
-        printf("\tpop {lr}\n");
+        printf("\tpop {r5, lr}\n");
 
         /* pop params */
         if (!ASM::methodDecl->formalList->list.empty()) {
@@ -278,15 +243,6 @@ namespace AST {
     StatementList::~StatementList() {
         for (auto statement : list) {
             delete statement;
-        }
-    }
-
-    void StatementList::execute() {
-        for (auto statement : list) {
-            statement->execute();
-            if (returned) {
-                break;
-            }
         }
     }
 

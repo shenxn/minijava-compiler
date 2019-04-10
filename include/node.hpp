@@ -1,7 +1,5 @@
 #pragma once
 
-#include <cstdio>
-
 // #define DETAIL_REPORT
 
 namespace AST {
@@ -15,8 +13,6 @@ namespace AST {
             Node();
 
             Node(int lineno);
-
-            virtual void execute() = 0;
 
             virtual void typecheck() = 0;
 

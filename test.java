@@ -80,17 +80,20 @@ class MainClass {
                 System.out.println("false");
             }
             System.out.println(new HelloClass().hello(1, 2));
+            System.out.println(new NewHelloClass().hello());
         }
 	}
 
 }
 
 class HelloClass {
+    int v;
+
     public int hello(int p1, int p2) {
         int x;
+        System.out.println("Hello from HelloClass::hello()");
         x = new HelloClass().hello2(1, 2, 3, 4, 5, false);
         System.out.println(x);
-        System.out.println("Hello from HelloClass::hello()");
         System.out.print("Return value is ");
         return -1;
     }
@@ -98,11 +101,11 @@ class HelloClass {
     public int hello2(int p1, int p2, int p3, int p4, int p5, boolean p6) {
         int x;
         int y;
+        System.out.println("Hello from HelloClass::hello2()");
         x = 100;
         y = 8;
         System.out.print("x * (x + y) - y = (10792) ");
         System.out.println(x * (x + y) - y);
-        System.out.println("Hello from HelloClass::hello2()");
         System.out.print("p1 = ");
         System.out.println(p1);
         System.out.print("p2 = ");
@@ -133,6 +136,37 @@ class HelloClass {
 
         System.out.print("Return value is ");
         return y;
+    }
+
+    public int printV() {
+        v = 8;
+        System.out.print("HelloClass::v = ");
+        System.out.println(v);
+        return this.hi();
+    }
+
+    public int hi() {
+        System.out.println("Hi from HelloClass");
+        return 0;
+    }
+}
+
+class NewHelloClass extends HelloClass {
+    int v;
+
+    public int hello() {
+        v = 5;
+        System.out.println("Hello from NewHelloClass::hello()");
+        if (this.printV() == 1) {} else {}
+        System.out.print("NewHelloClass::v = ");
+        System.out.println(v);
+        System.out.print("Return value is ");
+        return -1;
+    }
+
+    public int hi() {
+        System.out.println("Hi from NewHelloClass");
+        return 0;
     }
 }
 

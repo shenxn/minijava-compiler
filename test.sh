@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 make clean
-make typechecker
+make mjavac
 
 red=`tput setaf 1`
 green=`tput setaf 2`
@@ -11,7 +11,7 @@ function testparser() {
     FILENAME=$1
     ERRORLINENO=$2
     echo "Testing $FILENAME"
-    RESULT=`./typechecker $FILENAME`
+    RESULT=`./mjavac $FILENAME`
     if [[ ERRORLINENO -eq -1 ]]; then
         if [[ ! $RESULT =~ ^Syntax ]]; then
             echo "    ${green}Pass${reset}"
@@ -37,7 +37,7 @@ function testtypechecker() {
     FILENAME=$1
     OUTPUTFILE=$FILENAME.output
     echo "Testing $FILENAME"
-    RESULT=$(./typechecker $FILENAME)
+    RESULT=$(./mjavac $FILENAME)
     DIFF_RESULT=$(diff <(echo "$RESULT") $OUTPUTFILE)
     if [[ -z $DIFF_RESULT ]]; then
         echo "    ${green}Pass${reset}"
@@ -56,7 +56,7 @@ function testtypechecker() {
 function testinterpretation() {
     FILENAME=$1
     echo "Testing $FILENAME"
-    MY_RESULT=$(../../typechecker $FILENAME)
+    MY_RESULT=$(../../mjavac $FILENAME)
     javac $FILENAME
     CLASSFILE=$([[ $FILENAME =~ ^(.*)\.java$ ]] && echo ${BASH_REMATCH[1]})
     STD_RESULT=$(java $CLASSFILE)

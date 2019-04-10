@@ -1,5 +1,5 @@
 #include "class.hpp"
-#include "symboltable.hpp"
+#include "classdecl.hpp"
 
 namespace AST {
 
@@ -14,11 +14,11 @@ namespace AST {
     void Class::execute() {}
 
     void Class::typecheck() {
-        auto it = TableStatus::classTable.find(id->s);
-        if (it == TableStatus::classTable.end()) {
+        auto it = ClassDecl::classTable.find(id->s);
+        if (it == ClassDecl::classTable.end()) {
             reportTypeCheckError("Undefined class");
         } else {
-            classItem = it->second;
+            classDecl = ClassDecl::classTable[id->s];
         }
     }
 

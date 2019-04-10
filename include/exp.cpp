@@ -1,7 +1,10 @@
 #include "exp.hpp"
+
 #include "index.hpp"
-#include "symboltable.hpp"
 #include "asm.hpp"
+#include "variable.hpp"
+#include "type.hpp"
+#include "classdecl.hpp"
 
 namespace AST {
 
@@ -42,12 +45,6 @@ namespace AST {
         }
     }
 
-    void ExpList::execute() {
-        for (auto exp : list) {
-            exp->execute();
-        }
-    }
-
     void ExpList::typecheck() {
         for (auto exp : list) {
             exp->typecheck();
@@ -59,14 +56,10 @@ namespace AST {
         this->i = i;
     }
 
-    void Integer::execute() {
-        value.intVal = i;
-    }
-
     void Integer::typecheck() {}
 
     void Integer::compile() {
-        printf("\tmov r1, #%d\n", i);
+        printf("\tmov r0, #%d\n", i);
     }
 
     Boolean::Boolean(int lineno, bool b) : Exp(lineno) {
@@ -74,14 +67,10 @@ namespace AST {
         this->b = b;
     }
 
-    void Boolean::execute() {
-        value.boolVal = b;
-    }
-
     void Boolean::typecheck() {}
 
     void Boolean::compile() {
-        printf("\tmov r1, #%d\n", b ? 1 : 0);
+        printf("\tmov r0, #%d\n", b ? 1 : 0);
     }
 
     BinaryExp::BinaryExp(int lineno, Exp *a, Exp *b) : Exp(lineno) {
@@ -166,60 +155,36 @@ namespace AST {
 
     Add::Add(int lineno, Exp *a, Exp *b) : IntBinaryExp(lineno, a, b) {}
 
-    void Add::execute() {
-        a->execute();
-        b->execute();
-        value.intVal = a->value.intVal + b->value.intVal;
-    }
-
     void Add::compile() {
         a->compile();
-        printf("\tpush {r1}\n");
+        printf("\tpush {r0}\n");
         b->compile();
-        printf("\tpop {r0}\n");
-        printf("\tadd r1, r0\n");
+        printf("\tpop {r1}\n");
+        printf("\tadd r0, r1\n");
     }
 
     Minus::Minus(int lineno, Exp *a, Exp *b) : IntBinaryExp(lineno, a, b) {}
 
-    void Minus::execute() {
-        a->execute();
-        b->execute();
-        value.intVal = a->value.intVal - b->value.intVal;
-    }
-
     void Minus::compile() {
         a->compile();
-        printf("\tpush {r1}\n");
+        printf("\tpush {r0}\n");
         b->compile();
-        printf("\tpop {r0}\n");
-        printf("\tsub r0, r1\n");
-        printf("\tmov r1, r0\n");
+        printf("\tpop {r1}\n");
+        printf("\tsub r1, r0\n");
+        printf("\tmov r0, r1\n");
     }
 
     Multi::Multi(int lineno, Exp *a, Exp *b) : IntBinaryExp(lineno, a, b) {};
 
-    void Multi::execute() {
-        a->execute();
-        b->execute();
-        value.intVal = a->value.intVal * b->value.intVal;
-    }
-
     void Multi::compile() {
         a->compile();
-        printf("\tpush {r1}\n");
+        printf("\tpush {r0}\n");
         b->compile();
-        printf("\tpop {r0}\n");
-        printf("\tmul r1, r0\n");
+        printf("\tpop {r1}\n");
+        printf("\tmul r0, r1\n");
     }
 
     Divide::Divide(int lineno, Exp *a, Exp *b) : IntBinaryExp(lineno, a, b) {};
-
-    void Divide::execute() {
-        a->execute();
-        b->execute();
-        value.intVal = a->value.intVal / b->value.intVal;
-    }
 
     void Divide::compile() {
         // TODO
@@ -227,179 +192,117 @@ namespace AST {
 
     And::And(int lineno, Exp *a, Exp *b) : BoolBinaryExp(lineno, a, b) {};
 
-    void And::execute() {
-        a->execute();
-        b->execute();
-        value.boolVal = a->value.boolVal && b->value.boolVal;
-    }
-
     void And::compile() {
         a->compile();
-        printf("\tcmp r1, #0\n");  // logic shortcut
+        printf("\tcmp r0, #0\n");  // logic shortcut
         printf("\tbeq _exp_%d_shortcut\n", expId);
-        printf("\tpush {r1}\n");
         b->compile();
-        printf("\tpop {r0}\n");
-        printf("\tand r1, r0\n");
         printf("_exp_%d_shortcut:\n", expId);
     }
 
     Or::Or(int lineno, Exp *a, Exp *b) : BoolBinaryExp(lineno, a, b) {};
 
-    void Or::execute() {
-        a->execute();
-        b->execute();
-        value.boolVal = a->value.boolVal || b->value.boolVal;
-    }
-
     void Or::compile() {
         a->compile();
-        printf("\tcmp r1, #1\n");  // logic shortcut
+        printf("\tcmp r0, #1\n");  // logic shortcut
         printf("\tbeq _exp_%d_shortcut\n", expId);
-        printf("\tpush {r1}\n");
         b->compile();
-        printf("\tpop {r0}\n");
-        printf("\torr r1, r0\n");
         printf("_exp_%d_shortcut:\n", expId);
     }
 
     Less::Less(int lineno, Exp *a, Exp *b) : CompareBinaryExp(lineno, a, b) {};
 
-    void Less::execute() {
-        a->execute();
-        b->execute();
-        value.intVal = a->value.intVal < b->value.intVal;
-    }
-
     void Less::compile() {
         a->compile();
-        printf("\tpush {r1}\n");
+        printf("\tpush {r0}\n");
         b->compile();
-        printf("\tpop {r0}\n");
+        printf("\tpop {r1}\n");
         printf("\tcmp r1, r0\n");
-        printf("\tbgt _exp_%d_less\n", expId);
-        printf("\tmov r1, #0\n");
+        printf("\tblt _exp_%d_less\n", expId);
+        printf("\tmov r0, #0\n");
         printf("\tb _exp_%d_end\n", expId);
         printf("_exp_%d_less:\n", expId);
-        printf("\tmov r1, #1\n");
+        printf("\tmov r0, #1\n");
         printf("_exp_%d_end:\n", expId);
     }
 
     Greater::Greater(int lineno, Exp *a, Exp *b) : CompareBinaryExp(lineno, a, b) {};
 
-    void Greater::execute() {
-        a->execute();
-        b->execute();
-        value.intVal = a->value.intVal > b->value.intVal;
-    }
-
     void Greater::compile() {
         a->compile();
-        printf("\tpush {r1}\n");
+        printf("\tpush {r0}\n");
         b->compile();
-        printf("\tpop {r0}\n");
+        printf("\tpop {r1}\n");
         printf("\tcmp r1, r0\n");
-        printf("\tblt _exp_%d_greater\n", expId);
-        printf("\tmov r1, #0\n");
+        printf("\tbgt _exp_%d_greater\n", expId);
+        printf("\tmov r0, #0\n");
         printf("\tb _exp_%d_end\n", expId);
         printf("_exp_%d_greater:\n", expId);
-        printf("\tmov r1, #1\n");
+        printf("\tmov r0, #1\n");
         printf("_exp_%d_end:\n", expId);
     }
 
     LessEqual::LessEqual(int lineno, Exp *a, Exp *b) : CompareBinaryExp(lineno, a, b) {};
 
-    void LessEqual::execute() {
-        a->execute();
-        b->execute();
-        value.intVal = a->value.intVal <= b->value.intVal;
-    }
-
     void LessEqual::compile() {
         a->compile();
-        printf("\tpush {r1}\n");
+        printf("\tpush {r0}\n");
         b->compile();
-        printf("\tpop {r0}\n");
+        printf("\tpop {r1}\n");
         printf("\tcmp r1, r0\n");
-        printf("\tbge _exp_%d_lesseq\n", expId);
-        printf("\tmov r1, #0\n");
+        printf("\tble _exp_%d_lesseq\n", expId);
+        printf("\tmov r0, #0\n");
         printf("\tb _exp_%d_end\n", expId);
         printf("_exp_%d_lesseq:\n", expId);
-        printf("\tmov r1, #1\n");
+        printf("\tmov r0, #1\n");
         printf("_exp_%d_end:\n", expId);
     }
 
     GreaterEqual::GreaterEqual(int lineno, Exp *a, Exp *b) : CompareBinaryExp(lineno, a, b) {};
 
-    void GreaterEqual::execute() {
-        a->execute();
-        b->execute();
-        value.intVal = a->value.intVal >= b->value.intVal;
-    }
-
     void GreaterEqual::compile() {
         a->compile();
-        printf("\tpush {r1}\n");
+        printf("\tpush {r0}\n");
         b->compile();
-        printf("\tpop {r0}\n");
+        printf("\tpop {r1}\n");
         printf("\tcmp r1, r0\n");
-        printf("\tble _exp_%d_greatereq\n", expId);
-        printf("\tmov r1, #0\n");
+        printf("\tbge _exp_%d_greatereq\n", expId);
+        printf("\tmov r0, #0\n");
         printf("\tb _exp_%d_end\n", expId);
         printf("_exp_%d_greatereq:\n", expId);
-        printf("\tmov r1, #1\n");
+        printf("\tmov r0, #1\n");
         printf("_exp_%d_end:\n", expId);
     }
 
     Equal::Equal(int lineno, Exp *a, Exp *b) : EqualityBinaryExp(lineno, a, b) {};
 
-    void Equal::execute() {
-        a->execute();
-        b->execute();
-        if (type->isInt()) {
-            value.boolVal = a->value.intVal == b->value.intVal;
-        } else {
-            value.boolVal = a->value.boolVal == b->value.boolVal;
-        }
-    }
-
     void Equal::compile() {
         a->compile();
-        printf("\tpush {r1}\n");
+        printf("\tpush {r0}\n");
         b->compile();
-        printf("\tpop {r0}\n");
+        printf("\tpop {r1}\n");
         printf("\tcmp r1, r0\n");
         printf("\tbeq _exp_%d_equal\n", expId);
-        printf("\tmov r1, #0\n");
+        printf("\tmov r0, #0\n");
         printf("\tb _exp_%d_end\n", expId);
         printf("_exp_%d_equal:\n", expId);
-        printf("\tmov r1, #1\n");
+        printf("\tmov r0, #1\n");
         printf("_exp_%d_end:\n", expId);
     }
 
     NotEqual::NotEqual(int lineno, Exp *a, Exp *b) : EqualityBinaryExp(lineno, a, b) {};
 
-    void NotEqual::execute() {
-        a->execute();
-        b->execute();
-        if (type->isInt()) {
-            value.boolVal = a->value.intVal != b->value.intVal;
-        } else {
-            value.boolVal = a->value.boolVal != b->value.boolVal;
-        }
-    }
-
     void NotEqual::compile() {
         a->compile();
-        printf("\tpush {r1}\n");
+        printf("\tpush {r0}\n");
         b->compile();
-        printf("\tpop {r0}\n");
+        printf("\tpop {r1}\n");
         printf("\tcmp r1, r0\n");
-        printf("\tbeq _exp_%d_equal\n", expId);
-        printf("\tmov r1, #1\n");
+        printf("\tbeq _exp_%d_notequal\n", expId);
+        printf("\tmov r0, #1\n");
         printf("\tb _exp_%d_end\n", expId);
-        printf("_exp_%d_equal:\n", expId);
-        printf("\tmov r1, #0\n");
+        printf("_exp_%d_notequal:\n", expId);
+        printf("\tmov r0, #0\n");
         printf("_exp_%d_end:\n", expId);
     }
 
@@ -428,36 +331,21 @@ namespace AST {
 
     Positive::Positive(int lineno, Exp *a) : IntUnaryExp(lineno, a) {}
 
-    void Positive::execute() {
-        a->execute();
-        value = a->value;
-    }
-
     void Positive::compile() {
         a->compile();
     }
 
     Negative::Negative(int lineno, Exp *a) : IntUnaryExp(lineno, a) {}
 
-    void Negative::execute() {
-        a->execute();
-        value.intVal = -a->value.intVal;
-    }
-
     void Negative::compile() {
         a->compile();
-        printf("\tmov r0, #0\n");
-        printf("\tsub r0, r1\n");
-        printf("\tmov r1, r0\n");
+        printf("\tmov r1, #0\n");
+        printf("\tsub r1, r0\n");
+        printf("\tmov r0, r1\n");  // TODO: improve
     }
     
     Not::Not(int lineno, Exp *a) : UnaryExp(lineno, a) {
         this->type = new Type(booleanType);
-    }
-
-    void Not::execute() {
-        a->execute();
-        value.boolVal = !a->value.boolVal;
     }
 
     void Not::typecheck() {
@@ -469,7 +357,7 @@ namespace AST {
 
     void Not::compile() {
         a->compile();
-        printf("\tEOR r1, #1\n");
+        printf("\tEOR r0, #1\n");
     }
 
     MethodCall::MethodCall(int lineno, Exp *object, Identifier *methodId, ExpList *paramList) : Exp(lineno) {
@@ -482,16 +370,8 @@ namespace AST {
         delete object;
         delete methodId;
         delete paramList;
-    }
 
-    void MethodCall::execute() {
-        // TODO: vtable
-        object->execute();
-        paramList->execute();
-        Stack::_classStack.push(object->value.classVal);
-        methodItem->methodDecl->execute(paramList);
-        Stack::_classStack.pop();
-        value = returnValue;
+        // TODO: free methodMap
     }
 
     void MethodCall::typecheck() {
@@ -506,13 +386,13 @@ namespace AST {
         }
 
         paramList->typecheck();
-        for (auto it = object->type->classId->classItem; it != NULL; it = it->parent) {
-            auto methodIt = it->methodTable.find(methodId->s);
-            if (methodIt != it->methodTable.end()) {
-                for (auto jt = methodIt->second; jt != NULL; jt = jt->next) {
-                    if (jt->methodDecl->formalList->typeMatch(paramList)) {
-                        methodItem = jt;
-                        type = Type::copy(jt->methodDecl->returnType);
+        for (auto classDecl = object->type->classId->classDecl; classDecl != NULL; classDecl = classDecl->parent) {
+            auto methodIt = classDecl->methodMap.find(methodId->s);
+            if (methodIt != classDecl->methodMap.end()) {
+                for (auto methodDecl : *methodIt->second) {
+                    if (methodDecl->formalList->typeMatch(paramList)) {
+                        this->methodDecl = methodDecl;
+                        type = Type::copy(methodDecl->returnType);
                         return;
                     }
                 }
@@ -522,19 +402,22 @@ namespace AST {
     }
 
     bool MethodCall::isValid() {
-        return methodItem != NULL;
+        return methodDecl != NULL;
     }
 
     void MethodCall::compile() {
         // TODO: vtable
-        // TODO: compile object
+
+        printf("\tpush {r4}\n");
+        object->compile();
+        printf("\tmov r5, r0\n");  // temporarily stored in r5
         
         if (!paramList->list.empty()) {
             printf("\tsub sp, #%lu\n", 4 * paramList->list.size());  // Make space for parameters
             int stackOffset = 0;
             for (auto param : paramList->list) {
                 param->compile();
-                printf("\tstr r1, [ sp, #%d ]\n", stackOffset);
+                printf("\tstr r0, [ sp, #%d ]\n", stackOffset);
                 stackOffset += 4;
             }
             switch (paramList->list.size()) {
@@ -553,7 +436,10 @@ namespace AST {
             }
         }
 
-        printf("\tbl _method_%d\n", methodItem->methodDecl->methodId);
+        printf("\tmov r4, r5\n");  // set object base pointer
+        int memoryOffset = 0;
+        printf("\tbl _method_%d\n", methodDecl->methodId);
+        printf("\tpop {r4}\n");
     }
 
     IdIndexLength::IdIndexLength(int lineno, Identifier* id, Index *index, bool isLength) : Exp(lineno) {
@@ -567,23 +453,23 @@ namespace AST {
         delete index;
     }
 
-    void IdIndexLength::execute() {
-        id->execute();
-        if (index != NULL) {
-            index->execute();
-        }
-        Index *subIndex = index;
-        VarValue subValue = id->value;
-        while (subIndex != NULL) {
-            subValue = subValue.arrayVal->value[subIndex->exp->value.intVal];
-            subIndex = subIndex->subIndex;
-        }
-        if (isLength) {
-            value.intVal = subValue.arrayVal->length;
-        } else {
-            value = subValue;
-        }
-    }
+    // void IdIndexLength::execute() {
+    //     id->execute();
+    //     if (index != NULL) {
+    //         index->execute();
+    //     }
+    //     Index *subIndex = index;
+    //     VarValue subValue = id->value;
+    //     while (subIndex != NULL) {
+    //         subValue = subValue.arrayVal->value[subIndex->exp->value.intVal];
+    //         subIndex = subIndex->subIndex;
+    //     }
+    //     if (isLength) {
+    //         value.intVal = subValue.arrayVal->length;
+    //     } else {
+    //         value = subValue;
+    //     }
+    // }
 
     void IdIndexLength::typecheck() {
         id->typecheck();
@@ -630,9 +516,9 @@ namespace AST {
         delete var;
     }
 
-    void IdObject::execute() {
-        value = *var->find();
-    }
+    // void IdObject::execute() {
+    //     value = *var->find();
+    // }
 
     void IdObject::typecheck() {
         var->typecheck();
@@ -644,20 +530,22 @@ namespace AST {
     }
 
     void IdObject::compile() {
-        printf("\tldr r1, [ fp, #%d ]\n" ,var->varDecl()->stackOffset);
+        int memoryOffset;
+        auto varDecl = var->varDecl(&memoryOffset);
+        printf("\tldr r0, [ %s, #%d ]\n", varDecl->isLocal ? "fp" : "r4", memoryOffset);
     }
 
     ThisObject::ThisObject(int lineno) : Exp(lineno) {}
 
-    void ThisObject::execute() {
-        value.classVal = classStack;
-    }
+    // void ThisObject::execute() {
+    //     value.classVal = classStack;
+    // }
 
     void ThisObject::typecheck() {
-        type = new Type(lineno, Identifier::copy(currentClass->classDecl->id));
+        type = new Type(lineno, Identifier::copy(ClassDecl::currClass->id));
         type->typecheck();
 
-        if (currentMethod == NULL) {
+        if (MethodDecl::currMethod == NULL) {
             // Main class
             reportTypeCheckError("'this' is used in static method");
         }
@@ -668,7 +556,7 @@ namespace AST {
     }
 
     void ThisObject::compile() {
-        // TODO
+        printf("\tmov r0, r4\n");
     }
 
     NewClassObject::NewClassObject(int lineno, Identifier *classId) : Exp(lineno) {
@@ -677,30 +565,6 @@ namespace AST {
 
     NewClassObject::~NewClassObject() {
         delete type;
-    }
-
-    void NewClassObject::execute() {
-        value.classVal = new StackItem();
-        for (ClassItem *classItem = type->classId->classItem; classItem != NULL; classItem = classItem->parent) {
-            for (auto varDecl : classItem->classDecl->varDeclList->list) {
-                if (value.classVal->variableMap.find(varDecl->id->s) == value.classVal->variableMap.end()) {
-                    VarValue *varValue = new VarValue;
-
-                    // Initialize
-                    if (varDecl->type->isInt()) {
-                        varValue->intVal = 0;
-                    } else if (varDecl->type->isBool()) {
-                        varValue->boolVal = 0;
-                    } else if (varDecl->type->isClass()) {
-                        varValue->classVal = NULL;
-                    } else if (varDecl->type->isArray()) {
-                        varValue->arrayVal = NULL;
-                    }
-
-                    value.classVal->variableMap[varDecl->id->s] = varValue;
-                }
-            }
-        }
     }
 
     void NewClassObject::typecheck() {
@@ -715,7 +579,12 @@ namespace AST {
     }
 
     void NewClassObject::compile() {
-        // TODO
+        size_t totalSize = 0;
+        for (auto classDecl = ClassDecl::currClass; classDecl != NULL; classDecl = classDecl->parent) {
+            totalSize += classDecl->varSize;
+        }  // TODO: calculate once
+        printf("\tmov r0, #%lu\n", totalSize);
+        printf("\tbl malloc\n");
     }
 
     NewArrayObject::NewArrayObject(int lineno, Type *primeType, Index *index) : Exp(lineno) {
@@ -728,20 +597,15 @@ namespace AST {
         delete index;
     }
 
-    void NewArrayObject::execute() {
-        index->execute();
-        value.arrayVal = newArray(index);
-    }
-
-    Array *NewArrayObject::newArray(Index *subIndex) {
-        Array *array = new Array(subIndex->exp->value.intVal);
-        if (subIndex->subIndex != NULL) {
-            for (int i = 0; i < subIndex->exp->value.intVal; i++) {
-                array->value[i].arrayVal = newArray(subIndex->subIndex);
-            }
-        }
-        return array;
-    }
+    // Array *NewArrayObject::newArray(Index *subIndex) {
+    //     Array *array = new Array(subIndex->exp->value.intVal);
+    //     if (subIndex->subIndex != NULL) {
+    //         for (int i = 0; i < subIndex->exp->value.intVal; i++) {
+    //             array->value[i].arrayVal = newArray(subIndex->subIndex);
+    //         }
+    //     }
+    //     return array;
+    // }
 
     void NewArrayObject::typecheck() {
         primeType->typecheck();

@@ -1,8 +1,7 @@
 #pragma once
 
-#include "mainclass.hpp"
 #include "node.hpp"
-#include "classdecl.hpp"
+#include "typedef.hpp"
 
 namespace AST {
 
@@ -15,7 +14,9 @@ namespace AST {
 
             ~Program();
 
-            void execute();
+            void preTypecheckProcess();
+
+            void preCompileProcess();
 
             void typecheck();
 

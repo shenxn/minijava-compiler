@@ -1,6 +1,8 @@
 #include "vardecl.hpp"
-#include "symboltable.hpp"
+
+#include "exp.hpp"
 #include "stack.hpp"
+#include "type.hpp"
 
 namespace AST {
 
@@ -19,30 +21,19 @@ namespace AST {
         delete id;
     }
 
-    void VarDecl::execute() {}
-
     void VarDecl::typecheck() {
-        VarItem *varItem = varTable->find(id->s)->second;
-        if (!varItem->type->isValid) {
+        VarDecl *varDecl = varMap->find(id->s)->second;
+        if (!varDecl->type->isValid) {
             // Error already found
             return;
         }
 
-        if (varItem->decleared) {
+        if (varDecl != this) {
             id->reportTypeCheckError("Duplicated variable declaration");
             return;
         }
-        varItem->decleared = true;
 
         type->typecheck();
-    }
-
-    void VarDecl::insert(VarTable *varTable) {
-        this->varTable = varTable;
-
-        if (varTable->find(id->s) == varTable->end()) {
-            varTable->insert(VarPair(id->s, new VarItem(type)));
-        }
     }
 
     VarDeclList::~VarDeclList() {
@@ -50,8 +41,6 @@ namespace AST {
             delete varDecl;
         }
     }
-
-    void VarDeclList::execute() {}
 
     void VarDeclList::typecheck() {
         for (auto varDecl : list) {

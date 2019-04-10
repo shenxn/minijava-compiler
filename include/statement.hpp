@@ -5,8 +5,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include "node.hpp"
-#include "exp.hpp"
-#include "index.hpp"
+#include "typedef.hpp"
 
 namespace AST {
 
@@ -16,7 +15,7 @@ namespace AST {
         public:
             virtual bool isReturn();
 
-            virtual void compile() = 0; // TODO: to be replaced
+            virtual void compile() = 0;
     };
 
     class StatementBlock: public Statement {
@@ -26,8 +25,6 @@ namespace AST {
             StatementBlock(StatementList *statementList);
 
             ~StatementBlock();
-
-            void execute();
 
             void typecheck();
 
@@ -46,8 +43,6 @@ namespace AST {
 
             ~IfElse();
 
-            void execute();
-
             void typecheck();
 
             void compile();
@@ -63,8 +58,6 @@ namespace AST {
             While(Exp *exp, Statement *statement);
 
             ~While();
-
-            void execute();
 
             void typecheck();
 
@@ -84,8 +77,6 @@ namespace AST {
 
             ~Print();
 
-            void execute();
-
             void typecheck();
 
             void compile();
@@ -101,8 +92,6 @@ namespace AST {
 
             ~VarAssign();
 
-            void execute();
-
             void typecheck();
 
             void compile();
@@ -116,8 +105,6 @@ namespace AST {
 
             ~Return();
 
-            void execute();
-
             void typecheck();
 
             bool isReturn();
@@ -130,8 +117,6 @@ namespace AST {
             std::list <Statement*> list;
 
             ~StatementList();
-
-            void execute();
 
             void typecheck();
 

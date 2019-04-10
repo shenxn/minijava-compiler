@@ -1,7 +1,7 @@
 #pragma once
 
 #include "node.hpp"
-#include "exp.hpp"
+#include "typedef.hpp"
 
 namespace AST {
 
@@ -14,8 +14,6 @@ namespace AST {
             Index(int lineno, Index *subIndex, Exp *exp);
 
             ~Index();
-
-            void execute();
 
             void typecheck();
     };

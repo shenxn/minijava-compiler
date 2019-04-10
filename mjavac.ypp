@@ -4,7 +4,6 @@
 #include <iostream>
 
 #include "include/ast.hpp"
-#include "include/symboltable.hpp"
 #include "include/asm.hpp"
 
 extern "C" {
@@ -151,9 +150,10 @@ int main(int argc, char* argv[])
     yyparse();
     fclose(yyin);
     if (root != NULL) {
+        root->preTypecheckProcess();
         root->typecheck();
         if (AST::Node::countTypeCheckError == 0) {
-            // root->compile();
+            root->preCompileProcess();
             ASM::compile(argv[1], root);
         }
 #ifdef DETAIL_REPORT
@@ -163,7 +163,7 @@ int main(int argc, char* argv[])
 #endif
         delete root;
     }
-    cleanupTables();
+    // cleanupTables();
     return 0;
 }
 

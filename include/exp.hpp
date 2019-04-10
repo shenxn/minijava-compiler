@@ -2,10 +2,7 @@
 
 #include <list>
 #include "node.hpp"
-#include "type.hpp"
-#include "variable.hpp"
-#include "symboltabletype.hpp"
-#include "stack.hpp"
+#include "typedef.hpp"
 
 namespace AST {
 
@@ -14,7 +11,6 @@ namespace AST {
     class Exp: public Node {
         public:
             Type *type = NULL;
-            VarValue value;
             bool _isValid = true;
 
             Exp(int lineno);
@@ -42,8 +38,6 @@ namespace AST {
 
             ~ExpList();
 
-            void execute();
-
             void typecheck();
     };
 
@@ -52,8 +46,6 @@ namespace AST {
             int i;
 
             Integer(int lineno, int i);
-
-            void execute();
 
             void typecheck();
 
@@ -65,8 +57,6 @@ namespace AST {
             bool b;
 
             Boolean(int lineno, bool b);
-
-            void execute();
 
             void typecheck();
 
@@ -123,16 +113,12 @@ namespace AST {
         public:
             Add(int lineno, Exp *a, Exp *b);
 
-            void execute();
-
             void compile();
     };
 
     class Minus: public IntBinaryExp {
         public:
             Minus(int lineno, Exp *a, Exp *b);
-
-            void execute();
 
             void compile();
     };
@@ -141,16 +127,12 @@ namespace AST {
         public:
             Multi(int lineno, Exp *a, Exp *b);
 
-            void execute();
-
             void compile();
     };
 
     class Divide: public IntBinaryExp {
         public:
             Divide(int lineno, Exp *a, Exp *b);
-
-            void execute();
 
             void compile();
     };
@@ -159,16 +141,12 @@ namespace AST {
         public:
             And(int lineno, Exp *a, Exp *b);
 
-            void execute();
-
             void compile();
     };
 
     class Or: public BoolBinaryExp {
         public:
             Or(int lineno, Exp *a, Exp *b);
-
-            void execute();
 
             void compile();
     };
@@ -177,16 +155,12 @@ namespace AST {
         public:
             Less(int lineno, Exp *a, Exp *b);
 
-            void execute();
-
             void compile();
     };
 
     class Greater: public CompareBinaryExp {
         public:
             Greater(int lineno, Exp *a, Exp *b);
-
-            void execute();
 
             void compile();
     };
@@ -195,16 +169,12 @@ namespace AST {
         public:
             LessEqual(int lineno, Exp *a, Exp *b);
 
-            void execute();
-
             void compile();
     };
 
     class GreaterEqual: public CompareBinaryExp {
         public:
             GreaterEqual(int lineno, Exp *a, Exp *b);
-
-            void execute();
 
             void compile();
     };
@@ -213,16 +183,12 @@ namespace AST {
         public:
             Equal(int lineno, Exp *a, Exp *b);
 
-            void execute();
-
             void compile();
     };
 
     class NotEqual: public EqualityBinaryExp {
         public:
             NotEqual(int lineno, Exp *a, Exp *b);
-
-            void execute();
 
             void compile();
     };
@@ -249,8 +215,6 @@ namespace AST {
         public:
             Positive(int lineno, Exp *a);
 
-            void execute();
-
             void compile();
     };
 
@@ -258,16 +222,12 @@ namespace AST {
         public:
             Negative(int lineno, Exp *a);
 
-            void execute();
-
             void compile();
     };
 
     class Not: public UnaryExp {
         public:
             Not(int lineno, Exp *a);
-
-            void execute();
 
             void typecheck();
 
@@ -280,13 +240,11 @@ namespace AST {
             Identifier *methodId;
             ExpList *paramList;
 
-            MethodItem *methodItem = NULL;
+            MethodDecl *methodDecl = NULL;
 
             MethodCall(int lineno, Exp *object, Identifier *methodId, ExpList *paramList);
 
             ~MethodCall();
-
-            void execute();
 
             void typecheck();
 
@@ -302,8 +260,6 @@ namespace AST {
             IdObject(int lineno, Identifier *id);
 
             ~IdObject();
-
-            void execute();
 
             void typecheck();
 
@@ -321,8 +277,6 @@ namespace AST {
             IdIndexLength(int lineno, Identifier* id, Index *index, bool isLength);
 
             ~IdIndexLength();
-
-            void execute();
             
             void typecheck();
 
@@ -334,8 +288,6 @@ namespace AST {
     class ThisObject: public Exp {
         public:
             ThisObject(int lineno);
-
-            void execute();
 
             void typecheck();
 
@@ -349,8 +301,6 @@ namespace AST {
             NewClassObject(int lineno, Identifier *classId);
 
             ~NewClassObject();
-
-            void execute();
 
             void typecheck();
 
@@ -368,11 +318,7 @@ namespace AST {
 
             ~NewArrayObject();
 
-            void execute();
-
             void typecheck();
-
-            Array *newArray(Index *subIndex);
 
             bool isValid();
 

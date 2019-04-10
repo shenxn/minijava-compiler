@@ -2,10 +2,7 @@
 
 #include <list>
 #include "node.hpp"
-#include "type.hpp"
-#include "identifier.hpp"
-#include "symboltabletype.hpp"
-#include "exp.hpp"
+#include "typedef.hpp"
 
 namespace AST {
 
@@ -14,9 +11,11 @@ namespace AST {
             Type *type;
             Identifier *id;
 
-            VarTable *varTable = NULL;
+            bool isLocal;  // true: local, false: class
 
-            int stackOffset;
+            VarMap *varMap;
+
+            int memoryOffset;
 
             VarDecl();
 
@@ -24,11 +23,7 @@ namespace AST {
 
             ~VarDecl();
 
-            void execute();
-
             void typecheck();
-
-            void insert(VarTable *varTable);
 
             size_t size();
     };
@@ -38,8 +33,6 @@ namespace AST {
             std::list<VarDecl*> list;
 
             ~VarDeclList();
-
-            void execute();
 
             void typecheck();
 

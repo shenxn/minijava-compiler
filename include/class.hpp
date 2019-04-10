@@ -1,15 +1,16 @@
 #pragma once
 
 #include "node.hpp"
-#include "identifier.hpp"
-#include "symboltabletype.hpp"
+#include "typedef.hpp"
 
 namespace AST {
+    
+    class ClassDecl;
 
     class Class: public Node {
         public:
             Identifier *id;
-            ClassItem *classItem = NULL;
+            ClassDecl *classDecl = NULL;
 
             int classId;
 
