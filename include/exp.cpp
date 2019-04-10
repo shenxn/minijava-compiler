@@ -386,6 +386,7 @@ namespace AST {
         }
 
         paramList->typecheck();
+        classStackOffset = 0;
         for (auto classDecl = object->type->classId->classDecl; classDecl != NULL; classDecl = classDecl->parent) {
             auto methodIt = classDecl->methodMap.find(methodId->s);
             if (methodIt != classDecl->methodMap.end()) {
@@ -397,6 +398,7 @@ namespace AST {
                     }
                 }
             }
+            classStackOffset += classDecl->varSize;
         }
         reportTypeCheckError("No method found with matched param type");
     }
@@ -437,7 +439,9 @@ namespace AST {
         }
 
         printf("\tmov r4, r5\n");  // set object base pointer
-        int memoryOffset = 0;
+        if (classStackOffset > 0) {
+            printf("\tadd r4, #%d\n", classStackOffset);
+        }
         printf("\tbl _method_%d\n", methodDecl->methodId);
         printf("\tpop {r4}\n");
     }

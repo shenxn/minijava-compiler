@@ -242,6 +242,8 @@ namespace AST {
 
             MethodDecl *methodDecl = NULL;
 
+            int classStackOffset;
+
             MethodCall(int lineno, Exp *object, Identifier *methodId, ExpList *paramList);
 
             ~MethodCall();
