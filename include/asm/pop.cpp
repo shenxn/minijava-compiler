@@ -17,7 +17,7 @@ namespace ASM {
     }
 
     void Pop::assembly() {
-        Global::out << "push " << opRand->toString() << std::endl;
+        Global::out << "\tpop " << opRand->toString() << std::endl;
     }
 
 }

@@ -17,7 +17,7 @@ namespace ASM {
     }
 
     void Push::assembly() {
-        Global::out << "push " << opRand->toString() << std::endl;
+        Global::out << "\tpush " << opRand->toString() << std::endl;
     }
 
 }

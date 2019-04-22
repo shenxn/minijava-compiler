@@ -22,7 +22,7 @@ namespace AST {
     void MainClass::compile() {
         ASM::Block::New("main");
         NewInstr(new ASM::Push(new ASM::ListOpRand(1, ASM::Register::LR)));
-        // statement->compile();
+        statement->compile();
         NewInstr(new ASM::Pop(new ASM::ListOpRand(1, ASM::Register::PC)));
     }
 

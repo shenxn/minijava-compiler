@@ -5,6 +5,10 @@
 namespace ASM {
 
     enum Register {
+        R0,
+        R1,
+        R2,
+        R3,
         LR,
         PC,
     };
@@ -20,5 +24,9 @@ namespace ASM {
     class OpRand;
 
     class ListOpRand;
+
+    class LabelAddrOpRand;
+
+    class PhysRegOpRand;
 
 }

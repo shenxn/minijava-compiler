@@ -135,13 +135,22 @@ namespace AST {
 
     void Print::compile() {
         if (isString) {
-            printf("\tldr r0, =_string_literal_%d\n", stringLiteralId);
-        } else {
-            exp->compile();
-            printf("\tmov r1, r0\n");
-            printf("\tldr r0, =%s\n", isNewLine ? "_string_printintln" : "_string_printint");
+            NewInstr(
+                new ASM::Ldr(
+                    new ASM::PhysRegOpRand(ASM::R0),
+                    new ASM::LabelAddrOpRand("_string_literal_", stringLiteralId)
+                )
+            );
         }
-        printf("\tbl printf\n");
+        NewInstr(new ASM::Bl("printf"));
+        // if (isString) {
+        //     printf("\tldr r0, =_string_literal_%d\n", stringLiteralId);
+        // } else {
+        //     exp->compile();
+        //     printf("\tmov r1, r0\n");
+        //     printf("\tldr r0, =%s\n", isNewLine ? "_string_printintln" : "_string_printint");
+        // }
+        // printf("\tbl printf\n");
     }
 
     VarAssign::VarAssign(Identifier *id, Index *index, Exp *exp) {
