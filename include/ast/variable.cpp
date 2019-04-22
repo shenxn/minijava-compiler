@@ -1,6 +1,5 @@
 #include "variable.hpp"
 
-#include "asm.hpp"
 #include "classdecl.hpp"
 #include "methoddecl.hpp"
 #include "type.hpp"
@@ -41,11 +40,12 @@ namespace AST {
     }
 
     VarDecl *Variable::varDecl(int *offset) {
-        auto varDeclIt = ASM::methodDecl->varMap.find(id->s);
-        if (varDeclIt != ASM::methodDecl->varMap.end()) {
-            *offset = varDeclIt->second->memoryOffset;
-            return varDeclIt->second;
-        }
+        // TODO:
+        // auto varDeclIt = ASM::methodDecl->varMap.find(id->s);
+        // if (varDeclIt != ASM::methodDecl->varMap.end()) {
+        //     *offset = varDeclIt->second->memoryOffset;
+        //     return varDeclIt->second;
+        // }
 
         *offset = 0;
         for (auto classDecl = ClassDecl::currClass; classDecl != NULL; classDecl = classDecl->parent) {

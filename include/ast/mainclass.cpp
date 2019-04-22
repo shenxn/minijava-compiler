@@ -1,6 +1,7 @@
 #include "mainclass.hpp"
 
 #include <cstdio>
+#include "../asm/asm.hpp"
 #include "classdecl.hpp"
 #include "methoddecl.hpp"
 
@@ -19,12 +20,10 @@ namespace AST {
     }
 
     void MainClass::compile() {
-        printf(".global main\n");
-        printf(".balign 4\n");
-        printf("main:\n");
-        printf("\tpush {lr}\n");
-        statement->compile();
-        printf("\tpop {pc}\n");
+        ASM::Block::New("main");
+        NewInstr(new ASM::Push(new ASM::ListOpRand(1, ASM::Register::LR)));
+        // statement->compile();
+        NewInstr(new ASM::Pop(new ASM::ListOpRand(1, ASM::Register::PC)));
     }
 
     void MainClass::typecheck() {

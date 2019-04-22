@@ -1,7 +1,7 @@
 #include "statement.hpp"
 
 #include <cstring>
-#include "asm.hpp"
+#include "../asm/asm.hpp"
 #include "exp.hpp"
 #include "variable.hpp"
 #include "methoddecl.hpp"
@@ -36,7 +36,7 @@ namespace AST {
         this->ifStatement = ifStatement;
         this->elseStatement = elseStatement;
 
-        statementId = ASM::statementCount++;
+        // TODO: statementId = ASM::statementCount++;
     }
 
     IfElse::~IfElse() {
@@ -70,7 +70,7 @@ namespace AST {
         this->exp = exp;
         this->statement = statement;
 
-        statementId = ASM::statementCount++;
+        // TODO: statementId = ASM::statementCount++;
     }
 
     While::~While() {
@@ -101,20 +101,12 @@ namespace AST {
         this->isString = true;
         this->isNewLine = isNewLine;
 
+        std::string str = s;
+
         if (isNewLine) {
-            /* add \n to the end of the string literal */
-            size_t oldLen = strlen(s);
-            char *newS = (char*)malloc(oldLen + 3);
-            strncpy(newS, s, oldLen);
-            newS[oldLen - 1] = '\\';
-            newS[oldLen] = 'n';
-            newS[oldLen + 1] = '"';
-            newS[oldLen + 2] = '\0';
-            free(s);
-            s = newS;
+            str.substr(0, str.length() - 1) += "\\n";
         }
-        ASM::stringLiterals.push_back(s);
-        stringLiteralId = ASM::stringLiterals.size() - 1;
+        stringLiteralId = ASM::Global::insertStringLiteral(str);
     }
 
     Print::Print(Exp *exp, bool isNewLine = false) {
@@ -232,9 +224,10 @@ namespace AST {
         printf("\tpop {r5, lr}\n");
 
         /* pop params */
-        if (!ASM::methodDecl->formalList->list.empty()) {
-            printf("\tadd sp, #%lu\n", 4 * ASM::methodDecl->formalList->list.size());
-        }
+        // TODO
+        // if (!ASM::methodDecl->formalList->list.empty()) {
+        //     printf("\tadd sp, #%lu\n", 4 * ASM::methodDecl->formalList->list.size());
+        // }
 
         /* restore program counter from link */
         printf("\tmov pc, lr\n");

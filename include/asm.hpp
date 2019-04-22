@@ -1,21 +1,16 @@
-#include <list>
-#include "methoddecl.hpp"
+// namespace ASM {
+//     class ASM {
+//         public:
+//             static std::list<char*> stringLiterals;
 
-namespace AST {
-    class Program;
-};
+//             static int statementCount;
 
-class ASM {
-    public:
-        static std::list<char*> stringLiterals;
+//             static int expCount;
 
-        static int statementCount;
+//             static int methodCount;
 
-        static int expCount;
+//             static AST::MethodDecl *methodDecl;
 
-        static int methodCount;
-
-        static AST::MethodDecl *methodDecl;
-
-        static void compile(char *programFileName, AST::Program *root);
-};
+//             static void compile(char *programFileName, AST::Program *root);
+//     };
+// }

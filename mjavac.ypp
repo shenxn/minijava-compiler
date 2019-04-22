@@ -3,8 +3,8 @@
 #include <cstdio>
 #include <iostream>
 
-#include "include/ast.hpp"
-#include "include/asm.hpp"
+#include "include/ast/ast.hpp"
+#include "include/asm/asm.hpp"
 
 extern "C" {
     extern int yydebug;
@@ -154,7 +154,8 @@ int main(int argc, char* argv[])
         root->typecheck();
         if (AST::Node::countTypeCheckError == 0) {
             root->preCompileProcess();
-            ASM::compile(argv[1], root);
+            root->compile();
+            ASM::Global::assembly(argv[1]);
         }
 #ifdef DETAIL_REPORT
         else {

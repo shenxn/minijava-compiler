@@ -26,10 +26,10 @@ namespace AST {
         mainClass->typecheck();
         classDeclList->typecheck();
     }
-
+    
     void Program::compile() {
         mainClass->compile();
-        classDeclList->compile();
+        // classDeclList->assembly();
     }
 
 }

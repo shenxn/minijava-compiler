@@ -16,9 +16,9 @@ namespace AST {
 
             ~MainClass();
 
-            void compile();
-
             void typecheck();
+
+            void compile();
     };
 
 }

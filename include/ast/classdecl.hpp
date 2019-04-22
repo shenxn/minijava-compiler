@@ -16,10 +16,14 @@ namespace AST {
 
             static ClassDecl *currClass;
 
+            static int classCount;
+
             Identifier *id;
             Identifier *superClass;
             VarDeclList *varDeclList;
             MethodDeclList *methodDeclList;
+
+            int classId;
 
             bool typecheckDisabled = false;
 
@@ -31,7 +35,11 @@ namespace AST {
 
             MethodSigMap *methodSigMap = NULL;
 
+            MethodSigList *methodSigList = NULL;
+
             size_t varSize;  // Total size of class variables in this class
+
+            size_t totalVarSize;
 
             ClassDecl(Identifier *id, Identifier *superClass, VarDeclList *varDeclList, MethodDeclList *methodDeclList);
 
@@ -40,6 +48,8 @@ namespace AST {
             void buildParentRelation();
 
             MethodSigMap *buildMethodSigMap();
+
+            void compileVTable();
 
             void typecheck();
 
@@ -55,6 +65,8 @@ namespace AST {
             void buildParentRelation();
 
             void buildMethodSigMap();
+
+            void compileVTable();
 
             void typecheck();
 

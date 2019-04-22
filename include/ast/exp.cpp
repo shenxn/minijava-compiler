@@ -1,7 +1,6 @@
 #include "exp.hpp"
 
 #include "index.hpp"
-#include "asm.hpp"
 #include "variable.hpp"
 #include "type.hpp"
 #include "classdecl.hpp"
@@ -105,7 +104,7 @@ namespace AST {
     BoolBinaryExp::BoolBinaryExp(int lineno, Exp *a, Exp *b) : BinaryExp(lineno, a, b) {
         this->type = new Type(booleanType);
 
-        expId = ASM::expCount++;
+        // TODO: expId = ASM::expCount++;
     }
 
     void BoolBinaryExp::typecheck() {
@@ -122,7 +121,7 @@ namespace AST {
     CompareBinaryExp::CompareBinaryExp(int lineno, Exp *a, Exp *b) : BinaryExp(lineno, a, b) {
         this->type = new Type(booleanType);
         
-        expId = ASM::expCount++;
+        // TODO: expId = ASM::expCount++;
     }
 
     void CompareBinaryExp::typecheck() {
@@ -139,7 +138,7 @@ namespace AST {
     EqualityBinaryExp::EqualityBinaryExp(int lineno, Exp *a, Exp *b): BinaryExp(lineno, a, b) {
         this->type = new Type(booleanType);
         
-        expId = ASM::expCount++;
+        // TODO: expId = ASM::expCount++;
     }
 
     void EqualityBinaryExp::typecheck() {
@@ -439,10 +438,20 @@ namespace AST {
         }
 
         printf("\tmov r4, r5\n");  // set object base pointer
-        if (classStackOffset > 0) {
-            printf("\tadd r4, #%d\n", classStackOffset);
+        if (methodDecl->methodSignature->isVirtual) {
+            ClassDecl *classDecl = object->type->classId->classDecl;
+            printf("\tpush {r5-r6}\n");
+            printf("\tldr r5, [ r4, #%lu ]\n", classDecl->totalVarSize + 8 * methodDecl->methodSignature->virtualId);  // method address
+            printf("\tldr r6, [ r4, #%lu ]\n", classDecl->totalVarSize + 8 * methodDecl->methodSignature->virtualId + 1);  // stack offset
+            printf("\tadd r4, r6\n");
+            printf("\tblx r5\n");
+            printf("\tpop {r5-r6}\n");
+        } else {
+            if (classStackOffset > 0) {
+                printf("\tadd r4, #%d\n", classStackOffset);
+            }
+            printf("\tbl _method_%d\n", methodDecl->methodId);
         }
-        printf("\tbl _method_%d\n", methodDecl->methodId);
         printf("\tpop {r4}\n");
     }
 
@@ -541,10 +550,6 @@ namespace AST {
 
     ThisObject::ThisObject(int lineno) : Exp(lineno) {}
 
-    // void ThisObject::execute() {
-    //     value.classVal = classStack;
-    // }
-
     void ThisObject::typecheck() {
         type = new Type(lineno, Identifier::copy(ClassDecl::currClass->id));
         type->typecheck();
@@ -583,12 +588,14 @@ namespace AST {
     }
 
     void NewClassObject::compile() {
-        size_t totalSize = 0;
-        for (auto classDecl = ClassDecl::currClass; classDecl != NULL; classDecl = classDecl->parent) {
-            totalSize += classDecl->varSize;
-        }  // TODO: calculate once
-        printf("\tmov r0, #%lu\n", totalSize);
+        ClassDecl *classDecl = type->classId->classDecl;
+
+        printf("\tmov r0, #%lu\n", classDecl->totalVarSize + 4);
         printf("\tbl malloc\n");
+
+        /* set vtable */
+        printf("\tldr r1, =_class_%d_vtable\n", type->classId->classDecl->classId);
+        printf("\tstr r1, [ r0, #%lu ]\n", classDecl->totalVarSize);
     }
 
     NewArrayObject::NewArrayObject(int lineno, Type *primeType, Index *index) : Exp(lineno) {

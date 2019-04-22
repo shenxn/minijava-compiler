@@ -1,7 +1,6 @@
 #include "methoddecl.hpp"
 
 #include "exp.hpp"
-#include "asm.hpp"
 #include "classdecl.hpp"
 #include "statement.hpp"
 #include "type.hpp"
@@ -17,7 +16,7 @@ namespace AST {
         this->varDeclList = varDeclList;
         this->statementList = statementList;
 
-        methodId = ASM::methodCount++;
+        // TODO: methodId = ASM::methodCount++;
 
         int stackOffset = 12;
         for (auto varDecl : formalList->list) {
@@ -131,7 +130,7 @@ namespace AST {
 
         printf("\tsub sp, #%lu\n", 4 * varDeclList->list.size());  // local variables
 
-        ASM::methodDecl = this;
+        // TODO: ASM::methodDecl = this;
         statementList->compile();
     }
 

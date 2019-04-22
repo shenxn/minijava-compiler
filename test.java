@@ -80,7 +80,6 @@ class MainClass {
                 System.out.println("false");
             }
             System.out.println(new HelloClass().hello(1, 2));
-            System.out.println(new NewHelloClass().hello());
         }
 	}
 
@@ -101,7 +100,10 @@ class HelloClass {
     public int hello2(int p1, int p2, int p3, int p4, int p5, boolean p6) {
         int x;
         int y;
+        HelloClass hc;
         System.out.println("Hello from HelloClass::hello2()");
+        hc = new NewHelloClass();
+        System.out.println(hc.hello(1, 2));
         x = 100;
         y = 8;
         System.out.print("x * (x + y) - y = (10792) ");
@@ -154,7 +156,7 @@ class HelloClass {
 class NewHelloClass extends HelloClass {
     int v;
 
-    public int hello() {
+    public int hello(int p1, int p2) {
         v = 5;
         System.out.println("Hello from NewHelloClass::hello()");
         if (this.printV() == 1) {} else {}

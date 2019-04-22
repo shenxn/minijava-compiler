@@ -1,5 +1,5 @@
 mjavac: mjavac.tab.cpp lex.yy.o
-	g++ -g mjavac.tab.cpp lex.yy.o include/*.cpp -o mjavac
+	g++ -g mjavac.tab.cpp lex.yy.o include/asm/*.cpp include/ast/*.cpp -o mjavac
 mjavac.tab.cpp: mjavac.ypp
 	bison -d -g --verbose --debug mjavac.ypp
 lex.yy.o: mjavac.l mjavac.tab.cpp

@@ -8,11 +8,15 @@ namespace AST {
 
     ClassDecl *ClassDecl::currClass;
 
+    int ClassDecl::classCount = 0;
+
     ClassDecl::ClassDecl(Identifier *id, Identifier *superClass, VarDeclList *varDeclList, MethodDeclList *methodDeclList) {
         this->id = id;
         this->superClass = superClass;
         this->varDeclList = varDeclList;
         this->methodDeclList = methodDeclList;
+
+        classId = classCount++;
 
         if (classTable.find(id->s) == classTable.end()) {currClass = this;
             classTable[id->s] = this;
@@ -55,12 +59,13 @@ namespace AST {
 
         if (parent == NULL && methodSigMap != NULL) {
             for (auto methodSigListIt : *methodSigMap) {
-                for (auto methodSig : *methodSigListIt.second) {
-                    delete methodSig;
-                }
                 delete methodSigListIt.second;
             }
             delete methodSigMap;
+            for (auto methodSig : *methodSigList) {
+                delete methodSig;
+            }
+            delete methodSigList;
         }
     }
 
@@ -78,8 +83,12 @@ namespace AST {
         }
         if (parent == NULL) {
             methodSigMap = new MethodSigMap();
+            methodSigList = new MethodSigList();
+            totalVarSize = varSize;
         } else {
             methodSigMap = parent->buildMethodSigMap();
+            methodSigList = parent->methodSigList;
+            totalVarSize = parent->totalVarSize + varSize;
         }
         for (auto methodDecl : methodDeclList->list) {
             MethodSigList *list;
@@ -100,9 +109,42 @@ namespace AST {
             if (methodDecl->methodSignature == NULL) {
                 methodDecl->methodSignature = new MethodSignature(methodDecl);
                 list->push_back(methodDecl->methodSignature);
+                methodSigList->push_back(methodDecl->methodSignature);
             }
         }
         return methodSigMap;
+    }
+
+    void ClassDecl::compileVTable() {
+        printf("_class_%d_vtable:\n", classId);
+        int virtualMethodCount = 0;
+        for (auto methodSig : *methodSigList) {
+            if (!methodSig->isVirtual) {
+                continue;
+            }
+            methodSig->virtualId = virtualMethodCount++;
+            MethodDecl *targetMethod = NULL;
+            int classStackOffset = 0;
+            for (auto classDecl = this; classDecl != NULL; classDecl = classDecl->parent) {
+                auto methodList = classDecl->methodMap[methodSig->methodDecl->id->s];
+                for (auto methodDecl : *methodList) {
+                    if (methodDecl->formalList->typeEqual(methodSig->methodDecl->formalList)) {
+                        targetMethod = methodDecl;
+                        break;
+                    }
+                }
+                if (targetMethod != NULL) {
+                    break;
+                }
+                classStackOffset += classDecl->varSize;
+            }
+            if (targetMethod == NULL) {
+                printf("\t.skip 8\n");
+            } else {
+                printf("\t.word =_method_%d\n", targetMethod->methodId);
+                printf("\t.word %d\n", classStackOffset);
+            }
+        }
     }
 
     void ClassDecl::typecheck() {
@@ -153,6 +195,12 @@ namespace AST {
     void ClassDeclList::buildMethodSigMap() {
         for (auto classDecl : list) {
             classDecl->buildMethodSigMap();
+        }
+    }
+
+    void ClassDeclList::compileVTable() {
+        for (auto classDecl : list) {
+            classDecl->compileVTable();
         }
     }
 
