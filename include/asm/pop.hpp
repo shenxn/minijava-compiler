@@ -6,15 +6,11 @@
 
 namespace ASM {
 
-    class Pop : public Instruction {
+    class Pop : public ListRegInstruction {
         public:
-            ListOpRand *opRand;
+            Pop(int nRegisters, ...);
 
-            Pop(ListOpRand *opRand);
-
-            ~Pop();
-
-            void assembly();
+            std::string opName();
     };
 
 }

@@ -7,7 +7,7 @@
 
 #include "typedef.hpp"
 
-#define NewInstr(instruction) ASM::Global::currBlock->instructions.push_back(instruction);
+#define NewInstr(instr) ASM::Global::instructions.push_back(instr);
 
 namespace ASM {
 
@@ -17,11 +17,13 @@ namespace ASM {
 
             static std::map<std::string, int> stringLiterals;
 
-            static std::list<Block*> blocks;
+            static std::list<Instruction*> instructions;
 
-            static Block* currBlock;
+            static std::list<Reg*> registers;
 
             static int insertStringLiteral(std::string &str);
+
+            static void optimize();
 
             static void assembly(std::string programFileName);
 

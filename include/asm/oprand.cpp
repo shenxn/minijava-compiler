@@ -3,57 +3,46 @@
 #include <cstdarg>
 
 #include "global.hpp"
-#include "block.hpp"
+#include "reg.hpp"
 
 namespace ASM {
 
-    ListOpRand::ListOpRand(int nRegisters, ...) {
-        va_list ap;
-        va_start(ap, nRegisters);
-        for (int i = 0; i < nRegisters; i++) {
-            registers.push_back(new PhysRegOpRand((Register)va_arg(ap, int)));
+    OpRand::OpRand(const std::string &labelName) {
+        type = LabelAddrOpRand;
+        val.labelName = new std::string(labelName);
+    }
+
+    OpRand::OpRand(const std::string &labelPrefix, int labelId) {
+        type = LabelAddrOpRand;
+        val.labelName = new std::string(labelPrefix + std::to_string(labelId));
+    }
+
+    OpRand::OpRand(Reg *reg) {
+        type = RegOpRand;
+        val.reg = reg;
+    }
+
+    OpRand::OpRand(int constValue) {
+        type = ConstOpRand;
+        val.constValue = constValue;
+    }
+
+    OpRand::~OpRand() {
+        if (type == LabelAddrOpRand) {
+            delete val.labelName;
         }
-        va_end(ap);
     }
 
-    ListOpRand::~ListOpRand() {
-        for (auto reg : registers) {
-            delete reg;
+    std::string OpRand::toString() {
+        switch (type) {
+            case LabelAddrOpRand:
+                return "=" + *val.labelName;
+            case RegOpRand:
+                return val.reg->toString();
+            case ConstOpRand:
+                return "#" + std::to_string(val.constValue);
         }
-    }
-
-    std::string ListOpRand::toString() {
-        std::string str = "{";
-        bool isFirstReg = true;
-        for (auto reg : registers) {
-            if (isFirstReg) {
-                isFirstReg = false;
-            } else {
-                str += ",";
-            }
-            str += reg->toString();
-        }
-        return str + "}";
-    }
-
-    LabelAddrOpRand::LabelAddrOpRand(std::string labelName) {
-        this->labelName = labelName;
-    }
-
-    LabelAddrOpRand::LabelAddrOpRand(std::string labelPrefix, int labelId) {
-        labelName = labelPrefix + std::to_string(labelId);
-    }
-
-    std::string LabelAddrOpRand::toString() {
-        return "=" + labelName;
-    }
-
-    PhysRegOpRand::PhysRegOpRand(Register reg) {
-        this->reg = reg;
-    }
-
-    std::string PhysRegOpRand::toString() {
-        return RegisterToStr[reg];
+        return "";
     }
 
 }

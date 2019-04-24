@@ -155,6 +155,7 @@ int main(int argc, char* argv[])
         if (AST::Node::countTypeCheckError == 0) {
             root->preCompileProcess();
             root->compile();
+            ASM::Global::optimize();
             ASM::Global::assembly(argv[1]);
         }
 #ifdef DETAIL_REPORT

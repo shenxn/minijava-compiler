@@ -20,10 +20,10 @@ namespace AST {
     }
 
     void MainClass::compile() {
-        ASM::Block::New("main");
-        NewInstr(new ASM::Push(new ASM::ListOpRand(1, ASM::Register::LR)));
+        NewInstr(new ASM::Label("main"));
+        NewInstr(new ASM::Push(1, &ASM::Reg::LR));
         statement->compile();
-        NewInstr(new ASM::Pop(new ASM::ListOpRand(1, ASM::Register::PC)));
+        NewInstr(new ASM::Pop(1, &ASM::Reg::PC));
     }
 
     void MainClass::typecheck() {

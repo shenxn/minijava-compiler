@@ -1,6 +1,7 @@
 #pragma once
 
 #include <list>
+#include "../asm/asm.hpp"
 #include "node.hpp"
 #include "typedef.hpp"
 
@@ -12,6 +13,8 @@ namespace AST {
         public:
             Type *type = NULL;
             bool _isValid = true;
+
+            ASM::Reg *resultReg;
 
             Exp(int lineno);
 

@@ -7,38 +7,33 @@
 
 namespace ASM {
 
+    enum OpRandType {
+        LabelAddrOpRand,
+        RegOpRand,
+        ConstOpRand,
+    };
+
+    union OpRandValue {
+        std::string *labelName;
+        Reg *reg;
+        int constValue;
+    };
+
     class OpRand {
         public:
-            virtual std::string toString() = 0;
-    };
+            OpRandType type;
 
-    class ListOpRand : public OpRand {
-        public:
-            std::list<PhysRegOpRand*> registers;
+            OpRandValue val;
 
-            ListOpRand(int nRegisters, ...);
+            OpRand(const std::string &labelName);
 
-            ~ListOpRand();
+            OpRand(const std::string &labelPrefix, int labelId);
 
-            std::string toString();
-    };
+            OpRand(Reg* reg);
 
-    class LabelAddrOpRand : public OpRand {
-        public:
-            std::string labelName;
+            OpRand(int constValue);
 
-            LabelAddrOpRand(std::string labelName);
-
-            LabelAddrOpRand(std::string labelPrefix, int labelId);
-
-            std::string toString();
-    };
-
-    class PhysRegOpRand : public OpRand {
-        public:
-            Register reg;
-
-            PhysRegOpRand(Register reg);
+            ~OpRand();
 
             std::string toString();
     };

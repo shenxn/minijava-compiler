@@ -104,7 +104,7 @@ namespace AST {
         std::string str = s;
 
         if (isNewLine) {
-            str.substr(0, str.length() - 1) += "\\n";
+            str = str.substr(0, str.length() - 1) + "\\n\"";
         }
         stringLiteralId = ASM::Global::insertStringLiteral(str);
     }
@@ -137,20 +137,28 @@ namespace AST {
         if (isString) {
             NewInstr(
                 new ASM::Ldr(
-                    new ASM::PhysRegOpRand(ASM::R0),
-                    new ASM::LabelAddrOpRand("_string_literal_", stringLiteralId)
+                    new ASM::OpRand(&ASM::Reg::R0),
+                    new ASM::OpRand(ASM::Label::StringLiteralPrefix, stringLiteralId)
                 )
             );
+        } else {
+            exp->compile();
+            NewInstr(
+                new ASM::Mov(
+                    new ASM::OpRand(&ASM::Reg::R1),
+                    new ASM::OpRand(exp->resultReg)
+                )
+            );  // int
+            NewInstr(
+                new ASM::Ldr(
+                    new ASM::OpRand(&ASM::Reg::R0),
+                    new ASM::OpRand(
+                        isNewLine ? "_string_printintln" : "_string_printint"
+                    )
+                )
+            );  // format
         }
         NewInstr(new ASM::Bl("printf"));
-        // if (isString) {
-        //     printf("\tldr r0, =_string_literal_%d\n", stringLiteralId);
-        // } else {
-        //     exp->compile();
-        //     printf("\tmov r1, r0\n");
-        //     printf("\tldr r0, =%s\n", isNewLine ? "_string_printintln" : "_string_printint");
-        // }
-        // printf("\tbl printf\n");
     }
 
     VarAssign::VarAssign(Identifier *id, Index *index, Exp *exp) {

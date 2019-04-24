@@ -8,9 +8,10 @@ namespace ASM {
 
     class Ldr : public BiOpRandInstruction {
         public:
-            Ldr(OpRand *opA, OpRand *opB);
 
-            inline std::string opName();
+            Ldr(OpRand *opA, OpRand *opB);
+            
+            std::string opName();
     };
 
 }

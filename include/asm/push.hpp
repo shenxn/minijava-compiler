@@ -6,15 +6,11 @@
 
 namespace ASM {
 
-    class Push : public Instruction {
+    class Push : public ListRegInstruction {
         public:
-            ListOpRand *opRand;
+            Push(int nRegisters, ...);
 
-            Push(ListOpRand *opRand);
-
-            ~Push();
-
-            void assembly();
+            std::string opName();
     };
 
 }

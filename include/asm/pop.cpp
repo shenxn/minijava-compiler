@@ -3,21 +3,24 @@
 #include <cstdarg>
 
 #include "global.hpp"
-#include "block.hpp"
 #include "oprand.hpp"
+#include "reg.hpp"
 
 namespace ASM {
 
-    Pop::Pop(ListOpRand *opRand) {
-        this->opRand = opRand;
+    Pop::Pop(int nRegisters, ...) {
+        va_list ap;
+        va_start(ap, nRegisters);
+        for (int i = 0; i < nRegisters; i++) {
+            Reg *reg = va_arg(ap, Reg*);
+            registers.push_back(reg);
+            def.insert(reg);
+        }
+        va_end(ap);
     }
 
-    Pop::~Pop() {
-        delete opRand;
-    }
-
-    void Pop::assembly() {
-        Global::out << "\tpop " << opRand->toString() << std::endl;
+    std::string Pop::opName() {
+        return "pop";
     }
 
 }

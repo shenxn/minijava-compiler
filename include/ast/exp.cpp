@@ -7,10 +7,13 @@
 
 namespace AST {
 
-    Exp::Exp(int lineno) : Node(lineno) {}
+    Exp::Exp(int lineno) : Node(lineno) {
+        resultReg = new ASM::Reg();
+    }
 
     Exp::~Exp() {
         delete type;
+        delete resultReg;
     }
 
     bool Exp::isValid() {
@@ -58,7 +61,7 @@ namespace AST {
     void Integer::typecheck() {}
 
     void Integer::compile() {
-        printf("\tmov r0, #%d\n", i);
+        NewInstr(new ASM::Mov(new ASM::OpRand(resultReg), new ASM::OpRand(i)));
     }
 
     Boolean::Boolean(int lineno, bool b) : Exp(lineno) {
