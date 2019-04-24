@@ -5,6 +5,12 @@
 #include "type.hpp"
 #include "classdecl.hpp"
 
+#define CompileConst optimizeConst(); \
+    if (isConst) { \
+        NewInstr(new ASM::Mov(new ASM::OpRand(resultReg), new ASM::OpRand(constVal))); \
+        return; \
+    }
+
 namespace AST {
 
     Exp::Exp(int lineno) : Node(lineno) {
@@ -55,24 +61,26 @@ namespace AST {
 
     Integer::Integer(int lineno, int i) : Exp(lineno) {
         this->type = new Type(integerType);
-        this->i = i;
+        this->isConst = true;
+        this->constVal = i;
     }
 
     void Integer::typecheck() {}
 
     void Integer::compile() {
-        NewInstr(new ASM::Mov(new ASM::OpRand(resultReg), new ASM::OpRand(i)));
+        NewInstr(new ASM::Mov(new ASM::OpRand(resultReg), new ASM::OpRand(constVal)));
     }
 
     Boolean::Boolean(int lineno, bool b) : Exp(lineno) {
         this->type = new Type(booleanType);
-        this->b = b;
+        this->isConst = true;
+        this->constVal = b;
     }
 
     void Boolean::typecheck() {}
 
     void Boolean::compile() {
-        printf("\tmov r0, #%d\n", b ? 1 : 0);
+        NewInstr(new ASM::Mov(new ASM::OpRand(resultReg), new ASM::OpRand(constVal)));
     }
 
     BinaryExp::BinaryExp(int lineno, Exp *a, Exp *b) : Exp(lineno) {
@@ -87,6 +95,13 @@ namespace AST {
 
     bool BinaryExp::isValid() {
         return _isValid && a->isValid() && b->isValid();
+    }
+
+    void BinaryExp::optimizeConst() {
+        if (a->isConst && b->isConst) {
+            this->isConst = true;
+            this->constVal = constCalc();
+        }
     }
 
     IntBinaryExp::IntBinaryExp(int lineno, Exp *a, Exp *b) : BinaryExp(lineno, a, b) {
@@ -158,6 +173,8 @@ namespace AST {
     Add::Add(int lineno, Exp *a, Exp *b) : IntBinaryExp(lineno, a, b) {}
 
     void Add::compile() {
+        CompileConst;
+
         a->compile();
         printf("\tpush {r0}\n");
         b->compile();
@@ -165,9 +182,15 @@ namespace AST {
         printf("\tadd r0, r1\n");
     }
 
+    int Add::constCalc() {
+        return a->constVal + b->constVal;
+    }
+
     Minus::Minus(int lineno, Exp *a, Exp *b) : IntBinaryExp(lineno, a, b) {}
 
     void Minus::compile() {
+        CompileConst;
+
         a->compile();
         printf("\tpush {r0}\n");
         b->compile();
@@ -176,9 +199,15 @@ namespace AST {
         printf("\tmov r0, r1\n");
     }
 
+    int Minus::constCalc() {
+        return a->constVal - b->constVal;
+    }
+
     Multi::Multi(int lineno, Exp *a, Exp *b) : IntBinaryExp(lineno, a, b) {};
 
     void Multi::compile() {
+        CompileConst;
+
         a->compile();
         printf("\tpush {r0}\n");
         b->compile();
@@ -186,15 +215,27 @@ namespace AST {
         printf("\tmul r0, r1\n");
     }
 
+    int Multi::constCalc() {
+        return a->constVal * b->constVal;
+    }
+
     Divide::Divide(int lineno, Exp *a, Exp *b) : IntBinaryExp(lineno, a, b) {};
 
     void Divide::compile() {
+        CompileConst;
+
         // TODO
+    }
+
+    int Divide::constCalc() {
+        return a->constVal / b->constVal;
     }
 
     And::And(int lineno, Exp *a, Exp *b) : BoolBinaryExp(lineno, a, b) {};
 
     void And::compile() {
+        CompileConst;
+
         a->compile();
         printf("\tcmp r0, #0\n");  // logic shortcut
         printf("\tbeq _exp_%d_shortcut\n", expId);
@@ -202,9 +243,15 @@ namespace AST {
         printf("_exp_%d_shortcut:\n", expId);
     }
 
+    int And::constCalc() {
+        return a->constVal && b->constVal;
+    }
+
     Or::Or(int lineno, Exp *a, Exp *b) : BoolBinaryExp(lineno, a, b) {};
 
     void Or::compile() {
+        CompileConst;
+
         a->compile();
         printf("\tcmp r0, #1\n");  // logic shortcut
         printf("\tbeq _exp_%d_shortcut\n", expId);
@@ -212,9 +259,15 @@ namespace AST {
         printf("_exp_%d_shortcut:\n", expId);
     }
 
+    int Or::constCalc() {
+        return a->constVal || b->constVal;
+    }
+
     Less::Less(int lineno, Exp *a, Exp *b) : CompareBinaryExp(lineno, a, b) {};
 
     void Less::compile() {
+        CompileConst;
+
         a->compile();
         printf("\tpush {r0}\n");
         b->compile();
@@ -228,9 +281,15 @@ namespace AST {
         printf("_exp_%d_end:\n", expId);
     }
 
+    int Less::constCalc() {
+        return a->constVal < b->constVal;
+    }
+
     Greater::Greater(int lineno, Exp *a, Exp *b) : CompareBinaryExp(lineno, a, b) {};
 
     void Greater::compile() {
+        CompileConst;
+
         a->compile();
         printf("\tpush {r0}\n");
         b->compile();
@@ -244,9 +303,15 @@ namespace AST {
         printf("_exp_%d_end:\n", expId);
     }
 
+    int Greater::constCalc() {
+        return a->constVal > b->constVal;
+    }
+
     LessEqual::LessEqual(int lineno, Exp *a, Exp *b) : CompareBinaryExp(lineno, a, b) {};
 
     void LessEqual::compile() {
+        CompileConst;
+
         a->compile();
         printf("\tpush {r0}\n");
         b->compile();
@@ -260,9 +325,15 @@ namespace AST {
         printf("_exp_%d_end:\n", expId);
     }
 
+    int LessEqual::constCalc() {
+        return a->constVal <= b->constVal;
+    }
+
     GreaterEqual::GreaterEqual(int lineno, Exp *a, Exp *b) : CompareBinaryExp(lineno, a, b) {};
 
     void GreaterEqual::compile() {
+        CompileConst;
+
         a->compile();
         printf("\tpush {r0}\n");
         b->compile();
@@ -276,9 +347,15 @@ namespace AST {
         printf("_exp_%d_end:\n", expId);
     }
 
+    int GreaterEqual::constCalc() {
+        return a->constVal >= b->constVal;
+    }
+
     Equal::Equal(int lineno, Exp *a, Exp *b) : EqualityBinaryExp(lineno, a, b) {};
 
     void Equal::compile() {
+        CompileConst;
+
         a->compile();
         printf("\tpush {r0}\n");
         b->compile();
@@ -290,6 +367,10 @@ namespace AST {
         printf("_exp_%d_equal:\n", expId);
         printf("\tmov r0, #1\n");
         printf("_exp_%d_end:\n", expId);
+    }
+
+    int Equal::constCalc() {
+        return a->constVal == b->constVal;
     }
 
     NotEqual::NotEqual(int lineno, Exp *a, Exp *b) : EqualityBinaryExp(lineno, a, b) {};
@@ -308,6 +389,10 @@ namespace AST {
         printf("_exp_%d_end:\n", expId);
     }
 
+    int NotEqual::constCalc() {
+        return a->constVal != b->constVal;
+    }
+
     UnaryExp::UnaryExp(int lineno, Exp *a) : Exp(lineno) {
         this->a = a;
     }
@@ -318,6 +403,13 @@ namespace AST {
 
     bool UnaryExp::isValid() {
         return _isValid && a->isValid();
+    }
+
+    void UnaryExp::optimizeConst() {
+        if (a->isConst) {
+            isConst = true;
+            constVal = constCalc();
+        }
     }
 
     IntUnaryExp::IntUnaryExp(int lineno, Exp *a) : UnaryExp(lineno, a) {
@@ -334,16 +426,28 @@ namespace AST {
     Positive::Positive(int lineno, Exp *a) : IntUnaryExp(lineno, a) {}
 
     void Positive::compile() {
+        CompileConst;
+
         a->compile();
+    }
+
+    int Positive::constCalc() {
+        return a->constVal;
     }
 
     Negative::Negative(int lineno, Exp *a) : IntUnaryExp(lineno, a) {}
 
     void Negative::compile() {
+        CompileConst;
+
         a->compile();
         printf("\tmov r1, #0\n");
         printf("\tsub r1, r0\n");
         printf("\tmov r0, r1\n");  // TODO: improve
+    }
+
+    int Negative::constCalc() {
+        return -a->constVal;
     }
     
     Not::Not(int lineno, Exp *a) : UnaryExp(lineno, a) {
@@ -358,8 +462,14 @@ namespace AST {
     }
 
     void Not::compile() {
+        CompileConst;
+
         a->compile();
         printf("\tEOR r0, #1\n");
+    }
+
+    int Not::constCalc() {
+        return !a->constVal;
     }
 
     MethodCall::MethodCall(int lineno, Exp *object, Identifier *methodId, ExpList *paramList) : Exp(lineno) {

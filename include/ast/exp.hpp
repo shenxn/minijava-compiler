@@ -14,6 +14,9 @@ namespace AST {
             Type *type = NULL;
             bool _isValid = true;
 
+            bool isConst = false;
+            int constVal;
+
             ASM::Reg *resultReg;
 
             Exp(int lineno);
@@ -46,8 +49,6 @@ namespace AST {
 
     class Integer: public Exp {
         public:
-            int i;
-
             Integer(int lineno, int i);
 
             void typecheck();
@@ -57,8 +58,6 @@ namespace AST {
 
     class Boolean: public Exp {
         public:
-            bool b;
-
             Boolean(int lineno, bool b);
 
             void typecheck();
@@ -76,6 +75,10 @@ namespace AST {
             ~BinaryExp();
 
             bool isValid();
+
+            void optimizeConst();
+
+            virtual int constCalc() = 0;  // optimization: precalculate const expressions
     };
 
     class IntBinaryExp: public BinaryExp {
@@ -117,6 +120,8 @@ namespace AST {
             Add(int lineno, Exp *a, Exp *b);
 
             void compile();
+
+            int constCalc();
     };
 
     class Minus: public IntBinaryExp {
@@ -124,6 +129,8 @@ namespace AST {
             Minus(int lineno, Exp *a, Exp *b);
 
             void compile();
+
+            int constCalc();
     };
 
     class Multi: public IntBinaryExp {
@@ -131,6 +138,8 @@ namespace AST {
             Multi(int lineno, Exp *a, Exp *b);
 
             void compile();
+
+            int constCalc();
     };
 
     class Divide: public IntBinaryExp {
@@ -138,6 +147,8 @@ namespace AST {
             Divide(int lineno, Exp *a, Exp *b);
 
             void compile();
+
+            int constCalc();
     };
 
     class And: public BoolBinaryExp {
@@ -145,6 +156,8 @@ namespace AST {
             And(int lineno, Exp *a, Exp *b);
 
             void compile();
+
+            int constCalc();
     };
 
     class Or: public BoolBinaryExp {
@@ -152,6 +165,8 @@ namespace AST {
             Or(int lineno, Exp *a, Exp *b);
 
             void compile();
+
+            int constCalc();
     };
 
     class Less: public CompareBinaryExp {
@@ -159,6 +174,8 @@ namespace AST {
             Less(int lineno, Exp *a, Exp *b);
 
             void compile();
+
+            int constCalc();
     };
 
     class Greater: public CompareBinaryExp {
@@ -166,6 +183,8 @@ namespace AST {
             Greater(int lineno, Exp *a, Exp *b);
 
             void compile();
+
+            int constCalc();
     };
 
     class LessEqual: public CompareBinaryExp {
@@ -173,6 +192,8 @@ namespace AST {
             LessEqual(int lineno, Exp *a, Exp *b);
 
             void compile();
+
+            int constCalc();
     };
 
     class GreaterEqual: public CompareBinaryExp {
@@ -180,6 +201,8 @@ namespace AST {
             GreaterEqual(int lineno, Exp *a, Exp *b);
 
             void compile();
+
+            int constCalc();
     };
 
     class Equal: public EqualityBinaryExp {
@@ -187,6 +210,8 @@ namespace AST {
             Equal(int lineno, Exp *a, Exp *b);
 
             void compile();
+
+            int constCalc();
     };
 
     class NotEqual: public EqualityBinaryExp {
@@ -194,6 +219,8 @@ namespace AST {
             NotEqual(int lineno, Exp *a, Exp *b);
 
             void compile();
+
+            int constCalc();
     };
 
     class UnaryExp: public Exp {
@@ -205,6 +232,10 @@ namespace AST {
             ~UnaryExp();
 
             bool isValid();
+
+            void optimizeConst();
+
+            virtual int constCalc() = 0;
     };
 
     class IntUnaryExp: public UnaryExp {
@@ -219,6 +250,8 @@ namespace AST {
             Positive(int lineno, Exp *a);
 
             void compile();
+
+            int constCalc();
     };
 
     class Negative: public IntUnaryExp {
@@ -226,6 +259,8 @@ namespace AST {
             Negative(int lineno, Exp *a);
 
             void compile();
+
+            int constCalc();
     };
 
     class Not: public UnaryExp {
@@ -235,6 +270,8 @@ namespace AST {
             void typecheck();
 
             void compile();
+
+            int constCalc();
     };
 
     class MethodCall: public Exp {
