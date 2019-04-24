@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../asm/asm.hpp"
 #include "identifier.hpp"
 #include "statement.hpp"
 #include "node.hpp"
@@ -12,11 +13,15 @@ namespace AST {
             Identifier *paramId;
             Statement *statement;
 
+            ASM::Method *asmMethod = NULL;
+
             MainClass(Identifier *id, Identifier *paramId, Statement *statement);
 
             ~MainClass();
 
             void typecheck();
+
+            void preCompileProcess();
 
             void compile();
     };

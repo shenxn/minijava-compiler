@@ -2,6 +2,7 @@
 
 #include <cstdarg>
 
+#include "method.hpp"
 #include "global.hpp"
 #include "oprand.hpp"
 #include "reg.hpp"
@@ -9,22 +10,25 @@
 namespace ASM {
 
     Instruction::Instruction() {
-        if (!Global::instructions.empty()) {
-            Instruction *lastInstruction = *(--Global::instructions.end());
+        if (!Method::currMethod->instructions.empty()) {
+            Instruction *lastInstruction = *(--Method::currMethod->instructions.end());
             predecessors.push_back(lastInstruction);  // Insert last statement into predecessor
             lastInstruction->successors.push_back(this);
             // TODO: consider branch
         }
     }
 
-    BiOpRandInstruction::BiOpRandInstruction(OpRand *opA, OpRand *opB, bool useOpA) {
+    BiOpRandInstruction::BiOpRandInstruction(OpRand *opA, OpRand *opB, bool useOpA, bool defOpA) {
         this->opA = opA;
         this->opB = opB;
 
-        /* opA has to be RegOpRand */
-        def.insert(opA->val.reg);
-        if (useOpA) {
-            use.insert(opA->val.reg);
+        if (opA->type == RegOpRand) {
+            if (defOpA) {
+                def.insert(opA->val.reg);
+            }
+            if (useOpA) {
+                use.insert(opA->val.reg);
+            }
         }
 
         if (opB->type == RegOpRand) {

@@ -53,6 +53,8 @@ namespace AST {
 
             void typecheck();
 
+            void preCompileProcess();
+
             void compile();
     };
 
@@ -69,6 +71,8 @@ namespace AST {
             void compileVTable();
 
             void typecheck();
+
+            void preCompileProcess();
 
             void compile();
     };

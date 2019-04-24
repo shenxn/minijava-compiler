@@ -1,7 +1,6 @@
 #include "mainclass.hpp"
 
 #include <cstdio>
-#include "../asm/asm.hpp"
 #include "classdecl.hpp"
 #include "methoddecl.hpp"
 
@@ -19,11 +18,17 @@ namespace AST {
         delete statement;
     }
 
+    void MainClass::preCompileProcess() {
+        asmMethod = new ASM::Method();
+        statement->preCompileProcess();
+    }
+
     void MainClass::compile() {
+        ASM::Method::currMethod = asmMethod;
         NewInstr(new ASM::Label("main"));
-        NewInstr(new ASM::Push(1, &ASM::Reg::LR));
+        NewInstr(new ASM::Push(1, ASM::Method::currMethod->LR));
         statement->compile();
-        NewInstr(new ASM::Pop(1, &ASM::Reg::PC));
+        NewInstr(new ASM::Pop(1, ASM::Method::currMethod->PC));
     }
 
     void MainClass::typecheck() {

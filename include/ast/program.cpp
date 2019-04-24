@@ -19,7 +19,9 @@ namespace AST {
     }
 
     void Program::preCompileProcess() {
-        classDeclList->buildMethodSigMap();
+        mainClass->preCompileProcess();
+        classDeclList->preCompileProcess();
+        // classDeclList->buildMethodSigMap();
     }
 
     void Program::typecheck() {

@@ -174,6 +174,11 @@ namespace AST {
         methodDeclList->typecheck();
     }
 
+    void ClassDecl::preCompileProcess() {
+        buildMethodSigMap();
+        methodDeclList->preCompileProcess();
+    }
+
     void ClassDecl::compile() {
         currClass = this;
         // TODO: varDecl
@@ -192,12 +197,6 @@ namespace AST {
         }
     }
 
-    void ClassDeclList::buildMethodSigMap() {
-        for (auto classDecl : list) {
-            classDecl->buildMethodSigMap();
-        }
-    }
-
     void ClassDeclList::compileVTable() {
         for (auto classDecl : list) {
             classDecl->compileVTable();
@@ -207,6 +206,12 @@ namespace AST {
     void ClassDeclList::typecheck() {
         for (auto classDecl : list) {
             classDecl->typecheck();
+        }
+    }
+
+    void ClassDeclList::preCompileProcess() {
+        for (auto classDecl : list) {
+            classDecl->preCompileProcess();
         }
     }
 

@@ -27,6 +27,10 @@ namespace AST {
         statementList->typecheck();
     }
 
+    void StatementBlock::preCompileProcess() {
+        statementList->preCompileProcess();
+    }
+
     void StatementBlock::compile() {
         statementList->compile();
     }
@@ -36,7 +40,7 @@ namespace AST {
         this->ifStatement = ifStatement;
         this->elseStatement = elseStatement;
 
-        // TODO: statementId = ASM::statementCount++;
+        statementId = ASM::Global::statementCount++;
     }
 
     IfElse::~IfElse() {
@@ -55,15 +59,31 @@ namespace AST {
         elseStatement->typecheck();
     }
 
+    void IfElse::preCompileProcess() {
+        exp->preCompileProcess();
+        ifStatement->preCompileProcess();
+        elseStatement->preCompileProcess();
+    }
+
     void IfElse::compile() {
         exp->compile();
-        printf("\tcmp r0, #0\n");
-        printf("\tbeq _statement_%d_else\n", statementId);
+        NewInstr(new ASM::Cmp(new ASM::OpRand(exp->resultReg), new ASM::OpRand(1)));
+        NewInstr(
+            new ASM::Branch(
+                ASM::BranchNotEqual,
+                new ASM::OpRand(ASM::Label::StatementElsePrefix, statementId, false)
+            )
+        );
         ifStatement->compile();
-        printf("\tb _statement_%d_end\n", statementId);
-        printf("_statement_%d_else:\n", statementId);
+        NewInstr(
+            new ASM::Branch(
+                ASM::BranchB,
+                new ASM::OpRand(ASM::Label::StatementEndIfPrefix, statementId, false)
+            )
+        );
+        NewInstr(new ASM::Label(ASM::Label::StatementElsePrefix, statementId));
         elseStatement->compile();
-        printf("_statement_%d_end:\n", statementId);
+        NewInstr(new ASM::Label(ASM::Label::StatementEndIfPrefix, statementId));
     }
 
     While::While(Exp *exp, Statement *statement) {
@@ -85,6 +105,11 @@ namespace AST {
         }
 
         statement->typecheck();
+    }
+
+    void While::preCompileProcess() {
+        exp->preCompileProcess();
+        statement->preCompileProcess();
     }
 
     void While::compile() {
@@ -133,32 +158,44 @@ namespace AST {
         }
     }
 
+    void Print::preCompileProcess() {
+        if (!isString) {
+            exp->preCompileProcess();
+        }
+    }
+
     void Print::compile() {
         if (isString) {
             NewInstr(
                 new ASM::Ldr(
-                    new ASM::OpRand(&ASM::Reg::R0),
-                    new ASM::OpRand(ASM::Label::StringLiteralPrefix, stringLiteralId)
+                    new ASM::OpRand(ASM::Method::currMethod->R0),
+                    new ASM::OpRand(ASM::Label::StringLiteralPrefix, stringLiteralId, true)
                 )
             );
         } else {
             exp->compile();
             NewInstr(
                 new ASM::Mov(
-                    new ASM::OpRand(&ASM::Reg::R1),
+                    new ASM::OpRand(ASM::Method::currMethod->R1),
                     new ASM::OpRand(exp->resultReg)
                 )
             );  // int
             NewInstr(
                 new ASM::Ldr(
-                    new ASM::OpRand(&ASM::Reg::R0),
+                    new ASM::OpRand(ASM::Method::currMethod->R0),
                     new ASM::OpRand(
-                        isNewLine ? "_string_printintln" : "_string_printint"
+                        isNewLine ? "_string_printintln" : "_string_printint",
+                        true
                     )
                 )
             );  // format
         }
-        NewInstr(new ASM::Bl("printf"));
+        NewInstr(
+            new ASM::Branch(
+                ASM::BranchLink,
+                new ASM::OpRand("printf", false)
+            )
+        );
     }
 
     VarAssign::VarAssign(Identifier *id, Index *index, Exp *exp) {
@@ -198,6 +235,12 @@ namespace AST {
         }
     }
 
+    void VarAssign::preCompileProcess() {
+        // TODO: var->preCompileProcess();
+        index->preCompileProcess();
+        exp->preCompileProcess();
+    }
+
     void VarAssign::compile() {
         // TODO: index
         exp->compile();
@@ -232,6 +275,10 @@ namespace AST {
         return true;
     }
 
+    void Return::preCompileProcess() {
+        exp->preCompileProcess();
+    }
+
     void Return::compile() {
         exp->compile();
 
@@ -259,6 +306,12 @@ namespace AST {
     void StatementList::typecheck() {
         for (auto statement : list) {
             statement->typecheck();
+        }
+    }
+
+    void StatementList::preCompileProcess() {
+        for (auto statement : list) {
+            statement->preCompileProcess();
         }
     }
 

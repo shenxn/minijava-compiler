@@ -29,7 +29,7 @@ namespace ASM {
             OpRand *opA;
             OpRand *opB;
 
-            BiOpRandInstruction(OpRand *opA, OpRand *opB, bool useOpA);
+            BiOpRandInstruction(OpRand *opA, OpRand *opB, bool useOpA, bool defOpA);
 
             ~BiOpRandInstruction();
 

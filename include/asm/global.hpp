@@ -7,8 +7,6 @@
 
 #include "typedef.hpp"
 
-#define NewInstr(instr) ASM::Global::instructions.push_back(instr);
-
 namespace ASM {
 
     class Global {
@@ -17,9 +15,9 @@ namespace ASM {
 
             static std::map<std::string, int> stringLiterals;
 
-            static std::list<Instruction*> instructions;
+            static int statementCount;  /* special expressions (if/while) count */
 
-            static std::list<Reg*> registers;
+            static std::list<Method*> methods;
 
             static int insertStringLiteral(std::string &str);
 

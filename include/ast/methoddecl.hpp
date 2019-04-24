@@ -33,6 +33,8 @@ namespace AST {
 
             void typecheck();
 
+            void preCompileProcess();
+
             void compile();
 
             void insert();
@@ -45,6 +47,8 @@ namespace AST {
             ~MethodDeclList();
 
             void typecheck();
+
+            void preCompileProcess();
 
             void compile();
     };

@@ -15,6 +15,8 @@ namespace AST {
         public:
             virtual bool isReturn();
 
+            virtual void preCompileProcess() = 0;
+
             virtual void compile() = 0;
     };
 
@@ -27,6 +29,8 @@ namespace AST {
             ~StatementBlock();
 
             void typecheck();
+
+            void preCompileProcess();
 
             void compile();
     };
@@ -45,6 +49,8 @@ namespace AST {
 
             void typecheck();
 
+            void preCompileProcess();
+
             void compile();
     };
 
@@ -60,6 +66,8 @@ namespace AST {
             ~While();
 
             void typecheck();
+
+            void preCompileProcess();
 
             void compile();
     };
@@ -79,6 +87,8 @@ namespace AST {
 
             void typecheck();
 
+            void preCompileProcess();
+
             void compile();
     };
 
@@ -93,6 +103,8 @@ namespace AST {
             ~VarAssign();
 
             void typecheck();
+
+            void preCompileProcess();
 
             void compile();
     };
@@ -109,6 +121,8 @@ namespace AST {
 
             bool isReturn();
 
+            void preCompileProcess();
+
             void compile();
     };
 
@@ -119,6 +133,8 @@ namespace AST {
             ~StatementList();
 
             void typecheck();
+
+            void preCompileProcess();
 
             void compile();
     };

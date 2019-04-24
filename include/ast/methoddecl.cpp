@@ -101,6 +101,10 @@ namespace AST {
         statementList->typecheck();
     }
 
+    void MethodDecl::preCompileProcess() {
+        statementList->preCompileProcess();
+    }
+
     void MethodDecl::compile() {
         printf("_method_%d:\n", methodId);
 
@@ -143,6 +147,12 @@ namespace AST {
     void MethodDeclList::typecheck() {
         for (auto methodDecl : list) {
             methodDecl->typecheck();
+        }
+    }
+
+    void MethodDeclList::preCompileProcess() {
+        for (auto methodDecl : list) {
+            methodDecl->preCompileProcess();
         }
     }
 

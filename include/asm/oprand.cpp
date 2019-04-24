@@ -7,13 +7,13 @@
 
 namespace ASM {
 
-    OpRand::OpRand(const std::string &labelName) {
-        type = LabelAddrOpRand;
+    OpRand::OpRand(const std::string &labelName, bool isAddr) {
+        type = isAddr ? LabelAddrOpRand : LabelOpRand;
         val.labelName = new std::string(labelName);
     }
 
-    OpRand::OpRand(const std::string &labelPrefix, int labelId) {
-        type = LabelAddrOpRand;
+    OpRand::OpRand(const std::string &labelPrefix, int labelId, bool isAddr) {
+        type = isAddr ? LabelAddrOpRand : LabelOpRand;
         val.labelName = new std::string(labelPrefix + std::to_string(labelId));
     }
 
@@ -37,6 +37,8 @@ namespace ASM {
         switch (type) {
             case LabelAddrOpRand:
                 return "=" + *val.labelName;
+            case LabelOpRand:
+                return *val.labelName;
             case RegOpRand:
                 return val.reg->toString();
             case ConstOpRand:

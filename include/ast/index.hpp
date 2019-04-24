@@ -16,6 +16,8 @@ namespace AST {
             ~Index();
 
             void typecheck();
+
+            void preCompileProcess();
     };
 
 }

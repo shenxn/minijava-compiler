@@ -17,13 +17,15 @@ namespace AST {
             bool isConst = false;
             int constVal;
 
-            ASM::Reg *resultReg;
+            ASM::Reg *resultReg = NULL;
 
             Exp(int lineno);
 
             ~Exp();
 
             virtual bool isValid();
+
+            void preCompileProcess();
 
             virtual void compile() = 0; // TODO: to be replaced
 
@@ -45,6 +47,8 @@ namespace AST {
             ~ExpList();
 
             void typecheck();
+
+            void preCompileProcess();
     };
 
     class Integer: public Exp {

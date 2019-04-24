@@ -13,9 +13,7 @@
 
 namespace AST {
 
-    Exp::Exp(int lineno) : Node(lineno) {
-        resultReg = new ASM::Reg();
-    }
+    Exp::Exp(int lineno) : Node(lineno) {}
 
     Exp::~Exp() {
         delete type;
@@ -24,6 +22,11 @@ namespace AST {
 
     bool Exp::isValid() {
         return _isValid;
+    }
+
+    void Exp::preCompileProcess() {
+        resultReg = new ASM::Reg();
+        ASM::Method::currMethod->symbolicRegs.push_back(resultReg);
     }
 
     bool Exp::isInt() {
@@ -56,6 +59,12 @@ namespace AST {
     void ExpList::typecheck() {
         for (auto exp : list) {
             exp->typecheck();
+        }
+    }
+
+    void ExpList::preCompileProcess() {
+        for (auto exp : list) {
+            exp->preCompileProcess();
         }
     }
 

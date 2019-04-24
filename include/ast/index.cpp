@@ -22,6 +22,11 @@ namespace AST {
         delete this->exp;
     }
 
+    void Index::preCompileProcess() {
+        subIndex->preCompileProcess();
+        exp->preCompileProcess();
+    }
+
     // void Index::execute() {
     //     exp->execute();
     //     if (subIndex != NULL) {

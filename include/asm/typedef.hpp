@@ -12,6 +12,8 @@ namespace ASM {
 
     class Label;
 
+    class Method;
+
     class OpRand;
     class ListOpRand;
     class LabelAddrOpRand;

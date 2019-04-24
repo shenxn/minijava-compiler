@@ -9,6 +9,7 @@ namespace ASM {
 
     enum OpRandType {
         LabelAddrOpRand,
+        LabelOpRand,
         RegOpRand,
         ConstOpRand,
     };
@@ -25,9 +26,9 @@ namespace ASM {
 
             OpRandValue val;
 
-            OpRand(const std::string &labelName);
+            OpRand(const std::string &labelName, bool isAddr);
 
-            OpRand(const std::string &labelPrefix, int labelId);
+            OpRand(const std::string &labelPrefix, int labelId, bool isAddr);
 
             OpRand(Reg* reg);
 

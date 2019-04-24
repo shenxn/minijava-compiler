@@ -5,7 +5,7 @@
 
 namespace ASM {
 
-    Ldr::Ldr(OpRand *opA, OpRand *opB) : BiOpRandInstruction(opA, opB, false) {}
+    Ldr::Ldr(OpRand *opA, OpRand *opB) : BiOpRandInstruction(opA, opB, false, true) {}
 
     std::string Ldr::opName() {
         return "ldr";

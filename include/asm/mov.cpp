@@ -5,7 +5,7 @@
 
 namespace ASM {
 
-    Mov::Mov(OpRand *opA, OpRand *opB) : BiOpRandInstruction(opA, opB, false) {}
+    Mov::Mov(OpRand *opA, OpRand *opB) : BiOpRandInstruction(opA, opB, false, true) {}
 
     std::string Mov::opName() {
         return "mov";
