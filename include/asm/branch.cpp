@@ -2,6 +2,7 @@
 
 #include "global.hpp"
 #include "oprand.hpp"
+#include "method.hpp"
 
 namespace ASM {
 
@@ -16,6 +17,20 @@ namespace ASM {
 
     Branch::~Branch() {
         delete opRand;
+    }
+
+    void Branch::generateControlFlow(Instruction *nextInstr) {
+        if (type != BranchB) {
+            Instruction::generateControlFlow(nextInstr);
+        }
+        
+        if (type == BranchLink || type == BranchX) {
+            /* branch outside the method */
+            return;
+        }
+        Instruction *target = Method::currMethod->labelMap[*opRand->val.labelName];
+        target->predecessors.push_back(this);
+        successors.push_back(target);
     }
 
     void Branch::assembly() {

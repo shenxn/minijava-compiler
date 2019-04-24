@@ -1,6 +1,7 @@
 #include "label.hpp"
 
 #include "global.hpp"
+#include "method.hpp"
 
 namespace ASM {
 
@@ -10,10 +11,16 @@ namespace ASM {
 
     Label::Label(const std::string &labelName) {
         this->labelName = labelName;
+
+        /* Insert label into label map */
+        Method::currMethod->labelMap[labelName] = this;
     }
 
     Label::Label(const std::string &labelPrefix, int labelId) {
         this->labelName = labelPrefix + std::to_string(labelId);
+
+        /* Insert label into label map */
+        Method::currMethod->labelMap[labelName] = this;
     }
 
     void Label::assembly() {

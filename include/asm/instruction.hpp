@@ -19,9 +19,9 @@ namespace ASM {
             std::list<Instruction*> predecessors;
             std::list<Instruction*> successors;
 
-            Instruction();
-
             virtual void assembly() = 0;
+
+            virtual void generateControlFlow(Instruction *nextInstr);
     };
 
     class BiOpRandInstruction : public Instruction {

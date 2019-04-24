@@ -1,6 +1,8 @@
 #pragma once
 
 #include <list>
+#include <map>
+#include <string>
 
 #include "typedef.hpp"
 
@@ -32,6 +34,8 @@ namespace ASM {
             Reg *R10;
             Reg *LR;
             Reg *PC;
+
+            std::map <std::string, Instruction*> labelMap;
 
             Method();
 

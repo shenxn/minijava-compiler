@@ -44,6 +44,16 @@ namespace ASM {
     }
 
     void Method::optimize() {
+        currMethod = this;
+
+        /* generate control flow graph */
+        Instruction *nextInstr = NULL;
+        for (auto i = instructions.rbegin(); i != instructions.rend(); i++) {
+            /* scan is reversed */
+            (*i)->generateControlFlow(nextInstr);
+            nextInstr = (*i);
+        }
+
         /* calculate LVin and LVout */
         std::list<Instruction*> workList;
         for (auto instruction : instructions) {

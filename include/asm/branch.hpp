@@ -26,6 +26,8 @@ namespace ASM {
             ~Branch();
 
             void assembly();
+
+            void generateControlFlow(Instruction *nextInstr);
     };
 
 }

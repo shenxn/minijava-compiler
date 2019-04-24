@@ -9,13 +9,12 @@
 
 namespace ASM {
 
-    Instruction::Instruction() {
-        if (!Method::currMethod->instructions.empty()) {
-            Instruction *lastInstruction = *(--Method::currMethod->instructions.end());
-            predecessors.push_back(lastInstruction);  // Insert last statement into predecessor
-            lastInstruction->successors.push_back(this);
-            // TODO: consider branch
+    void Instruction::generateControlFlow(Instruction *nextInstr) {
+        if (nextInstr == NULL) {
+            return;
         }
+        nextInstr->predecessors.push_back(this);
+        successors.push_back(nextInstr);
     }
 
     BiOpRandInstruction::BiOpRandInstruction(OpRand *opA, OpRand *opB, bool useOpA, bool defOpA) {
