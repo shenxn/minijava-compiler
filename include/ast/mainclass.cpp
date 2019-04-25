@@ -20,16 +20,15 @@ namespace AST {
 
     void MainClass::preCompileProcess() {
         asmMethod = new ASM::Method();
-        statement->preCompileProcess();
     }
 
     void MainClass::compile() {
         ASM::Method::currMethod = asmMethod;
 
         ASM::Label::New("main");
-        ASM::Push::New(1, HWLR);
+        ASM::MethodRegRestore::New(true);
         statement->compile();
-        ASM::Pop::New(1, HWPC);
+        ASM::MethodRegRestore::New(false);
     }
 
     void MainClass::typecheck() {

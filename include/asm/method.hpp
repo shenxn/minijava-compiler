@@ -32,6 +32,8 @@ namespace ASM {
 
             std::list <Instruction*> instructions;
 
+            std::list <Reg*> savedRegs;  /* saved general regs */
+
             std::list <Reg*> symbolicRegs;
 
             Reg **generalRegs;

@@ -27,6 +27,12 @@ namespace ASM {
         val.constValue = constValue;
     }
 
+    OpRand::OpRand(Reg *reg, int offset) {
+        type = AddrOffsetOpRand;
+        val.reg = reg;
+        this->offset = offset;
+    }
+
     OpRand::~OpRand() {
         if (type == LabelAddrOpRand) {
             delete val.labelName;
@@ -43,6 +49,9 @@ namespace ASM {
                 return val.reg->toString();
             case ConstOpRand:
                 return "#" + std::to_string(val.constValue);
+            case AddrOffsetOpRand:
+                return '[' + val.reg->toString()
+                    + (offset == 0 ? "" : (", #" + std::to_string(offset))) + ']';
         }
         return "";
     }

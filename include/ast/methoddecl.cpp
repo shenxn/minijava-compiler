@@ -102,40 +102,31 @@ namespace AST {
     }
 
     void MethodDecl::preCompileProcess() {
-        statementList->preCompileProcess();
+        asmMethod = new ASM::Method();
     }
 
     void MethodDecl::compile() {
-        printf("_method_%d:\n", methodId);
+        ASM::Method::currMethod = asmMethod;
 
-        /* push params to stack */
-        switch (formalList->list.size()) {
-            case 0:
-                break;
-            case 1:
-                printf("\tpush {r0}\n");
-                break;
-            case 2:
-                printf("\tpush {r0-r1}\n");
-                break;
-            case 3:
-                printf("\tpush {r0-r2}\n");
-                break;
-            default:
-                printf("\tpush {r0-r3}\n");
-        }
+        ASM::Label::New(ASM::Label::MethodPrefix, methodId);
+        ASM::MethodRegRestore::New(true);
+        ASM::Mov::New(HWFP, HWSP);  // set new frame point
 
-        /* save link and frame point */
-        printf("\tpush {r5, lr}\n");
-        printf("\tpush {fp}\n");
+        // TODO: local variables
 
-        /* set new frame point */
-        printf("\tmov fp, sp\n");
-
-        printf("\tsub sp, #%lu\n", 4 * varDeclList->list.size());  // local variables
-
-        // TODO: ASM::methodDecl = this;
         statementList->compile();
+
+        // /* save link and frame point */
+        // printf("\tpush {r5, lr}\n");
+        // printf("\tpush {fp}\n");
+
+        // /* set new frame point */
+        // printf("\tmov fp, sp\n");
+
+        // printf("\tsub sp, #%lu\n", 4 * varDeclList->list.size());  // local variables
+
+        // // TODO: ASM::methodDecl = this;
+        // statementList->compile();
     }
 
     MethodDeclList::~MethodDeclList() {

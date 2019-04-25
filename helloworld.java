@@ -9,7 +9,16 @@ class MainClass {
             } else {
                 System.out.println("Should not print");
             }
+            System.out.println(new HelloClass().hello());
         }
 	}
 
+}
+
+class HelloClass {
+    public int hello() {
+        System.out.println("Hello from hello()");
+        System.out.print("Return value is ");
+        return -1;
+    }
 }

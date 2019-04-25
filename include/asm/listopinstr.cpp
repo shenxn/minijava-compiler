@@ -2,6 +2,7 @@
 
 #include "global.hpp"
 #include "reg.hpp"
+#include "method.hpp"
 
 #define __DEFINE_LISTOPINSTR__(instrName, isUse, instr) \
     void instrName::New(int nRegs, ...) { \
@@ -31,6 +32,35 @@
 namespace ASM {
 
     __DEFINE_LISTOPINSTR__(Push, true, "push");
+
     __DEFINE_LISTOPINSTR__(Pop, false, "pop");
+
+    void MethodRegRestore::New(bool isPush) {
+        new MethodRegRestore(isPush);
+    }
+
+    MethodRegRestore::MethodRegRestore(bool isPush) {
+        this->isPush = isPush;
+        regs = &Method::currMethod->savedRegs;
+    }
+
+    void MethodRegRestore::assembly() {
+        Global::out
+            << "\t" << (isPush ? "push" : "pop") << " {";
+        for (auto reg : *regs) {
+            Global::out << reg->toString() << ",";
+        }
+        Global::out
+            << HWFP->toString() << ","
+            << (isPush ? HWLR : HWPC)->toString()
+            << "}" << std::endl;
+    }
+
+    void MethodRegRestore::generateControlFlow(Instruction *nextInstr) {
+        if (isPush) {
+            Instruction::generateControlFlow(nextInstr);
+        }
+        /* pop is return statement */
+    }
 
 }

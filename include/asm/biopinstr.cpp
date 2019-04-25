@@ -10,7 +10,7 @@
         this->opB = opB; \
         if (useA) use.insert(opA); \
         if (defA) def.insert(opA); \
-        if (opB->type == RegOpRand) use.insert(opB->val.reg); \
+        if (opB->type == RegOpRand || opB->type == AddrOffsetOpRand) use.insert(opB->val.reg); \
     } \
     instrName::~instrName() { \
         delete opB; \
@@ -37,6 +37,11 @@
         new instrName(opA, new OpRand(labelPrefix, labelId, true)); \
     }
 
+#define __DEFINE_BIOPINSTR_ADDROFFSETB__(instrName) \
+    void instrName::New(Reg *opA, Reg *regB, int offset) { \
+        new instrName(opA, new OpRand(regB, offset)); \
+    }
+
 namespace ASM {
 
     __DEFINE_BIOPINSTR__(Mov, "mov", true, false);
@@ -46,8 +51,19 @@ namespace ASM {
     __DEFINE_BIOPINSTR__(Ldr, "ldr", false, true);
     __DEFINE_BIOPINSTR_LABELADDRB__(Ldr);
 
+    __DEFINE_BIOPINSTR__(Str, "str", true, false);
+    __DEFINE_BIOPINSTR_ADDROFFSETB__(Str);
+
     __DEFINE_BIOPINSTR__(Cmp, "cmp", true, false);
     __DEFINE_BIOPINSTR_REGB__(Cmp);
     __DEFINE_BIOPINSTR_CONSTB__(Cmp);
+
+    __DEFINE_BIOPINSTR__(Add, "add", true, true);
+    __DEFINE_BIOPINSTR_REGB__(Add);
+    __DEFINE_BIOPINSTR_CONSTB__(Add);
+
+    __DEFINE_BIOPINSTR__(Sub, "sub", true, true);
+    __DEFINE_BIOPINSTR_REGB__(Sub);
+    __DEFINE_BIOPINSTR_CONSTB__(Sub);
 
 }

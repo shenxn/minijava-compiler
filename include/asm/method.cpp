@@ -2,6 +2,7 @@
 
 #include <stack>
 
+#include "listopinstr.hpp"
 #include "global.hpp"
 #include "instruction.hpp"
 #include "reg.hpp"
@@ -169,6 +170,8 @@ namespace ASM {
                 if (isValid) {
                     /* assign register */
                     reg->val.physReg = generalRegs[i];
+                    generalRegs[i]->isUsed = true;
+                    break;
                 }
             }
 
@@ -177,6 +180,13 @@ namespace ASM {
                 regB->interferences.insert(reg);
             }
             reg->isInInterGraph = true;
+        }
+
+        /* add used hardware registers to list of saved registers */
+        for (int i = 4; i < Reg::nGeneralRegs; i++) {
+            if (generalRegs[i]->isUsed) {
+                savedRegs.push_back(generalRegs[i]);
+            }
         }
     }
 

@@ -24,9 +24,9 @@ namespace AST {
             ~Exp();
 
             virtual bool isValid();
-
+        protected:
             void preCompileProcess();
-
+        public:
             virtual void compile() = 0; // TODO: to be replaced
 
             bool isInt();
@@ -47,8 +47,6 @@ namespace AST {
             ~ExpList();
 
             void typecheck();
-
-            void preCompileProcess();
     };
 
     class Integer: public Exp {
@@ -283,6 +281,8 @@ namespace AST {
             Exp *object;
             Identifier *methodId;
             ExpList *paramList;
+
+            ASM::Reg *paramSP = NULL;  // param stack pointer
 
             MethodDecl *methodDecl = NULL;
 

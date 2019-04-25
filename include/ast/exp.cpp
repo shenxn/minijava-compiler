@@ -62,12 +62,6 @@ namespace AST {
         }
     }
 
-    void ExpList::preCompileProcess() {
-        for (auto exp : list) {
-            exp->preCompileProcess();
-        }
-    }
-
     Integer::Integer(int lineno, int i) : Exp(lineno) {
         this->type = new Type(integerType);
         this->isConst = true;
@@ -77,6 +71,8 @@ namespace AST {
     void Integer::typecheck() {}
 
     void Integer::compile() {
+        preCompileProcess();
+
         ASM::Mov::New(resultReg, constVal);
     }
 
@@ -89,6 +85,8 @@ namespace AST {
     void Boolean::typecheck() {}
 
     void Boolean::compile() {
+        preCompileProcess();
+
         ASM::Mov::New(resultReg, constVal);
     }
 
@@ -182,6 +180,8 @@ namespace AST {
     Add::Add(int lineno, Exp *a, Exp *b) : IntBinaryExp(lineno, a, b) {}
 
     void Add::compile() {
+        preCompileProcess();
+
         CompileConst;
 
         a->compile();
@@ -198,6 +198,8 @@ namespace AST {
     Minus::Minus(int lineno, Exp *a, Exp *b) : IntBinaryExp(lineno, a, b) {}
 
     void Minus::compile() {
+        preCompileProcess();
+
         CompileConst;
 
         a->compile();
@@ -215,6 +217,8 @@ namespace AST {
     Multi::Multi(int lineno, Exp *a, Exp *b) : IntBinaryExp(lineno, a, b) {};
 
     void Multi::compile() {
+        preCompileProcess();
+
         CompileConst;
 
         a->compile();
@@ -231,6 +235,8 @@ namespace AST {
     Divide::Divide(int lineno, Exp *a, Exp *b) : IntBinaryExp(lineno, a, b) {};
 
     void Divide::compile() {
+        preCompileProcess();
+
         CompileConst;
 
         // TODO
@@ -243,6 +249,8 @@ namespace AST {
     And::And(int lineno, Exp *a, Exp *b) : BoolBinaryExp(lineno, a, b) {};
 
     void And::compile() {
+        preCompileProcess();
+
         CompileConst;
 
         a->compile();
@@ -259,6 +267,8 @@ namespace AST {
     Or::Or(int lineno, Exp *a, Exp *b) : BoolBinaryExp(lineno, a, b) {};
 
     void Or::compile() {
+        preCompileProcess();
+
         CompileConst;
 
         a->compile();
@@ -275,6 +285,8 @@ namespace AST {
     Less::Less(int lineno, Exp *a, Exp *b) : CompareBinaryExp(lineno, a, b) {};
 
     void Less::compile() {
+        preCompileProcess();
+
         CompileConst;
 
         a->compile();
@@ -297,6 +309,8 @@ namespace AST {
     Greater::Greater(int lineno, Exp *a, Exp *b) : CompareBinaryExp(lineno, a, b) {};
 
     void Greater::compile() {
+        preCompileProcess();
+
         CompileConst;
 
         a->compile();
@@ -319,6 +333,8 @@ namespace AST {
     LessEqual::LessEqual(int lineno, Exp *a, Exp *b) : CompareBinaryExp(lineno, a, b) {};
 
     void LessEqual::compile() {
+        preCompileProcess();
+
         CompileConst;
 
         a->compile();
@@ -341,6 +357,8 @@ namespace AST {
     GreaterEqual::GreaterEqual(int lineno, Exp *a, Exp *b) : CompareBinaryExp(lineno, a, b) {};
 
     void GreaterEqual::compile() {
+        preCompileProcess();
+
         CompileConst;
 
         a->compile();
@@ -363,6 +381,8 @@ namespace AST {
     Equal::Equal(int lineno, Exp *a, Exp *b) : EqualityBinaryExp(lineno, a, b) {};
 
     void Equal::compile() {
+        preCompileProcess();
+
         CompileConst;
 
         a->compile();
@@ -385,6 +405,8 @@ namespace AST {
     NotEqual::NotEqual(int lineno, Exp *a, Exp *b) : EqualityBinaryExp(lineno, a, b) {};
 
     void NotEqual::compile() {
+        preCompileProcess();
+
         a->compile();
         printf("\tpush {r0}\n");
         b->compile();
@@ -435,6 +457,8 @@ namespace AST {
     Positive::Positive(int lineno, Exp *a) : IntUnaryExp(lineno, a) {}
 
     void Positive::compile() {
+        preCompileProcess();
+
         CompileConst;
 
         a->compile();
@@ -447,6 +471,8 @@ namespace AST {
     Negative::Negative(int lineno, Exp *a) : IntUnaryExp(lineno, a) {}
 
     void Negative::compile() {
+        preCompileProcess();
+
         CompileConst;
 
         a->compile();
@@ -471,6 +497,8 @@ namespace AST {
     }
 
     void Not::compile() {
+        preCompileProcess();
+
         CompileConst;
 
         a->compile();
@@ -529,19 +557,41 @@ namespace AST {
     }
 
     void MethodCall::compile() {
-        // TODO: vtable
-        // TODO: class pointer
-        // object->compile();
+        preCompileProcess();
 
-        // if (paramList->list.size() > 4) {
-        //     /* Make space for additional parameters */
-        //     NewInstr(
-        //         new ASM::Sub(
-        //             new ASM::OpRand(ASM::Method::currMethod->SP),
-        //             new ASM::OpRand(4 * (paramList->list.size() - 4))
-        //         )
-        //     );
-        // }
+        object->compile();
+
+        if (paramList->list.size() > 4) {
+            /* make space for additional parameters in stack */
+            ASM::Sub::New(HWSP, 4 * (paramList->list.size() - 4));
+
+            paramSP = new ASM::Reg();
+            ASM::Mov::New(paramSP, HWSP);
+        }
+
+        /* calculate parameters */
+        int paramCount = 0;
+        for (auto param : paramList->list) {
+            param->compile();
+            if (paramCount < 4) {
+                /* move param to register */
+                ASM::Mov::New(
+                    ASM::Method::currMethod->generalRegs[paramCount],
+                    param->resultReg
+                );
+            } else {
+                /* save param into stack */
+                ASM::Str::New(param->resultReg, paramSP, (paramCount - 4) * 4);
+            }
+            paramCount++;
+        }
+
+        // TODO: class pointer
+        // TODO: vtable
+
+        ASM::Branch::BL(ASM::Label::MethodPrefix, methodDecl->methodId, paramList->list.size());
+
+        ASM::Mov::New(resultReg, HWR0);
 
         // printf("\tpush {r4}\n");
         // object->compile();
@@ -652,6 +702,8 @@ namespace AST {
     }
 
     void IdIndexLength::compile() {
+        preCompileProcess();
+
         // TODO
     }
 
@@ -677,6 +729,8 @@ namespace AST {
     }
 
     void IdObject::compile() {
+        preCompileProcess();
+
         int memoryOffset;
         auto varDecl = var->varDecl(&memoryOffset);
         printf("\tldr r0, [ %s, #%d ]\n", varDecl->isLocal ? "fp" : "r4", memoryOffset);
@@ -699,6 +753,8 @@ namespace AST {
     }
 
     void ThisObject::compile() {
+        preCompileProcess();
+
         printf("\tmov r0, r4\n");
     }
 
@@ -722,26 +778,13 @@ namespace AST {
     }
 
     void NewClassObject::compile() {
+        preCompileProcess();
+
         ClassDecl *classDecl = type->classId->classDecl;
 
-        // NewInstr(
-        //     new ASM::Mov(
-        //         new ASM::OpRand(ASM::Method::currMethod->R0),
-        //         new ASM::OpRand(classDecl->totalVarSize)
-        //     )
-        // );
-        // NewInstr(
-        //     new ASM::Branch(
-        //         ASM::BranchLink,
-        //         new ASM::OpRand("malloc", false)
-        //     )
-        // );
-        // NewInstr(
-        //     new ASM::Mov(
-        //         new ASM::OpRand(resultReg),
-        //         new ASM::OpRand(ASM::Method::currMethod->R0)
-        //     )
-        // );
+        ASM::Mov::New(HWR0, classDecl->totalVarSize * 4);
+        ASM::Branch::BL("malloc", 1);
+        ASM::Mov::New(resultReg, HWR0);
 
         // TODO: /* set vtable */
         // printf("\tldr r1, =_class_%d_vtable\n", type->classId->classDecl->classId);
@@ -782,6 +825,8 @@ namespace AST {
     }
 
     void NewArrayObject::compile() {
+        preCompileProcess();
+
         // TODO
     }
 

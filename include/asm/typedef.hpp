@@ -9,6 +9,8 @@ namespace ASM {
     class Block;
 
     class Instruction;
+    class Push;
+    class Pop;
 
     class Label;
 

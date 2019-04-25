@@ -19,6 +19,8 @@ namespace ASM {
 
             bool isInInterGraph = true;
 
+            bool isUsed = false;  // hardware register only
+
             RegValue val;
 
             RegSet interferences;

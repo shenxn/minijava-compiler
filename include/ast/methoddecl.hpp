@@ -2,6 +2,7 @@
 
 #include <list>
 #include <string>
+#include "../asm/asm.hpp"
 #include "node.hpp"
 #include "typedef.hpp"
 
@@ -24,6 +25,8 @@ namespace AST {
             VarMap varMap;
 
             MethodSignature *methodSignature = NULL;
+
+            ASM::Method *asmMethod;
 
             MethodDecl(int lineno, Type *returnType, Identifier *methodId, VarDeclList *formalList, VarDeclList *varDeclList, StatementList *statementList);
 

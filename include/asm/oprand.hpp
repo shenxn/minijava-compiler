@@ -12,6 +12,7 @@ namespace ASM {
         LabelOpRand,
         RegOpRand,
         ConstOpRand,
+        AddrOffsetOpRand,
     };
 
     union OpRandValue {
@@ -26,6 +27,8 @@ namespace ASM {
 
             OpRandValue val;
 
+            int offset;
+
             OpRand(const std::string &labelName, bool isAddr);
 
             OpRand(const std::string &labelPrefix, int labelId, bool isAddr);
@@ -33,6 +36,8 @@ namespace ASM {
             OpRand(Reg* reg);
 
             OpRand(int constValue);
+
+            OpRand(Reg *reg, int offset);
 
             ~OpRand();
 

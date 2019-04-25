@@ -181,7 +181,6 @@ namespace AST {
 
     void ClassDecl::compile() {
         currClass = this;
-        // TODO: varDecl
         methodDeclList->compile();
     }
 

@@ -22,6 +22,10 @@ namespace ASM {
         new Branch(label, paramLength);
     }
 
+    void Branch::BL(const std::string &labelPrefix, int labelId, int paramLength) {
+        new Branch(labelPrefix + std::to_string(labelId), paramLength);
+    }
+
     Branch::Branch(BranchType type, const std::string &label) {
         this->type = type;
         this->label = label;

@@ -27,10 +27,6 @@ namespace AST {
         statementList->typecheck();
     }
 
-    void StatementBlock::preCompileProcess() {
-        statementList->preCompileProcess();
-    }
-
     void StatementBlock::compile() {
         statementList->compile();
     }
@@ -57,12 +53,6 @@ namespace AST {
 
         ifStatement->typecheck();
         elseStatement->typecheck();
-    }
-
-    void IfElse::preCompileProcess() {
-        exp->preCompileProcess();
-        ifStatement->preCompileProcess();
-        elseStatement->preCompileProcess();
     }
 
     void IfElse::compile() {
@@ -96,11 +86,6 @@ namespace AST {
         }
 
         statement->typecheck();
-    }
-
-    void While::preCompileProcess() {
-        exp->preCompileProcess();
-        statement->preCompileProcess();
     }
 
     void While::compile() {
@@ -146,12 +131,6 @@ namespace AST {
             if (!exp->isInt()) {
                 exp->reportTypeCheckError("Print parameter is neither int nor string literal");
             }
-        }
-    }
-
-    void Print::preCompileProcess() {
-        if (!isString) {
-            exp->preCompileProcess();
         }
     }
 
@@ -206,12 +185,6 @@ namespace AST {
         }
     }
 
-    void VarAssign::preCompileProcess() {
-        // TODO: var->preCompileProcess();
-        index->preCompileProcess();
-        exp->preCompileProcess();
-    }
-
     void VarAssign::compile() {
         // TODO: index
         exp->compile();
@@ -246,26 +219,13 @@ namespace AST {
         return true;
     }
 
-    void Return::preCompileProcess() {
-        exp->preCompileProcess();
-    }
-
     void Return::compile() {
         exp->compile();
+        ASM::Mov::New(HWR0, exp->resultReg);
 
-        /* restore stack point, frame point, and link */
-        printf("\tmov sp, fp\n");
-        printf("\tpop {fp}\n");
-        printf("\tpop {r5, lr}\n");
-
-        /* pop params */
-        // TODO
-        // if (!ASM::methodDecl->formalList->list.empty()) {
-        //     printf("\tadd sp, #%lu\n", 4 * ASM::methodDecl->formalList->list.size());
-        // }
-
-        /* restore program counter from link */
-        printf("\tmov pc, lr\n");
+        /* restore registers */
+        ASM::Mov::New(HWSP, HWFP);
+        ASM::MethodRegRestore::New(false);
     }
 
     StatementList::~StatementList() {
@@ -277,12 +237,6 @@ namespace AST {
     void StatementList::typecheck() {
         for (auto statement : list) {
             statement->typecheck();
-        }
-    }
-
-    void StatementList::preCompileProcess() {
-        for (auto statement : list) {
-            statement->preCompileProcess();
         }
     }
 

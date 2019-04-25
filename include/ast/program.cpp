@@ -21,7 +21,6 @@ namespace AST {
     void Program::preCompileProcess() {
         mainClass->preCompileProcess();
         classDeclList->preCompileProcess();
-        // classDeclList->buildMethodSigMap();
     }
 
     void Program::typecheck() {
@@ -31,7 +30,7 @@ namespace AST {
     
     void Program::compile() {
         mainClass->compile();
-        // classDeclList->assembly();
+        classDeclList->compile();
     }
 
 }
