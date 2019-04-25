@@ -5,6 +5,20 @@
 #include "node.hpp"
 #include "typedef.hpp"
 
+#define __DECLEAR_BINARY_EXP__(eName, ...) \
+    class eName: public Exp { \
+        public: \
+            Exp *a; \
+            Exp *b; \
+            eName(int lineno, Exp *a, Exp *b); \
+            ~eName(); \
+            bool isValid(); \
+            void typecheck(); \
+            void optimizeConst(); \
+            void compile(); \
+            __VA_ARGS__ \
+    };
+
 namespace AST {
 
     class Index;
@@ -67,6 +81,14 @@ namespace AST {
             void compile();
     };
 
+    __DECLEAR_BINARY_EXP__(Add);
+    __DECLEAR_BINARY_EXP__(Sub);
+    __DECLEAR_BINARY_EXP__(Mul);
+    __DECLEAR_BINARY_EXP__(Div,
+        void divide(ASM::Reg *opA, ASM::Reg *opB, ASM::Reg *opC);
+        void divide(ASM::Reg *opA, ASM::Reg *opB, int constC);
+    );
+
     class BinaryExp: public Exp {
         public:
             Exp *a;
@@ -81,13 +103,6 @@ namespace AST {
             void optimizeConst();
 
             virtual int constCalc() = 0;  // optimization: precalculate const expressions
-    };
-
-    class IntBinaryExp: public BinaryExp {
-        public:
-            IntBinaryExp(int lineno, Exp *a, Exp *b);
-
-            void typecheck();
     };
 
     class BoolBinaryExp: public BinaryExp {
@@ -115,42 +130,6 @@ namespace AST {
             EqualityBinaryExp(int lineno, Exp *a, Exp *b);
 
             void typecheck();
-    };
-
-    class Add: public IntBinaryExp {
-        public:
-            Add(int lineno, Exp *a, Exp *b);
-
-            void compile();
-
-            int constCalc();
-    };
-
-    class Minus: public IntBinaryExp {
-        public:
-            Minus(int lineno, Exp *a, Exp *b);
-
-            void compile();
-
-            int constCalc();
-    };
-
-    class Multi: public IntBinaryExp {
-        public:
-            Multi(int lineno, Exp *a, Exp *b);
-
-            void compile();
-
-            int constCalc();
-    };
-
-    class Divide: public IntBinaryExp {
-        public:
-            Divide(int lineno, Exp *a, Exp *b);
-
-            void compile();
-
-            int constCalc();
     };
 
     class And: public BoolBinaryExp {

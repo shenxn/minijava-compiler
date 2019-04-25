@@ -58,12 +58,4 @@ namespace ASM {
     __DEFINE_BIOPINSTR_REGB__(Cmp);
     __DEFINE_BIOPINSTR_CONSTB__(Cmp);
 
-    __DEFINE_BIOPINSTR__(Add, "add", true, true);
-    __DEFINE_BIOPINSTR_REGB__(Add);
-    __DEFINE_BIOPINSTR_CONSTB__(Add);
-
-    __DEFINE_BIOPINSTR__(Sub, "sub", true, true);
-    __DEFINE_BIOPINSTR_REGB__(Sub);
-    __DEFINE_BIOPINSTR_CONSTB__(Sub);
-
 }

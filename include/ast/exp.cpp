@@ -5,6 +5,44 @@
 #include "type.hpp"
 #include "classdecl.hpp"
 
+#define __DEFINE_BINARY_EXP__(eName, resultType, calcOperator, asmConstructor) \
+    eName::eName(int lineno, Exp *a, Exp *b) : Exp(lineno) { \
+        type = new Type(resultType); \
+        this->a = a; \
+        this->b = b;\
+    } \
+    eName::~eName() { \
+        delete a; \
+        delete b; \
+    } \
+    bool eName::isValid() { \
+        return _isValid && a->isValid() && b->isValid(); \
+    } \
+    void eName::optimizeConst() { \
+        if (a->isConst && b->isConst) { \
+            isConst = true; \
+            constVal = a->constVal calcOperator b->constVal; \
+        } \
+    } \
+    void eName::compile() { \
+        preCompileProcess(); \
+        if (isConst) { \
+            ASM::Mov::New(resultReg, constVal); \
+        } \
+        a->compile(); \
+        b->compile(); \
+        if (b->isConst) asmConstructor(resultReg, a->resultReg, b->constVal); \
+        else asmConstructor(resultReg, a->resultReg, b->resultReg); \
+    }
+
+#define __DEFINE_BINARY_EXP_INT_TYPECHECK__(eName) \
+    void eName::typecheck() { \
+        a->typecheck(); \
+        b->typecheck(); \
+        if (!a->isValid() || !b->isValid()) return; \
+        if (!a->isInt() || !b->isInt()) reportTypeCheckError("Incorrect oprand type for int binary operation"); \
+    }
+
 #define CompileConst optimizeConst(); \
     if (isConst) { \
         ASM::Mov::New(resultReg, constVal); \
@@ -90,6 +128,8 @@ namespace AST {
         ASM::Mov::New(resultReg, constVal);
     }
 
+    
+
     BinaryExp::BinaryExp(int lineno, Exp *a, Exp *b) : Exp(lineno) {
         this->a = a;
         this->b = b;
@@ -108,21 +148,6 @@ namespace AST {
         if (a->isConst && b->isConst) {
             this->isConst = true;
             this->constVal = constCalc();
-        }
-    }
-
-    IntBinaryExp::IntBinaryExp(int lineno, Exp *a, Exp *b) : BinaryExp(lineno, a, b) {
-        this->type = new Type(integerType);
-    }
-
-    void IntBinaryExp::typecheck() {
-        a->typecheck();
-        b->typecheck();
-        if (!a->isValid() || !b->isValid()) {
-            return;
-        }
-        if (!a->isInt() || !b->isInt()) {
-            reportTypeCheckError("Incorrect oprand type for int binary operation");
         }
     }
 
@@ -177,73 +202,28 @@ namespace AST {
         }
     }
 
-    Add::Add(int lineno, Exp *a, Exp *b) : IntBinaryExp(lineno, a, b) {}
+    __DEFINE_BINARY_EXP__(Add, integerType, +, ASM::Add::New)
+    __DEFINE_BINARY_EXP_INT_TYPECHECK__(Add)
 
-    void Add::compile() {
-        preCompileProcess();
+    __DEFINE_BINARY_EXP__(Sub, integerType, -, ASM::Sub::New)
+    __DEFINE_BINARY_EXP_INT_TYPECHECK__(Sub)
 
-        CompileConst;
+    __DEFINE_BINARY_EXP__(Mul, integerType, *, ASM::Mul::New)
+    __DEFINE_BINARY_EXP_INT_TYPECHECK__(Mul)
 
-        a->compile();
-        printf("\tpush {r0}\n");
-        b->compile();
-        printf("\tpop {r1}\n");
-        printf("\tadd r0, r1\n");
+    __DEFINE_BINARY_EXP__(Div, integerType, /, divide)
+    __DEFINE_BINARY_EXP_INT_TYPECHECK__(Div)
+    void Div::divide(ASM::Reg *opA, ASM::Reg *opB, ASM::Reg *opC) {
+        ASM::Mov::New(HWR0, opB);
+        ASM::Mov::New(HWR1, opC);
+        ASM::Branch::BL("__aeabi_idiv", 2);
+        ASM::Mov::New(resultReg, HWR0);
     }
-
-    int Add::constCalc() {
-        return a->constVal + b->constVal;
-    }
-
-    Minus::Minus(int lineno, Exp *a, Exp *b) : IntBinaryExp(lineno, a, b) {}
-
-    void Minus::compile() {
-        preCompileProcess();
-
-        CompileConst;
-
-        a->compile();
-        printf("\tpush {r0}\n");
-        b->compile();
-        printf("\tpop {r1}\n");
-        printf("\tsub r1, r0\n");
-        printf("\tmov r0, r1\n");
-    }
-
-    int Minus::constCalc() {
-        return a->constVal - b->constVal;
-    }
-
-    Multi::Multi(int lineno, Exp *a, Exp *b) : IntBinaryExp(lineno, a, b) {};
-
-    void Multi::compile() {
-        preCompileProcess();
-
-        CompileConst;
-
-        a->compile();
-        printf("\tpush {r0}\n");
-        b->compile();
-        printf("\tpop {r1}\n");
-        printf("\tmul r0, r1\n");
-    }
-
-    int Multi::constCalc() {
-        return a->constVal * b->constVal;
-    }
-
-    Divide::Divide(int lineno, Exp *a, Exp *b) : IntBinaryExp(lineno, a, b) {};
-
-    void Divide::compile() {
-        preCompileProcess();
-
-        CompileConst;
-
-        // TODO
-    }
-
-    int Divide::constCalc() {
-        return a->constVal / b->constVal;
+    void Div::divide(ASM::Reg *opA, ASM::Reg *opB, int const constC) {
+        ASM::Mov::New(HWR0, opB);
+        ASM::Mov::New(HWR1, constC);
+        ASM::Branch::BL("__aeabi_idiv", 2);
+        ASM::Mov::New(resultReg, HWR0);
     }
 
     And::And(int lineno, Exp *a, Exp *b) : BoolBinaryExp(lineno, a, b) {};
@@ -563,7 +543,7 @@ namespace AST {
 
         if (paramList->list.size() > 4) {
             /* make space for additional parameters in stack */
-            ASM::Sub::New(HWSP, 4 * (paramList->list.size() - 4));
+            ASM::Sub::New(HWSP, HWSP, 4 * (paramList->list.size() - 4));
 
             paramSP = new ASM::Reg();
             ASM::Mov::New(paramSP, HWSP);

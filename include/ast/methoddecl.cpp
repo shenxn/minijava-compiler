@@ -9,6 +9,8 @@ namespace AST {
 
     MethodDecl *MethodDecl::currMethod = NULL;
 
+    int MethodDecl::methodCount = 0;
+
     MethodDecl::MethodDecl(int lineno, Type *returnType, Identifier *id, VarDeclList *formalList, VarDeclList *varDeclList, StatementList *statementList) : Node(lineno) {
         this->returnType = returnType;
         this->id = id;
@@ -103,6 +105,7 @@ namespace AST {
 
     void MethodDecl::preCompileProcess() {
         asmMethod = new ASM::Method();
+        methodId = methodCount++;
     }
 
     void MethodDecl::compile() {

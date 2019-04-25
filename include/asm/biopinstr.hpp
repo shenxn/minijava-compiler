@@ -50,16 +50,4 @@ namespace ASM {
         __DECLEAR_BIOPINSTR_CONSTB__
     );
 
-    __DECLEAR_BIOPINSTR__(
-        Add,
-        __DECLEAR_BIOPINSTR_REGB__
-        __DECLEAR_BIOPINSTR_CONSTB__
-    );
-
-    __DECLEAR_BIOPINSTR__(
-        Sub,
-        __DECLEAR_BIOPINSTR_REGB__
-        __DECLEAR_BIOPINSTR_CONSTB__
-    );
-
 }

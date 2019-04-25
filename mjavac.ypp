@@ -99,9 +99,9 @@ Index: '[' Exp ']'  { $$ = new AST::Index(yylineno, NULL, (AST::Exp*)$2); }
 | '[' Exp ']' Index  { $$ = new AST::Index(yylineno, (AST::Index*)$4, (AST::Exp*)$2); }
 ;
 Exp: Exp '+' Exp  { $$ = new AST::Add(yylineno, (AST::Exp*)$1, (AST::Exp*)$3); }
-| Exp '-' Exp  { $$ = new AST::Minus(yylineno, (AST::Exp*)$1, (AST::Exp*)$3); }
-| Exp '*' Exp  { $$ = new AST::Multi(yylineno, (AST::Exp*)$1, (AST::Exp*)$3); }
-| Exp '/' Exp  { $$ = new AST::Divide(yylineno, (AST::Exp*)$1, (AST::Exp*)$3); }
+| Exp '-' Exp  { $$ = new AST::Sub(yylineno, (AST::Exp*)$1, (AST::Exp*)$3); }
+| Exp '*' Exp  { $$ = new AST::Mul(yylineno, (AST::Exp*)$1, (AST::Exp*)$3); }
+| Exp '/' Exp  { $$ = new AST::Div(yylineno, (AST::Exp*)$1, (AST::Exp*)$3); }
 | Exp AND Exp  { $$ = new AST::And(yylineno, (AST::Exp*)$1, (AST::Exp*)$3); }
 | Exp OR Exp  { $$ = new AST::Or(yylineno, (AST::Exp*)$1, (AST::Exp*)$3); }
 | Exp '<' Exp  { $$ = new AST::Less(yylineno, (AST::Exp*)$1, (AST::Exp*)$3); }

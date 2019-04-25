@@ -14,6 +14,8 @@ namespace AST {
         public:
             static MethodDecl *currMethod;
 
+            static int methodCount;
+
             Type *returnType;
             Identifier *id;
             VarDeclList *formalList;

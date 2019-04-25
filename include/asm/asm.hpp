@@ -9,4 +9,5 @@
 #include "listopinstr.hpp"
 #include "method.hpp"
 #include "oprand.hpp"
+#include "triopinstr.hpp"
 #include "reg.hpp"
