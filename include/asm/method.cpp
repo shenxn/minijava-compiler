@@ -27,6 +27,8 @@ namespace ASM {
         generalRegs[8] = R8 = new Reg("r8");
         generalRegs[9] = R9 = new Reg("r9");
         generalRegs[10] = R10 = new Reg("r10");
+        FP = new Reg("fp");
+        SP = new Reg("sp");
         LR = new Reg("lr");
         PC = new Reg("pc");
     }
@@ -36,6 +38,8 @@ namespace ASM {
             delete generalRegs[i];
         }
         delete generalRegs;
+        delete FP;
+        delete SP;
         delete LR;
         delete PC;
         for (auto instruction : instructions) {

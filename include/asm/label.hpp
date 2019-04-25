@@ -12,6 +12,9 @@ namespace ASM {
             static const std::string StatementElsePrefix;
             static const std::string StatementEndIfPrefix;
 
+            static void New(const std::string &labelName);
+            static void New(const std::string &labelPrefix, int labelId);
+
             std::string labelName;
 
             std::string *labelPrefix = NULL;
@@ -19,8 +22,6 @@ namespace ASM {
             int labelId;
 
             Label(const std::string &labelName);
-
-            Label(const std::string &labelPrefix, int labelId);
 
             void assembly();
     };

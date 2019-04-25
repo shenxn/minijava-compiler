@@ -25,10 +25,11 @@ namespace AST {
 
     void MainClass::compile() {
         ASM::Method::currMethod = asmMethod;
-        NewInstr(new ASM::Label("main"));
-        NewInstr(new ASM::Push(1, ASM::Method::currMethod->LR));
+
+        ASM::Label::New("main");
+        ASM::Push::New(1, HWLR);
         statement->compile();
-        NewInstr(new ASM::Pop(1, ASM::Method::currMethod->PC));
+        ASM::Pop::New(1, HWPC);
     }
 
     void MainClass::typecheck() {

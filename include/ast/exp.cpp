@@ -7,7 +7,7 @@
 
 #define CompileConst optimizeConst(); \
     if (isConst) { \
-        NewInstr(new ASM::Mov(new ASM::OpRand(resultReg), new ASM::OpRand(constVal))); \
+        ASM::Mov::New(resultReg, constVal); \
         return; \
     }
 
@@ -77,7 +77,7 @@ namespace AST {
     void Integer::typecheck() {}
 
     void Integer::compile() {
-        NewInstr(new ASM::Mov(new ASM::OpRand(resultReg), new ASM::OpRand(constVal)));
+        ASM::Mov::New(resultReg, constVal);
     }
 
     Boolean::Boolean(int lineno, bool b) : Exp(lineno) {
@@ -89,7 +89,7 @@ namespace AST {
     void Boolean::typecheck() {}
 
     void Boolean::compile() {
-        NewInstr(new ASM::Mov(new ASM::OpRand(resultReg), new ASM::OpRand(constVal)));
+        ASM::Mov::New(resultReg, constVal);
     }
 
     BinaryExp::BinaryExp(int lineno, Exp *a, Exp *b) : Exp(lineno) {
@@ -530,51 +530,63 @@ namespace AST {
 
     void MethodCall::compile() {
         // TODO: vtable
+        // TODO: class pointer
+        // object->compile();
 
-        printf("\tpush {r4}\n");
-        object->compile();
-        printf("\tmov r5, r0\n");  // temporarily stored in r5
+        // if (paramList->list.size() > 4) {
+        //     /* Make space for additional parameters */
+        //     NewInstr(
+        //         new ASM::Sub(
+        //             new ASM::OpRand(ASM::Method::currMethod->SP),
+        //             new ASM::OpRand(4 * (paramList->list.size() - 4))
+        //         )
+        //     );
+        // }
+
+        // printf("\tpush {r4}\n");
+        // object->compile();
+        // printf("\tmov r5, r0\n");  // temporarily stored in r5
         
-        if (!paramList->list.empty()) {
-            printf("\tsub sp, #%lu\n", 4 * paramList->list.size());  // Make space for parameters
-            int stackOffset = 0;
-            for (auto param : paramList->list) {
-                param->compile();
-                printf("\tstr r0, [ sp, #%d ]\n", stackOffset);
-                stackOffset += 4;
-            }
-            switch (paramList->list.size()) {
-                case 1:
-                    printf("\tpop {r0}\n");
-                    break;
-                case 2:
-                    printf("\tpop {r0-r1}\n");
-                    break;
-                case 3:
-                    printf("\tpop {r0-r2}\n");
-                    break;
-                default:
-                    printf("\tpop {r0-r3}\n");
-                    break;
-            }
-        }
+        // if (!paramList->list.empty()) {
+        //     printf("\tsub sp, #%lu\n", 4 * paramList->list.size());  // Make space for parameters
+        //     int stackOffset = 0;
+        //     for (auto param : paramList->list) {
+        //         param->compile();
+        //         printf("\tstr r0, [ sp, #%d ]\n", stackOffset);
+        //         stackOffset += 4;
+        //     }
+        //     switch (paramList->list.size()) {
+        //         case 1:
+        //             printf("\tpop {r0}\n");
+        //             break;
+        //         case 2:
+        //             printf("\tpop {r0-r1}\n");
+        //             break;
+        //         case 3:
+        //             printf("\tpop {r0-r2}\n");
+        //             break;
+        //         default:
+        //             printf("\tpop {r0-r3}\n");
+        //             break;
+        //     }
+        // }
 
-        printf("\tmov r4, r5\n");  // set object base pointer
-        if (methodDecl->methodSignature->isVirtual) {
-            ClassDecl *classDecl = object->type->classId->classDecl;
-            printf("\tpush {r5-r6}\n");
-            printf("\tldr r5, [ r4, #%lu ]\n", classDecl->totalVarSize + 8 * methodDecl->methodSignature->virtualId);  // method address
-            printf("\tldr r6, [ r4, #%lu ]\n", classDecl->totalVarSize + 8 * methodDecl->methodSignature->virtualId + 1);  // stack offset
-            printf("\tadd r4, r6\n");
-            printf("\tblx r5\n");
-            printf("\tpop {r5-r6}\n");
-        } else {
-            if (classStackOffset > 0) {
-                printf("\tadd r4, #%d\n", classStackOffset);
-            }
-            printf("\tbl _method_%d\n", methodDecl->methodId);
-        }
-        printf("\tpop {r4}\n");
+        // printf("\tmov r4, r5\n");  // set object base pointer
+        // if (methodDecl->methodSignature->isVirtual) {
+        //     ClassDecl *classDecl = object->type->classId->classDecl;
+        //     printf("\tpush {r5-r6}\n");
+        //     printf("\tldr r5, [ r4, #%lu ]\n", classDecl->totalVarSize + 8 * methodDecl->methodSignature->virtualId);  // method address
+        //     printf("\tldr r6, [ r4, #%lu ]\n", classDecl->totalVarSize + 8 * methodDecl->methodSignature->virtualId + 1);  // stack offset
+        //     printf("\tadd r4, r6\n");
+        //     printf("\tblx r5\n");
+        //     printf("\tpop {r5-r6}\n");
+        // } else {
+        //     if (classStackOffset > 0) {
+        //         printf("\tadd r4, #%d\n", classStackOffset);
+        //     }
+        //     printf("\tbl _method_%d\n", methodDecl->methodId);
+        // }
+        // printf("\tpop {r4}\n");
     }
 
     IdIndexLength::IdIndexLength(int lineno, Identifier* id, Index *index, bool isLength) : Exp(lineno) {
@@ -712,12 +724,28 @@ namespace AST {
     void NewClassObject::compile() {
         ClassDecl *classDecl = type->classId->classDecl;
 
-        printf("\tmov r0, #%lu\n", classDecl->totalVarSize + 4);
-        printf("\tbl malloc\n");
+        // NewInstr(
+        //     new ASM::Mov(
+        //         new ASM::OpRand(ASM::Method::currMethod->R0),
+        //         new ASM::OpRand(classDecl->totalVarSize)
+        //     )
+        // );
+        // NewInstr(
+        //     new ASM::Branch(
+        //         ASM::BranchLink,
+        //         new ASM::OpRand("malloc", false)
+        //     )
+        // );
+        // NewInstr(
+        //     new ASM::Mov(
+        //         new ASM::OpRand(resultReg),
+        //         new ASM::OpRand(ASM::Method::currMethod->R0)
+        //     )
+        // );
 
-        /* set vtable */
-        printf("\tldr r1, =_class_%d_vtable\n", type->classId->classDecl->classId);
-        printf("\tstr r1, [ r0, #%lu ]\n", classDecl->totalVarSize);
+        // TODO: /* set vtable */
+        // printf("\tldr r1, =_class_%d_vtable\n", type->classId->classDecl->classId);
+        // printf("\tstr r1, [ r0, #%lu ]\n", classDecl->totalVarSize);
     }
 
     NewArrayObject::NewArrayObject(int lineno, Type *primeType, Index *index) : Exp(lineno) {

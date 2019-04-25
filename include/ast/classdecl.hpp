@@ -66,8 +66,6 @@ namespace AST {
 
             void buildParentRelation();
 
-            void buildMethodSigMap();
-
             void compileVTable();
 
             void typecheck();

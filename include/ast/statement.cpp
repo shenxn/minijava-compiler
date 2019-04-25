@@ -66,24 +66,15 @@ namespace AST {
     }
 
     void IfElse::compile() {
+        // TODO: optimize branch
         exp->compile();
-        NewInstr(new ASM::Cmp(new ASM::OpRand(exp->resultReg), new ASM::OpRand(1)));
-        NewInstr(
-            new ASM::Branch(
-                ASM::BranchNotEqual,
-                new ASM::OpRand(ASM::Label::StatementElsePrefix, statementId, false)
-            )
-        );
+        ASM::Cmp::New(exp->resultReg, 1);
+        ASM::Branch::BNE(ASM::Label::StatementElsePrefix, statementId);
         ifStatement->compile();
-        NewInstr(
-            new ASM::Branch(
-                ASM::BranchB,
-                new ASM::OpRand(ASM::Label::StatementEndIfPrefix, statementId, false)
-            )
-        );
-        NewInstr(new ASM::Label(ASM::Label::StatementElsePrefix, statementId));
+        ASM::Branch::B(ASM::Label::StatementEndIfPrefix, statementId);
+        ASM::Label::New(ASM::Label::StatementElsePrefix, statementId);
         elseStatement->compile();
-        NewInstr(new ASM::Label(ASM::Label::StatementEndIfPrefix, statementId));
+        ASM::Label::New(ASM::Label::StatementEndIfPrefix, statementId);
     }
 
     While::While(Exp *exp, Statement *statement) {
@@ -166,36 +157,16 @@ namespace AST {
 
     void Print::compile() {
         if (isString) {
-            NewInstr(
-                new ASM::Ldr(
-                    new ASM::OpRand(ASM::Method::currMethod->R0),
-                    new ASM::OpRand(ASM::Label::StringLiteralPrefix, stringLiteralId, true)
-                )
-            );
+            ASM::Ldr::New(HWR0, ASM::Label::StringLiteralPrefix, stringLiteralId);
         } else {
             exp->compile();
-            NewInstr(
-                new ASM::Mov(
-                    new ASM::OpRand(ASM::Method::currMethod->R1),
-                    new ASM::OpRand(exp->resultReg)
-                )
-            );  // int
-            NewInstr(
-                new ASM::Ldr(
-                    new ASM::OpRand(ASM::Method::currMethod->R0),
-                    new ASM::OpRand(
-                        isNewLine ? "_string_printintln" : "_string_printint",
-                        true
-                    )
-                )
+            ASM::Mov::New(HWR1, exp->resultReg);  // int
+            ASM::Ldr::New(
+                HWR0,
+                isNewLine ? "_string_printintln" : "_string_printint"
             );  // format
         }
-        NewInstr(
-            new ASM::Branch(
-                ASM::BranchLink,
-                new ASM::OpRand("printf", false)
-            )
-        );
+        ASM::Branch::BL("printf", isString ? 1 : 2);
     }
 
     VarAssign::VarAssign(Identifier *id, Index *index, Exp *exp) {

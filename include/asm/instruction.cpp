@@ -9,46 +9,16 @@
 
 namespace ASM {
 
+    Instruction::Instruction() {
+        Method::currMethod->instructions.push_back(this);
+    }
+
     void Instruction::generateControlFlow(Instruction *nextInstr) {
         if (nextInstr == NULL) {
             return;
         }
         nextInstr->predecessors.push_back(this);
         successors.push_back(nextInstr);
-    }
-
-    BiOpRandInstruction::BiOpRandInstruction(OpRand *opA, OpRand *opB, bool useOpA, bool defOpA) {
-        this->opA = opA;
-        this->opB = opB;
-
-        if (opA->type == RegOpRand) {
-            if (defOpA) {
-                def.insert(opA->val.reg);
-            }
-            if (useOpA) {
-                use.insert(opA->val.reg);
-            }
-        }
-
-        if (opB->type == RegOpRand) {
-            use.insert(opB->val.reg);
-        }
-    }
-
-    BiOpRandInstruction::~BiOpRandInstruction() {
-        delete opA;
-        delete opB;
-    }
-
-    void BiOpRandInstruction::assembly() {
-        Global::out
-            << "\t"
-            << opName()
-            << " "
-            << opA->toString()
-            << ", "
-            << opB->toString()
-            << std::endl;
     }
 
     void ListRegInstruction::assembly() {

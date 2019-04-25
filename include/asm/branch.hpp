@@ -1,6 +1,12 @@
 #pragma once
 
+#include <string>
+
 #include "instruction.hpp"
+
+#define __DECLEAR_BRANCH__(fName) \
+    static void fName(const std::string &label); \
+    static void fName(const std::string &labelPrefix, int labelId);
 
 namespace ASM {
 
@@ -13,17 +19,21 @@ namespace ASM {
         BranchEqual,
         BranchNotEqual,
         BranchLink,
-        BranchX,
     };
 
     class Branch : public Instruction {
         public:
             BranchType type;
-            OpRand *opRand;
+            std::string label;
 
-            Branch(BranchType type, OpRand *opRand);
+            __DECLEAR_BRANCH__(B);
+            __DECLEAR_BRANCH__(BEQ);
+            __DECLEAR_BRANCH__(BNE);
+            static void BL(const std::string &label, int paramLength);
 
-            ~Branch();
+            Branch(BranchType type, const std::string &label);
+
+            Branch(const std::string &label, int paramLength);  // Branch Link
 
             void assembly();
 
