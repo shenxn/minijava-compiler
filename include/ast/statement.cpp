@@ -56,15 +56,20 @@ namespace AST {
     }
 
     void IfElse::compile() {
-        // TODO: optimize branch
+        if (!exp->isConst) {
+            /* optimize branch */
+            exp->setTrueLabel(ASM::Label::StatementTruePrefix, statementId);
+        }
         exp->compile();
-        ASM::Cmp::New(exp->resultReg, 1);
-        ASM::Branch::BNE(ASM::Label::StatementElsePrefix, statementId);
-        ifStatement->compile();
-        ASM::Branch::B(ASM::Label::StatementEndIfPrefix, statementId);
-        ASM::Label::New(ASM::Label::StatementElsePrefix, statementId);
+        if (exp->isConst) {
+            ASM::Cmp::New(exp->resultReg, 1);
+            ASM::Branch::BEQ(ASM::Label::StatementTruePrefix, statementId);
+        }
         elseStatement->compile();
-        ASM::Label::New(ASM::Label::StatementEndIfPrefix, statementId);
+        ASM::Branch::B(ASM::Label::StatementEndPrefix, statementId);
+        ASM::Label::New(ASM::Label::StatementTruePrefix, statementId);
+        ifStatement->compile();
+        ASM::Label::New(ASM::Label::StatementEndPrefix, statementId);
     }
 
     While::While(Exp *exp, Statement *statement) {

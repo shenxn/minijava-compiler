@@ -60,13 +60,25 @@
         } \
         a->compile(); \
         ASM::Cmp::New(a->resultReg, shortcutVal); \
+        if (trueLabel != NULL && shortcutVal) { \
+            ASM::Branch::BEQ(*trueLabel); \
+            return; \
+        } \
         ASM::Branch::BEQ(ASM::Label::ExpShortcutPrefix, expId); \
         b->compile(); \
-        ASM::Mov::New(resultReg, b->resultReg); \
-        ASM::Branch::B(ASM::Label::ExpEndPrefix, expId); \
+        if (trueLabel != NULL) { \
+            /* shortcutVal = false */ \
+            ASM::Cmp::New(b->resultReg, 1); \
+            ASM::Branch::BEQ(*trueLabel); \
+        } else { \
+            ASM::Mov::New(resultReg, b->resultReg); \
+            ASM::Branch::B(ASM::Label::ExpEndPrefix, expId); \
+        } \
         ASM::Label::New(ASM::Label::ExpShortcutPrefix, expId); \
-        ASM::Mov::New(resultReg, a->resultReg); \
-        ASM::Label::New(ASM::Label::ExpEndPrefix, expId); \
+        if (trueLabel == NULL) { \
+            ASM::Mov::New(resultReg, a->resultReg); \
+            ASM::Label::New(ASM::Label::ExpEndPrefix, expId); \
+        } \
     }
 
 #define CompileConst optimizeConst(); \
@@ -84,6 +96,11 @@ namespace AST {
     Exp::~Exp() {
         delete type;
         delete resultReg;
+        delete trueLabel;
+    }
+
+    void Exp::setTrueLabel(const std::string &labelPrefix, const int labelId) {
+        trueLabel = new std::string(labelPrefix + std::to_string(labelId));
     }
 
     bool Exp::isValid() {
@@ -258,14 +275,14 @@ namespace AST {
         booleanType,
         __BINARY_EXP_TYPECHECK_EXP_BOOL___,
         &&,
-        __DEFINE_BINARY_EXP_COMPILE_FUNC_BOOL__(And, 0)
+        __DEFINE_BINARY_EXP_COMPILE_FUNC_BOOL__(And, false)
     )
     __DEFINE_BINARY_EXP__(
         Orr,
         booleanType,
         __BINARY_EXP_TYPECHECK_EXP_BOOL___,
         &&,
-        __DEFINE_BINARY_EXP_COMPILE_FUNC_BOOL__(Orr, 1)
+        __DEFINE_BINARY_EXP_COMPILE_FUNC_BOOL__(Orr, true)
     )
 
     Less::Less(int lineno, Exp *a, Exp *b) : CompareBinaryExp(lineno, a, b) {};

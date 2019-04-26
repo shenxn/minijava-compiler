@@ -1,6 +1,7 @@
 #pragma once
 
 #include <list>
+#include <string>
 #include "../asm/asm.hpp"
 #include "node.hpp"
 #include "typedef.hpp"
@@ -36,9 +37,13 @@ namespace AST {
 
             ASM::Reg *resultReg = NULL;
 
+            std::string *trueLabel = NULL;  // for optimization
+
             Exp(int lineno);
 
             ~Exp();
+
+            void setTrueLabel(const std::string &labelPrefix, const int labelId);
 
             virtual bool isValid();
             

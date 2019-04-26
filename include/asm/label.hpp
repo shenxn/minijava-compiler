@@ -9,8 +9,8 @@ namespace ASM {
     class Label: public Instruction {
         public:
             static const std::string StringLiteralPrefix;
-            static const std::string StatementElsePrefix;
-            static const std::string StatementEndIfPrefix;
+            static const std::string StatementTruePrefix;
+            static const std::string StatementEndPrefix;
             static const std::string MethodPrefix;
             static const std::string ExpShortcutPrefix;
             static const std::string ExpEndPrefix;

@@ -21,7 +21,7 @@ class MainClass {
                 System.out.println("false");
             }
             System.out.print("true || false = ");
-            if (new HelloClass().vtrue() && new HelloClass().vfalse()) {
+            if (new HelloClass().vtrue() || new HelloClass().vfalse()) {
                 System.out.println("true");
             } else {
                 System.out.println("false");

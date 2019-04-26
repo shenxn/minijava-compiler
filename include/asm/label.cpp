@@ -6,8 +6,8 @@
 namespace ASM {
 
     const std::string Label::StringLiteralPrefix = "_string_literal_";
-    const std::string Label::StatementElsePrefix = "_statement_else_";
-    const std::string Label::StatementEndIfPrefix = "_statement_endif_";
+    const std::string Label::StatementTruePrefix = "_statement_true_";
+    const std::string Label::StatementEndPrefix = "_statement_end_";
     const std::string Label::MethodPrefix = "_method_";
     const std::string Label::ExpShortcutPrefix = "_exp_shortcut_";
     const std::string Label::ExpEndPrefix = "_exp_end_";
