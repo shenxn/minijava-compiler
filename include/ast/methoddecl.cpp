@@ -20,13 +20,15 @@ namespace AST {
 
         // TODO: methodId = ASM::methodCount++;
 
-        int stackOffset = 12;
+        int formalIt = 0;
         for (auto varDecl : formalList->list) {
             varDecl->varMap = &varMap;
             
             /* Set stack offset */
-            varDecl->memoryOffset = stackOffset;
-            stackOffset += 4;
+            if (formalIt >= 4) {
+                varDecl->memoryOffset = formalIt * 4;
+            }
+            formalIt++;
 
             /* Setup var table */
             if (varMap.find(varDecl->id->s) == varMap.end()) {
@@ -35,13 +37,12 @@ namespace AST {
 
             varDecl->isLocal = true;
         }
-        stackOffset = -4;
         for (auto varDecl : varDeclList->list) {
             varDecl->varMap = &varMap;
 
             /* Set stack offset */
-            varDecl->memoryOffset = stackOffset;
-            stackOffset -= 4;
+            // varDecl->memoryOffset = stackOffset;
+            // stackOffset -= 4;
 
             /* Setup var table */
             if (varMap.find(varDecl->id->s) == varMap.end()) {
@@ -106,25 +107,32 @@ namespace AST {
     void MethodDecl::preCompileProcess() {
         asmMethod = new ASM::Method();
         methodId = methodCount++;
+        formalList->preCompileProcess();
+        varDeclList->preCompileProcess();
     }
 
     void MethodDecl::compile() {
+        currMethod = this;
         ASM::Method::currMethod = asmMethod;
 
         ASM::Label::New(ASM::Label::MethodPrefix, methodId);
         ASM::MethodRegRestore::New(true);
         ASM::Mov::New(HWFP, HWSP);  // set new frame point
 
+        /* load parameters */
+        int paramIt = 0;
+        for (auto varDecl : formalList->list) {
+            if (paramIt >= 4) {
+                /* only first 4 params are in the registers */
+                break;
+            }
+            ASM::Mov::New(varDecl->asmReg, HWR[paramIt]);
+        }
+        // TODO: load reset parameters
+
         // TODO: local variables
 
         statementList->compile();
-
-        // /* save link and frame point */
-        // printf("\tpush {r5, lr}\n");
-        // printf("\tpush {fp}\n");
-
-        // /* set new frame point */
-        // printf("\tmov fp, sp\n");
 
         // printf("\tsub sp, #%lu\n", 4 * varDeclList->list.size());  // local variables
 

@@ -18,6 +18,7 @@ namespace AST {
     VarDecl::~VarDecl() {
         delete type;
         delete id;
+        delete asmReg;
     }
 
     void VarDecl::typecheck() {
@@ -33,6 +34,12 @@ namespace AST {
         }
 
         type->typecheck();
+    }
+
+    void VarDecl::preCompileProcess() {
+        if (isLocal) {
+            asmReg = new ASM::Reg();
+        }
     }
 
     VarDeclList::~VarDeclList() {
@@ -71,6 +78,12 @@ namespace AST {
             expIt++;
         }
         return true;
+    }
+
+    void VarDeclList::preCompileProcess() {
+        for (auto varDecl : list) {
+            varDecl->preCompileProcess();
+        }
     }
 
 }

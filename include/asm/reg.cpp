@@ -11,6 +11,7 @@ namespace ASM {
 
     Reg::Reg() {
         isSymbolic = true;
+        Method::currMethod->symbolicRegs.push_back(this);
     }
 
     Reg::Reg(std::string regName) {

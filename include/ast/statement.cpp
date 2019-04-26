@@ -231,6 +231,8 @@ namespace AST {
         /* restore registers */
         ASM::Mov::New(HWSP, HWFP);
         ASM::MethodRegRestore::New(false);
+        // TODO: pop parameters
+        ASM::Branch::BX(HWLR);
     }
 
     StatementList::~StatementList() {

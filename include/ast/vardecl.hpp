@@ -1,6 +1,7 @@
 #pragma once
 
 #include <list>
+#include "../asm/asm.hpp"
 #include "node.hpp"
 #include "typedef.hpp"
 
@@ -15,7 +16,9 @@ namespace AST {
 
             VarMap *varMap;
 
-            int memoryOffset;
+            int memoryOffset = 0;
+
+            ASM::Reg *asmReg = NULL;
 
             VarDecl();
 
@@ -26,6 +29,8 @@ namespace AST {
             void typecheck();
 
             size_t size();
+
+            void preCompileProcess();
     };
 
     class VarDeclList: public Node {
@@ -39,6 +44,8 @@ namespace AST {
             bool typeEqual(VarDeclList *b);
 
             bool typeMatch(ExpList *expList);
+
+            void preCompileProcess();
     };
 
 }

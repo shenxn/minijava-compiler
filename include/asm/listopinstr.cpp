@@ -42,6 +42,14 @@ namespace ASM {
     MethodRegRestore::MethodRegRestore(bool isPush) {
         this->isPush = isPush;
         regs = &Method::currMethod->savedRegs;
+
+        if (isPush) {
+            use.insert(HWFP);
+            use.insert(HWLR);
+        } else {
+            def.insert(HWFP);
+            def.insert(HWLR);
+        }
     }
 
     void MethodRegRestore::assembly() {
@@ -52,15 +60,8 @@ namespace ASM {
         }
         Global::out
             << HWFP->toString() << ","
-            << (isPush ? HWLR : HWPC)->toString()
+            << HWLR->toString()
             << "}" << std::endl;
-    }
-
-    void MethodRegRestore::generateControlFlow(Instruction *nextInstr) {
-        if (isPush) {
-            Instruction::generateControlFlow(nextInstr);
-        }
-        /* pop is return statement */
     }
 
 }

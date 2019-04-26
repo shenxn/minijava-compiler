@@ -31,7 +31,6 @@ namespace ASM {
             MethodRegRestore(bool isPush);
 
             void assembly();
-            void generateControlFlow(Instruction *nextInstr);
     };
 
 }

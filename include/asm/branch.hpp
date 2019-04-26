@@ -2,6 +2,7 @@
 
 #include <string>
 
+#include "typedef.hpp"
 #include "instruction.hpp"
 
 #define __DECLEAR_BRANCH__(fName) \
@@ -19,12 +20,18 @@ namespace ASM {
         BranchEqual,
         BranchNotEqual,
         BranchLink,
+        BranchX,
+    };
+
+    union BranchValue {
+        std::string *label;
+        Reg *reg;
     };
 
     class Branch : public Instruction {
         public:
             BranchType type;
-            std::string label;
+            BranchValue val;
 
             __DECLEAR_BRANCH__(B);
             __DECLEAR_BRANCH__(BLT);
@@ -35,10 +42,15 @@ namespace ASM {
             __DECLEAR_BRANCH__(BNE);
             static void BL(const std::string &label);
             static void BL(const std::string &labelPrefix, int labelId);
+            static void BX(Reg *reg);
 
             Branch(BranchType type, const std::string &label);
 
-            Branch(const std::string &label);  // Branch Link
+            Branch(const std::string &label);  // BL
+
+            Branch(Reg *reg);  //  BX
+
+            ~Branch();
 
             void assembly();
 

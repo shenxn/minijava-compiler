@@ -23,6 +23,7 @@
 #define HWSP ASM::Method::currMethod->SP
 #define HWLR ASM::Method::currMethod->LR
 #define HWPC ASM::Method::currMethod->PC
+#define HWR ASM::Method::currMethod->generalRegs
 
 namespace ASM {
 

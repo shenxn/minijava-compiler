@@ -167,7 +167,6 @@ namespace AST {
 
     void Exp::preCompileProcess() {
         resultReg = new ASM::Reg();
-        ASM::Method::currMethod->symbolicRegs.push_back(resultReg);
     }
 
     bool Exp::isInt() {
@@ -574,7 +573,12 @@ namespace AST {
 
         int memoryOffset;
         auto varDecl = var->varDecl(&memoryOffset);
-        printf("\tldr r0, [ %s, #%d ]\n", varDecl->isLocal ? "fp" : "r4", memoryOffset);
+        if (varDecl->isLocal && memoryOffset == 0) {
+            ASM::Mov::New(resultReg, varDecl->asmReg);
+        } else {
+            // TODO
+        }
+        // printf("\tldr r0, [ %s, #%d ]\n", varDecl->isLocal ? "fp" : "r4", memoryOffset);
     }
 
     ThisObject::ThisObject(int lineno) : Exp(lineno) {}

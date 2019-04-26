@@ -29,6 +29,7 @@ namespace AST {
         ASM::MethodRegRestore::New(true);
         statement->compile();
         ASM::MethodRegRestore::New(false);
+        ASM::Branch::BX(HWLR);
     }
 
     void MainClass::typecheck() {

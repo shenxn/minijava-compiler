@@ -9,7 +9,7 @@ class MainClass {
             } else {
                 System.out.println("Should not print");
             }
-            System.out.println(new HelloClass().hello());
+            System.out.println(new HelloClass().hello(-9));
             System.out.print("5 / 3 = ");
             System.out.println(new HelloClass().v5() / new HelloClass().v3());
             System.out.print("5 + 6 = ");
@@ -68,8 +68,10 @@ class MainClass {
 }
 
 class HelloClass {
-    public int hello() {
+    public int hello(int x) {
         System.out.println("Hello from hello()");
+        System.out.print("param x = ");
+        System.out.println(x);
         System.out.print("Return value is ");
         return -1;
     }

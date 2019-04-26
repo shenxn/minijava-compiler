@@ -40,22 +40,21 @@ namespace AST {
     }
 
     VarDecl *Variable::varDecl(int *offset) {
-        // TODO:
-        // auto varDeclIt = ASM::methodDecl->varMap.find(id->s);
-        // if (varDeclIt != ASM::methodDecl->varMap.end()) {
-        //     *offset = varDeclIt->second->memoryOffset;
-        //     return varDeclIt->second;
-        // }
-
-        *offset = 0;
-        for (auto classDecl = ClassDecl::currClass; classDecl != NULL; classDecl = classDecl->parent) {
-            auto varDeclIt = classDecl->varMap.find(id->s);
-            if (varDeclIt != classDecl->varMap.end()) {
-                *offset += varDeclIt->second->memoryOffset;
-                return varDeclIt->second;
-            }
-            *offset += classDecl->varSize;
+        auto varDeclIt = MethodDecl::currMethod->varMap.find(id->s);
+        if (varDeclIt != MethodDecl::currMethod->varMap.end()) {
+            *offset = varDeclIt->second->memoryOffset;
+            return varDeclIt->second;
         }
+
+        // *offset = 0;
+        // for (auto classDecl = ClassDecl::currClass; classDecl != NULL; classDecl = classDecl->parent) {
+        //     auto varDeclIt = classDecl->varMap.find(id->s);
+        //     if (varDeclIt != classDecl->varMap.end()) {
+        //         *offset += varDeclIt->second->memoryOffset;
+        //         return varDeclIt->second;
+        //     }
+        //     *offset += classDecl->varSize;
+        // }
         return NULL;
     }
 

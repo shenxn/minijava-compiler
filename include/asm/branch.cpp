@@ -3,6 +3,7 @@
 #include "global.hpp"
 #include "oprand.hpp"
 #include "method.hpp"
+#include "reg.hpp"
 
 #define __DEFINE_BRANCH__(fName, type) \
     void Branch::fName(const std::string &label) { \
@@ -30,14 +31,18 @@ namespace ASM {
         new Branch(labelPrefix + std::to_string(labelId));
     }
 
+    void Branch::BX(Reg *reg) {
+        new Branch(reg);
+    }
+
     Branch::Branch(BranchType type, const std::string &label) {
         this->type = type;
-        this->label = label;
+        this->val.label = new std::string(label);
     }
 
     Branch::Branch(const std::string &label) {
         this->type = BranchLink;
-        this->label = label;
+        this->val.label = new std::string(label);
 
         use.insert(HWR0);
         use.insert(HWR1);
@@ -49,16 +54,29 @@ namespace ASM {
         def.insert(HWR3);
     }
 
+    Branch::Branch(Reg *reg) {
+        this->type = BranchX;
+        this->val.reg = reg;
+
+        use.insert(reg);
+    }
+
+    Branch::~Branch() {
+        if (type != BranchX) {
+            delete this->val.label;
+        }
+    }
+
     void Branch::generateControlFlow(Instruction *nextInstr) {
-        if (type != BranchB) {
+        if (type != BranchB && type != BranchX) {
             Instruction::generateControlFlow(nextInstr);
         }
 
-        if (type == BranchLink) {
+        if (type == BranchLink || type == BranchX) {
             /* branch outside the method */
             return;
         }
-        Instruction *target = Method::currMethod->labelMap[label];
+        Instruction *target = Method::currMethod->labelMap[*val.label];
         target->predecessors.push_back(this);
         successors.push_back(target);
     }
@@ -90,8 +108,11 @@ namespace ASM {
             case BranchLink:
                 Global::out << "bl ";
                 break;
+            case BranchX:
+                Global::out << "bx " << val.reg->toString() << std::endl;
+                return;
         }
-        Global::out << label << std::endl;
+        Global::out << *val.label << std::endl;
     }
 
 }
