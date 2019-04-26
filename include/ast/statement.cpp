@@ -195,6 +195,14 @@ namespace AST {
         exp->compile();
         int memoryOffset;
         auto varDecl = var->varDecl(&memoryOffset);
+        if (varDecl->isLocal) {
+            if (exp->isConst) {
+                ASM::Mov::New(varDecl->asmReg, exp->constVal);
+            } else {
+                ASM::Mov::New(varDecl->asmReg, exp->resultReg);
+            }
+            varDecl->isLoaded = true;
+        }
         printf("\tstr r0, [ %s, #%d ]\n", varDecl->isLocal ? "fp" : "r4", memoryOffset);
     }
 

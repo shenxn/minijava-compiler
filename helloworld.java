@@ -93,6 +93,7 @@ class C {
         return false;
     }
     public boolean params(int a, int b, int c, int d, int e, int f) {
+        f = 10;
         System.out.print("a = ");
         System.out.println(a);
         System.out.print("b = ");
