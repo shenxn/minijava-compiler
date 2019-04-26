@@ -104,19 +104,20 @@ namespace ASM {
 
         // printf("method\n");
         // for (auto instruction : instructions) {
-        //     printf("use: ");
+        //     printf("statement:\n");
+        //     printf(" use: ");
         //     for (auto reg : instruction->use) {
         //         printf("  %p, ", reg);
         //     }
-        //     printf("\ndef: ");
+        //     printf("\n def: ");
         //     for (auto reg : instruction->def) {
         //         printf("  %p, ", reg);
         //     }
-        //     printf("\nLVin: ");
+        //     printf("\n LVin: ");
         //     for (auto reg : instruction->LVin) {
         //         printf("  %p, ", reg);
         //     }
-        //     printf("\nLVout: ");
+        //     printf("\n LVout: ");
         //     for (auto reg : instruction->LVout) {
         //         printf("  %p, ", reg);
         //     }
@@ -202,11 +203,13 @@ namespace ASM {
         }
 
         /* add used hardware registers to list of saved registers */
-        for (int i = 4; i < Reg::nGeneralRegs; i++) {
+        for (int i = N_REG_PARAM; i < Reg::nGeneralRegs; i++) {
             if (generalRegs[i]->isUsed) {
                 savedRegs.push_back(generalRegs[i]);
             }
         }
+
+        paramStackOffset = (2 + savedRegs.size()) * WORD_SIZE;
     }
 
     void Method::assembly() {

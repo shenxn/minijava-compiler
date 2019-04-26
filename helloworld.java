@@ -9,37 +9,37 @@ class MainClass {
             } else {
                 System.out.println("Should not print");
             }
-            System.out.println(new HelloClass().hello(-9));
+            System.out.println(new C().hello(-9));
             System.out.print("5 / 3 = ");
-            System.out.println(new HelloClass().v5() / new HelloClass().v3());
-            System.out.print("5 + 6 = ");
-            System.out.println(new HelloClass().v5() + 6);
+            System.out.println(new C().v5() / new C().v3());
+            System.out.print("6 + 5 = ");
+            System.out.println(6 + new C().v5());
             System.out.print("true && true = ");
-            if (new HelloClass().vtrue() && new HelloClass().vtrue()) {
+            if (new C().vtrue() && new C().vtrue()) {
                 System.out.println("true");
             } else {
                 System.out.println("false");
             }
             System.out.print("true || false = ");
-            if (new HelloClass().vtrue() || new HelloClass().vfalse()) {
+            if (new C().vtrue() || new C().vfalse()) {
                 System.out.println("true");
             } else {
                 System.out.println("false");
             }
             System.out.print("1 > 5 = ");
-            if (1 > new HelloClass().v5()) {
+            if (1 > new C().v5()) {
                 System.out.println("true");
             } else {
                 System.out.println("false");
             }
             System.out.print("5 >= 3 = ");
-            if (new HelloClass().v5() > new HelloClass().v3()) {
+            if (new C().v5() > new C().v3()) {
                 System.out.println("true");
             } else {
                 System.out.println("false");
             }
             System.out.print("5 == 3 = ");
-            if (new HelloClass().v5() == new HelloClass().v3()) {
+            if (new C().v5() == new C().v3()) {
                 System.out.println("true");
             } else {
                 System.out.println("false");
@@ -51,23 +51,28 @@ class MainClass {
                 System.out.println("false");
             }
             System.out.print("-5 = ");
-            System.out.println(-new HelloClass().v5());
+            System.out.println(-new C().v5());
             System.out.print("+3 = ");
-            System.out.println(+new HelloClass().v3());
+            System.out.println(+new C().v3());
             System.out.print("!true = ");
-            if (!new HelloClass().vtrue()) {
+            if (!new C().vtrue()) {
                 System.out.println("true");
             } else {
                 System.out.println("false");
             }
             System.out.print("-8 = ");
             System.out.println(-8);
+            if (new C().params(1, 2, 3, 4, 5, 6)) {
+                System.out.println("params is true");
+            } else {
+                System.out.println("param is false");
+            }
         }
 	}
 
 }
 
-class HelloClass {
+class C {
     public int hello(int x) {
         System.out.println("Hello from hello()");
         System.out.print("param x = ");
@@ -86,5 +91,24 @@ class HelloClass {
     }
     public boolean vfalse() {
         return false;
+    }
+    public boolean params(int a, int b, int c, int d, int e, int f) {
+        System.out.print("a = ");
+        System.out.println(a);
+        System.out.print("b = ");
+        System.out.println(b);
+        System.out.print("c = ");
+        System.out.println(c);
+        System.out.print("d = ");
+        System.out.println(d);
+        System.out.print("e = ");
+        System.out.println(e);
+        System.out.print("f = ");
+        System.out.println(f);
+        System.out.print("e + f = ");
+        System.out.println(e + f);
+        System.out.print("f / c = ");
+        System.out.println(f / c);
+        return true;
     }
 }

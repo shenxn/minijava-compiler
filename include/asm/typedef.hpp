@@ -2,6 +2,9 @@
 
 #include <set>
 
+#define WORD_SIZE 4
+#define N_REG_PARAM 4
+
 namespace ASM {
 
     class Global;

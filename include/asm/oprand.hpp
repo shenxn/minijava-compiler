@@ -19,6 +19,7 @@ namespace ASM {
         std::string *labelName;
         Reg *reg;
         int constValue;
+        int *dynamicValue;
     };
 
     class OpRand {
@@ -27,7 +28,9 @@ namespace ASM {
 
             OpRandValue val;
 
-            int offset;
+            int *dynamicOffset = NULL;
+
+            int constOffset;
 
             OpRand(const std::string &labelName, bool isAddr);
 
@@ -37,7 +40,9 @@ namespace ASM {
 
             OpRand(int constValue);
 
-            OpRand(Reg *reg, int offset);
+            OpRand(Reg *reg, int constOffset);
+
+            OpRand(Reg *reg, int *dynamicOffset, int constOffset);
 
             ~OpRand();
 

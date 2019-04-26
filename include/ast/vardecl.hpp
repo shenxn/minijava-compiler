@@ -18,7 +18,9 @@ namespace AST {
 
             int memoryOffset = 0;
 
+            /* local variables only */
             ASM::Reg *asmReg = NULL;
+            bool isLoaded = false;  // loaded into register
 
             VarDecl();
 
@@ -31,6 +33,10 @@ namespace AST {
             size_t size();
 
             void preCompileProcess();
+
+            void load();
+
+            void store();
     };
 
     class VarDeclList: public Node {

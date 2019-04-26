@@ -86,6 +86,12 @@
 
 #define __DEFINE_BINARY_EXP_COMPILE_FUNC_INT__(asmConstructor) \
     { \
+        if (a->isConst) { \
+            /* optimize: swap a and b */ \
+            b->compile(); \
+            asmConstructor(resultReg, b->resultReg, a->constVal); \
+            return; \
+        } \
         a->compile(); \
         if (b->isConst) asmConstructor(resultReg, a->resultReg, b->constVal); \
         else { \
@@ -403,27 +409,27 @@ namespace AST {
 
         if (paramList->list.size() > 4) {
             /* make space for additional parameters in stack */
-            ASM::Sub::New(HWSP, HWSP, 4 * (paramList->list.size() - 4));
+            ASM::Sub::New(HWSP, HWSP, WORD_SIZE * (paramList->list.size() - N_REG_PARAM));
 
             paramSP = new ASM::Reg();
             ASM::Mov::New(paramSP, HWSP);
         }
 
         /* calculate parameters */
-        int paramCount = 0;
+        int paramIt = 0;
         for (auto param : paramList->list) {
             param->compile();
-            if (paramCount < 4) {
+            if (paramIt < 4) {
                 /* move param to register */
                 ASM::Mov::New(
-                    ASM::Method::currMethod->generalRegs[paramCount],
+                    ASM::Method::currMethod->generalRegs[paramIt],
                     param->resultReg
                 );
             } else {
                 /* save param into stack */
-                ASM::Str::New(param->resultReg, paramSP, (paramCount - 4) * 4);
+                ASM::Str::New(param->resultReg, paramSP, (paramIt - N_REG_PARAM) * WORD_SIZE);
             }
-            paramCount++;
+            paramIt++;
         }
 
         // TODO: class pointer
@@ -555,10 +561,6 @@ namespace AST {
         delete var;
     }
 
-    // void IdObject::execute() {
-    //     value = *var->find();
-    // }
-
     void IdObject::typecheck() {
         var->typecheck();
         type = var->type;
@@ -573,7 +575,8 @@ namespace AST {
 
         int memoryOffset;
         auto varDecl = var->varDecl(&memoryOffset);
-        if (varDecl->isLocal && memoryOffset == 0) {
+        varDecl->load();
+        if (varDecl->isLocal) {
             ASM::Mov::New(resultReg, varDecl->asmReg);
         } else {
             // TODO

@@ -24,11 +24,10 @@ namespace AST {
         for (auto varDecl : formalList->list) {
             varDecl->varMap = &varMap;
             
-            /* Set stack offset */
-            if (formalIt >= 4) {
-                varDecl->memoryOffset = formalIt * 4;
+            if (formalIt >= N_REG_PARAM) {
+                /* Set stack offset */
+                varDecl->memoryOffset = (formalIt - N_REG_PARAM) * WORD_SIZE;
             }
-            formalIt++;
 
             /* Setup var table */
             if (varMap.find(varDecl->id->s) == varMap.end()) {
@@ -36,7 +35,9 @@ namespace AST {
             }
 
             varDecl->isLocal = true;
+            formalIt++;
         }
+
         for (auto varDecl : varDeclList->list) {
             varDecl->varMap = &varMap;
 
@@ -107,6 +108,11 @@ namespace AST {
     void MethodDecl::preCompileProcess() {
         asmMethod = new ASM::Method();
         methodId = methodCount++;
+
+        if (formalList->list.size() > N_REG_PARAM) {
+            asmMethod->paramStackSize = WORD_SIZE * (formalList->list.size() - N_REG_PARAM);
+        }
+
         formalList->preCompileProcess();
         varDeclList->preCompileProcess();
     }
@@ -122,11 +128,13 @@ namespace AST {
         /* load parameters */
         int paramIt = 0;
         for (auto varDecl : formalList->list) {
-            if (paramIt >= 4) {
+            if (paramIt >= N_REG_PARAM) {
                 /* only first 4 params are in the registers */
                 break;
             }
             ASM::Mov::New(varDecl->asmReg, HWR[paramIt]);
+            varDecl->isLoaded = true;
+            paramIt++;
         }
         // TODO: load reset parameters
 

@@ -23,8 +23,11 @@
     static void New(Reg *opA, const std::string &label); \
     static void New(Reg *opA, const std::string &labelPrefix, int labelId);
 
-#define __DECLEAR_BIOPINSTER_ADDROFFSETB_ \
-    static void New(Reg *opA, Reg *regB, int offsetB);
+#define __DECLEAR_BIOPINSTER_ADDRCONSTOFFSETB_ \
+    static void New(Reg *opA, Reg *regB, int constOffsetB);
+
+#define __DECLEAR_BIOPINSTER_ADDRDYNAMICOFFSETB_ \
+    static void New(Reg *opA, Reg *regB, int *dynamicOffsetB, int constOffsetB);
 
 namespace ASM {
 
@@ -37,11 +40,14 @@ namespace ASM {
     __DECLEAR_BIOPINSTR__(
         Ldr,
         __DECLEAR_BIOPINSTER_LABELADDRB__
+        __DECLEAR_BIOPINSTER_ADDRCONSTOFFSETB_
+        __DECLEAR_BIOPINSTER_ADDRDYNAMICOFFSETB_
     );
 
     __DECLEAR_BIOPINSTR__(
         Str,
-        __DECLEAR_BIOPINSTER_ADDROFFSETB_
+        __DECLEAR_BIOPINSTER_ADDRCONSTOFFSETB_
+        __DECLEAR_BIOPINSTER_ADDRDYNAMICOFFSETB_
     );
 
     __DECLEAR_BIOPINSTR__(

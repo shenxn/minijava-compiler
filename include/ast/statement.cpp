@@ -231,7 +231,12 @@ namespace AST {
         /* restore registers */
         ASM::Mov::New(HWSP, HWFP);
         ASM::MethodRegRestore::New(false);
-        // TODO: pop parameters
+
+        /* pop params */
+        if (ASM::Method::currMethod->paramStackSize) {
+            ASM::Add::New(HWSP, HWSP, ASM::Method::currMethod->paramStackSize);
+        }
+
         ASM::Branch::BX(HWLR);
     }
 

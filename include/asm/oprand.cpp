@@ -27,10 +27,17 @@ namespace ASM {
         val.constValue = constValue;
     }
 
-    OpRand::OpRand(Reg *reg, int offset) {
+    OpRand::OpRand(Reg *reg, int constOffset) {
         type = AddrOffsetOpRand;
         val.reg = reg;
-        this->offset = offset;
+        this->constOffset = constOffset;
+    }
+
+    OpRand::OpRand(Reg *reg, int *dynamicOffset, int constOffset) {
+        type = AddrOffsetOpRand;
+        val.reg = reg;
+        this->dynamicOffset = dynamicOffset;
+        this->constOffset = constOffset;
     }
 
     OpRand::~OpRand() {
@@ -50,6 +57,10 @@ namespace ASM {
             case ConstOpRand:
                 return "#" + std::to_string(val.constValue);
             case AddrOffsetOpRand:
+                int offset = constOffset;
+                if (dynamicOffset != NULL) {
+                    offset += *dynamicOffset;
+                }
                 return '[' + val.reg->toString()
                     + (offset == 0 ? "" : (", #" + std::to_string(offset))) + ']';
         }

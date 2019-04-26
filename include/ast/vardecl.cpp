@@ -42,6 +42,15 @@ namespace AST {
         }
     }
 
+    void VarDecl::load() {
+        if (isLocal) {
+            if (isLoaded) {
+                return;
+            }
+            ASM::Ldr::New(asmReg, HWFP, &ASM::Method::currMethod->paramStackOffset, memoryOffset);
+        }
+    }
+
     VarDeclList::~VarDeclList() {
         for (auto varDecl : list) {
             delete varDecl;

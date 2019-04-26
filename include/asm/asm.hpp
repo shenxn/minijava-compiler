@@ -2,6 +2,8 @@
 
 #include "instruction.hpp"
 
+#include "typedef.hpp"
+
 #include "biopinstr.hpp"
 #include "branch.hpp"
 #include "global.hpp"

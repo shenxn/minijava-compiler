@@ -35,6 +35,10 @@ namespace ASM {
 
             std::list <Reg*> savedRegs;  /* saved general regs */
 
+            int paramStackOffset = 0;
+
+            int paramStackSize = 0;
+
             std::list <Reg*> symbolicRegs;
 
             Reg **generalRegs;
