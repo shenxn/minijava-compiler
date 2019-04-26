@@ -98,6 +98,10 @@ namespace AST {
     );
     __DECLEAR_BINARY_EXP__(And);
     __DECLEAR_BINARY_EXP__(Orr);
+    __DECLEAR_BINARY_EXP__(Less);
+    __DECLEAR_BINARY_EXP__(Greater);
+    __DECLEAR_BINARY_EXP__(LessEqual);
+    __DECLEAR_BINARY_EXP__(GreaterEqual);
 
     class BinaryExp: public Exp {
         public:
@@ -115,15 +119,6 @@ namespace AST {
             virtual int constCalc() = 0;  // optimization: precalculate const expressions
     };
 
-    class CompareBinaryExp: public BinaryExp {
-        public:
-            int expId;
-
-            CompareBinaryExp(int lineno, Exp *a, Exp *b);
-
-            void typecheck();
-    };
-
     class EqualityBinaryExp: public BinaryExp {
         public:
             int expId;
@@ -131,42 +126,6 @@ namespace AST {
             EqualityBinaryExp(int lineno, Exp *a, Exp *b);
 
             void typecheck();
-    };
-
-    class Less: public CompareBinaryExp {
-        public:
-            Less(int lineno, Exp *a, Exp *b);
-
-            void compile();
-
-            int constCalc();
-    };
-
-    class Greater: public CompareBinaryExp {
-        public:
-            Greater(int lineno, Exp *a, Exp *b);
-
-            void compile();
-
-            int constCalc();
-    };
-
-    class LessEqual: public CompareBinaryExp {
-        public:
-            LessEqual(int lineno, Exp *a, Exp *b);
-
-            void compile();
-
-            int constCalc();
-    };
-
-    class GreaterEqual: public CompareBinaryExp {
-        public:
-            GreaterEqual(int lineno, Exp *a, Exp *b);
-
-            void compile();
-
-            int constCalc();
     };
 
     class Equal: public EqualityBinaryExp {

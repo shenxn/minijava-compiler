@@ -10,6 +10,7 @@ namespace ASM {
     const std::string Label::StatementEndPrefix = "_statement_end_";
     const std::string Label::MethodPrefix = "_method_";
     const std::string Label::ExpShortcutPrefix = "_exp_shortcut_";
+    const std::string Label::ExpTruePrefix = "_exp_true_";
     const std::string Label::ExpEndPrefix = "_exp_end_";
 
     void Label::New(const std::string &labelName) {

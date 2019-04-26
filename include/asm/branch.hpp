@@ -27,6 +27,10 @@ namespace ASM {
             std::string label;
 
             __DECLEAR_BRANCH__(B);
+            __DECLEAR_BRANCH__(BLT);
+            __DECLEAR_BRANCH__(BGT);
+            __DECLEAR_BRANCH__(BLE);
+            __DECLEAR_BRANCH__(BGE);
             __DECLEAR_BRANCH__(BEQ);
             __DECLEAR_BRANCH__(BNE);
             static void BL(const std::string &label);

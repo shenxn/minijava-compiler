@@ -15,6 +15,10 @@
 namespace ASM {
 
     __DEFINE_BRANCH__(B, BranchB);
+    __DEFINE_BRANCH__(BLT, BranchLess);
+    __DEFINE_BRANCH__(BGT, BranchGreater);
+    __DEFINE_BRANCH__(BLE, BranchLessEqual);
+    __DEFINE_BRANCH__(BGE, BranchGreaterEqual);
     __DEFINE_BRANCH__(BEQ, BranchEqual);
     __DEFINE_BRANCH__(BNE, BranchNotEqual);
 
