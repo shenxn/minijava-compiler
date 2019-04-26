@@ -12,6 +12,8 @@ namespace ASM {
             static const std::string StatementElsePrefix;
             static const std::string StatementEndIfPrefix;
             static const std::string MethodPrefix;
+            static const std::string ExpShortcutPrefix;
+            static const std::string ExpEndPrefix;
 
             static void New(const std::string &labelName);
             static void New(const std::string &labelPrefix, int labelId);

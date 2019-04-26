@@ -5,7 +5,7 @@
 #include "type.hpp"
 #include "classdecl.hpp"
 
-#define __DEFINE_BINARY_EXP__(eName, resultType, calcOperator, asmConstructor) \
+#define __DEFINE_BINARY_EXP__(eName, resultType, typecheckExp, calcOperator, compileFunc) \
     eName::eName(int lineno, Exp *a, Exp *b) : Exp(lineno) { \
         type = new Type(resultType); \
         this->a = a; \
@@ -18,12 +18,27 @@
     bool eName::isValid() { \
         return _isValid && a->isValid() && b->isValid(); \
     } \
-    void eName::optimizeConst() { \
+    void eName::typecheck() { \
+        a->typecheck(); \
+        b->typecheck(); \
+        if (!a->isValid() || !b->isValid()) return; \
+        if (!(typecheckExp)) reportTypeCheckError("Incorrect oprand type for binary operation"); \
+    } \
+    void eName::preCompileProcess() { \
+        expId = expCount++; \
         if (a->isConst && b->isConst) { \
             isConst = true; \
             constVal = a->constVal calcOperator b->constVal; \
         } \
+        Exp::preCompileProcess(); \
     } \
+    compileFunc
+
+#define __BINARY_EXP_TYPECHECK_EXP_INT___ (a->isInt() && b->isInt())
+
+#define __BINARY_EXP_TYPECHECK_EXP_BOOL___ (a->isBool() && b->isBool())
+
+#define __DEFINE_BINARY_EXP_COMPILE_FUNC_INT__(eName, asmConstructor) \
     void eName::compile() { \
         preCompileProcess(); \
         if (isConst) { \
@@ -37,12 +52,21 @@
         } \
     }
 
-#define __DEFINE_BINARY_EXP_INT_TYPECHECK__(eName) \
-    void eName::typecheck() { \
-        a->typecheck(); \
-        b->typecheck(); \
-        if (!a->isValid() || !b->isValid()) return; \
-        if (!a->isInt() || !b->isInt()) reportTypeCheckError("Incorrect oprand type for int binary operation"); \
+#define __DEFINE_BINARY_EXP_COMPILE_FUNC_BOOL__(eName, shortcutVal) \
+    void eName::compile() { \
+        preCompileProcess(); \
+        if (isConst) { \
+            ASM::Mov::New(resultReg, constVal); \
+        } \
+        a->compile(); \
+        ASM::Cmp::New(a->resultReg, shortcutVal); \
+        ASM::Branch::BEQ(ASM::Label::ExpShortcutPrefix, expId); \
+        b->compile(); \
+        ASM::Mov::New(resultReg, b->resultReg); \
+        ASM::Branch::B(ASM::Label::ExpEndPrefix, expId); \
+        ASM::Label::New(ASM::Label::ExpShortcutPrefix, expId); \
+        ASM::Mov::New(resultReg, a->resultReg); \
+        ASM::Label::New(ASM::Label::ExpEndPrefix, expId); \
     }
 
 #define CompileConst optimizeConst(); \
@@ -52,6 +76,8 @@
     }
 
 namespace AST {
+
+    int Exp::expCount = 0;
 
     Exp::Exp(int lineno) : Node(lineno) {}
 
@@ -153,23 +179,6 @@ namespace AST {
         }
     }
 
-    BoolBinaryExp::BoolBinaryExp(int lineno, Exp *a, Exp *b) : BinaryExp(lineno, a, b) {
-        this->type = new Type(booleanType);
-
-        // TODO: expId = ASM::expCount++;
-    }
-
-    void BoolBinaryExp::typecheck() {
-        a->typecheck();
-        b->typecheck();
-        if (!a->isValid() || !b->isValid()) {
-            return;
-        }
-        if (!a->isBool() || !b->isBool()) {
-            reportTypeCheckError("Incorrect oprand type for bool binary operation");
-        }
-    }
-
     CompareBinaryExp::CompareBinaryExp(int lineno, Exp *a, Exp *b) : BinaryExp(lineno, a, b) {
         this->type = new Type(booleanType);
         
@@ -204,65 +213,60 @@ namespace AST {
         }
     }
 
-    __DEFINE_BINARY_EXP__(Add, integerType, +, ASM::Add::New)
-    __DEFINE_BINARY_EXP_INT_TYPECHECK__(Add)
-
-    __DEFINE_BINARY_EXP__(Sub, integerType, -, ASM::Sub::New)
-    __DEFINE_BINARY_EXP_INT_TYPECHECK__(Sub)
-
-    __DEFINE_BINARY_EXP__(Mul, integerType, *, ASM::Mul::New)
-    __DEFINE_BINARY_EXP_INT_TYPECHECK__(Mul)
-
-    __DEFINE_BINARY_EXP__(Div, integerType, /, divide)
-    __DEFINE_BINARY_EXP_INT_TYPECHECK__(Div)
+    __DEFINE_BINARY_EXP__(
+        Add,
+        integerType, 
+        __BINARY_EXP_TYPECHECK_EXP_INT___,
+        +,
+        __DEFINE_BINARY_EXP_COMPILE_FUNC_INT__(Add, ASM::Add::New)
+    )
+    __DEFINE_BINARY_EXP__(
+        Sub,
+        integerType, 
+        __BINARY_EXP_TYPECHECK_EXP_INT___,
+        -,
+        __DEFINE_BINARY_EXP_COMPILE_FUNC_INT__(Sub, ASM::Sub::New)
+    )
+    __DEFINE_BINARY_EXP__(
+        Mul,
+        integerType, 
+        __BINARY_EXP_TYPECHECK_EXP_INT___,
+        *,
+        __DEFINE_BINARY_EXP_COMPILE_FUNC_INT__(Mul, ASM::Mul::New)
+    )
+    __DEFINE_BINARY_EXP__(
+        Div,
+        integerType, 
+        __BINARY_EXP_TYPECHECK_EXP_INT___,
+        /,
+        __DEFINE_BINARY_EXP_COMPILE_FUNC_INT__(Div, divide)
+    )
     void Div::divide(ASM::Reg *opA, ASM::Reg *opB, ASM::Reg *opC) {
         ASM::Mov::New(HWR0, opB);
         ASM::Mov::New(HWR1, opC);
         ASM::Branch::BL("__aeabi_idiv");
-        ASM::Mov::New(resultReg, HWR0);
+        ASM::Mov::New(opA, HWR0);
     }
     void Div::divide(ASM::Reg *opA, ASM::Reg *opB, int const constC) {
         ASM::Mov::New(HWR0, opB);
         ASM::Mov::New(HWR1, constC);
         ASM::Branch::BL("__aeabi_idiv");
-        ASM::Mov::New(resultReg, HWR0);
+        ASM::Mov::New(opA, HWR0);
     }
-
-    And::And(int lineno, Exp *a, Exp *b) : BoolBinaryExp(lineno, a, b) {};
-
-    void And::compile() {
-        preCompileProcess();
-
-        CompileConst;
-
-        a->compile();
-        printf("\tcmp r0, #0\n");  // logic shortcut
-        printf("\tbeq _exp_%d_shortcut\n", expId);
-        b->compile();
-        printf("_exp_%d_shortcut:\n", expId);
-    }
-
-    int And::constCalc() {
-        return a->constVal && b->constVal;
-    }
-
-    Or::Or(int lineno, Exp *a, Exp *b) : BoolBinaryExp(lineno, a, b) {};
-
-    void Or::compile() {
-        preCompileProcess();
-
-        CompileConst;
-
-        a->compile();
-        printf("\tcmp r0, #1\n");  // logic shortcut
-        printf("\tbeq _exp_%d_shortcut\n", expId);
-        b->compile();
-        printf("_exp_%d_shortcut:\n", expId);
-    }
-
-    int Or::constCalc() {
-        return a->constVal || b->constVal;
-    }
+    __DEFINE_BINARY_EXP__(
+        And,
+        booleanType,
+        __BINARY_EXP_TYPECHECK_EXP_BOOL___,
+        &&,
+        __DEFINE_BINARY_EXP_COMPILE_FUNC_BOOL__(And, 0)
+    )
+    __DEFINE_BINARY_EXP__(
+        Orr,
+        booleanType,
+        __BINARY_EXP_TYPECHECK_EXP_BOOL___,
+        &&,
+        __DEFINE_BINARY_EXP_COMPILE_FUNC_BOOL__(Orr, 1)
+    )
 
     Less::Less(int lineno, Exp *a, Exp *b) : CompareBinaryExp(lineno, a, b) {};
 

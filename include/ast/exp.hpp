@@ -10,11 +10,12 @@
         public: \
             Exp *a; \
             Exp *b; \
+            int expId; \
             eName(int lineno, Exp *a, Exp *b); \
             ~eName(); \
             bool isValid(); \
             void typecheck(); \
-            void optimizeConst(); \
+            void preCompileProcess(); \
             void compile(); \
             __VA_ARGS__ \
     };
@@ -25,6 +26,8 @@ namespace AST {
 
     class Exp: public Node {
         public:
+            static int expCount;
+
             Type *type = NULL;
             bool _isValid = true;
 
@@ -38,10 +41,10 @@ namespace AST {
             ~Exp();
 
             virtual bool isValid();
-        protected:
-            void preCompileProcess();
-        public:
-            virtual void compile() = 0; // TODO: to be replaced
+            
+            virtual void preCompileProcess();
+            
+            virtual void compile() = 0;
 
             bool isInt();
 
@@ -88,6 +91,8 @@ namespace AST {
         void divide(ASM::Reg *opA, ASM::Reg *opB, ASM::Reg *opC);
         void divide(ASM::Reg *opA, ASM::Reg *opB, int constC);
     );
+    __DECLEAR_BINARY_EXP__(And);
+    __DECLEAR_BINARY_EXP__(Orr);
 
     class BinaryExp: public Exp {
         public:
@@ -103,15 +108,6 @@ namespace AST {
             void optimizeConst();
 
             virtual int constCalc() = 0;  // optimization: precalculate const expressions
-    };
-
-    class BoolBinaryExp: public BinaryExp {
-        public:
-            int expId;
-
-            BoolBinaryExp(int lineno, Exp *a, Exp *b);
-
-            void typecheck();
     };
 
     class CompareBinaryExp: public BinaryExp {
@@ -130,24 +126,6 @@ namespace AST {
             EqualityBinaryExp(int lineno, Exp *a, Exp *b);
 
             void typecheck();
-    };
-
-    class And: public BoolBinaryExp {
-        public:
-            And(int lineno, Exp *a, Exp *b);
-
-            void compile();
-
-            int constCalc();
-    };
-
-    class Or: public BoolBinaryExp {
-        public:
-            Or(int lineno, Exp *a, Exp *b);
-
-            void compile();
-
-            int constCalc();
     };
 
     class Less: public CompareBinaryExp {

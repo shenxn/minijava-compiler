@@ -40,4 +40,16 @@ namespace ASM {
         __DECLEAR_TRIOPINSTR_CONSTC__
     )
 
+    __DECLEAR_TRIOPINSTR__(
+        And,
+        __DECLEAR_TRIOPINSTR_REGC__
+        __DECLEAR_TRIOPINSTR_CONSTC__
+    )
+
+    __DECLEAR_TRIOPINSTR__(
+        Orr,
+        __DECLEAR_TRIOPINSTR_REGC__
+        __DECLEAR_TRIOPINSTR_CONSTC__
+    )
+
 }

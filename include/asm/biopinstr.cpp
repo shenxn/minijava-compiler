@@ -4,7 +4,7 @@
 #include "oprand.hpp"
 #include "reg.hpp"
 
-#define __DEFINE_BIOPINSTR__(instrName, instr, useA, defA) \
+#define __DEFINE_BIOPINSTR__(instrName, instr, useA, defA, ...) \
     instrName::instrName(Reg *opA, OpRand *opB) { \
         this->opA = opA; \
         this->opB = opB; \
@@ -16,6 +16,7 @@
         delete opB; \
     } \
     void instrName::assembly() { \
+        __VA_ARGS__ \
         Global::out << "\t" << instr << " " << opA->toString() << ", " << opB->toString() << std::endl; \
     }
 
@@ -44,7 +45,9 @@
 
 namespace ASM {
 
-    __DEFINE_BIOPINSTR__(Mov, "mov", false, true);
+    __DEFINE_BIOPINSTR__(Mov, "mov", false, true,
+        if (opB->type == RegOpRand && (opA->isSymbolic ? opA->val.physReg : opA) == (opB->val.reg->isSymbolic ? opB->val.reg->val.physReg : opB->val.reg)) return;  // optimization: remove self copy
+    );
     __DEFINE_BIOPINSTR_REGB__(Mov);
     __DEFINE_BIOPINSTR_CONSTB__(Mov);
 
