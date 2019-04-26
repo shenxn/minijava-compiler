@@ -102,6 +102,8 @@ namespace AST {
     __DECLEAR_BINARY_EXP__(Greater);
     __DECLEAR_BINARY_EXP__(LessEqual);
     __DECLEAR_BINARY_EXP__(GreaterEqual);
+    __DECLEAR_BINARY_EXP__(Equal);
+    __DECLEAR_BINARY_EXP__(NotEqual);
 
     class BinaryExp: public Exp {
         public:
@@ -117,33 +119,6 @@ namespace AST {
             void optimizeConst();
 
             virtual int constCalc() = 0;  // optimization: precalculate const expressions
-    };
-
-    class EqualityBinaryExp: public BinaryExp {
-        public:
-            int expId;
-
-            EqualityBinaryExp(int lineno, Exp *a, Exp *b);
-
-            void typecheck();
-    };
-
-    class Equal: public EqualityBinaryExp {
-        public:
-            Equal(int lineno, Exp *a, Exp *b);
-
-            void compile();
-
-            int constCalc();
-    };
-
-    class NotEqual: public EqualityBinaryExp {
-        public:
-            NotEqual(int lineno, Exp *a, Exp *b);
-
-            void compile();
-
-            int constCalc();
     };
 
     class UnaryExp: public Exp {

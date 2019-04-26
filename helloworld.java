@@ -38,6 +38,18 @@ class MainClass {
             } else {
                 System.out.println("false");
             }
+            System.out.print("5 == 3 = ");
+            if (new HelloClass().v5() == new HelloClass().v3()) {
+                System.out.println("true");
+            } else {
+                System.out.println("false");
+            }
+            System.out.print("2 != 2 = ");
+            if (2 != 2) {
+                System.out.println("true");
+            } else {
+                System.out.println("false");
+            }
         }
 	}
 

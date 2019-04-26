@@ -44,6 +44,8 @@
 
 #define __BINARY_EXP_TYPECHECK_EXP_BOOL__ (a->isBool() && b->isBool())
 
+#define __BINARY_EXP_TYPECHECK_EXP_EQUALITY__ ((a->isInt() && b->isInt()) || (a->isBool() && b->isBool()))
+
 #define __DEFINE_BINARY_EXP_COMPILE_FUNC_INT__(asmConstructor) \
     { \
         a->compile(); \
@@ -214,23 +216,6 @@ namespace AST {
         }
     }
 
-    EqualityBinaryExp::EqualityBinaryExp(int lineno, Exp *a, Exp *b): BinaryExp(lineno, a, b) {
-        this->type = new Type(booleanType);
-        
-        // TODO: expId = ASM::expCount++;
-    }
-
-    void EqualityBinaryExp::typecheck() {
-        a->typecheck();
-        b->typecheck();
-        if (!a->isValid() || !b->isValid()) {
-            return;
-        }
-        if (!(a->isInt() && b->isInt()) && !(a->isBool() && b->isBool())) {
-            reportTypeCheckError("Incorrect oprand type for equality operation");
-        }
-    }
-
     __DEFINE_BINARY_EXP__(
         Add,
         integerType, 
@@ -313,52 +298,20 @@ namespace AST {
         >=,
         __DEFINE_BINARY_EXP_COMPILE_FUNC_COMPARE__(ASM::Branch::BGE)
     )
-
-    Equal::Equal(int lineno, Exp *a, Exp *b) : EqualityBinaryExp(lineno, a, b) {};
-
-    void Equal::compile() {
-        preCompileProcess();
-
-        CompileConst;
-
-        a->compile();
-        printf("\tpush {r0}\n");
-        b->compile();
-        printf("\tpop {r1}\n");
-        printf("\tcmp r1, r0\n");
-        printf("\tbeq _exp_%d_equal\n", expId);
-        printf("\tmov r0, #0\n");
-        printf("\tb _exp_%d_end\n", expId);
-        printf("_exp_%d_equal:\n", expId);
-        printf("\tmov r0, #1\n");
-        printf("_exp_%d_end:\n", expId);
-    }
-
-    int Equal::constCalc() {
-        return a->constVal == b->constVal;
-    }
-
-    NotEqual::NotEqual(int lineno, Exp *a, Exp *b) : EqualityBinaryExp(lineno, a, b) {};
-
-    void NotEqual::compile() {
-        preCompileProcess();
-
-        a->compile();
-        printf("\tpush {r0}\n");
-        b->compile();
-        printf("\tpop {r1}\n");
-        printf("\tcmp r1, r0\n");
-        printf("\tbeq _exp_%d_notequal\n", expId);
-        printf("\tmov r0, #1\n");
-        printf("\tb _exp_%d_end\n", expId);
-        printf("_exp_%d_notequal:\n", expId);
-        printf("\tmov r0, #0\n");
-        printf("_exp_%d_end:\n", expId);
-    }
-
-    int NotEqual::constCalc() {
-        return a->constVal != b->constVal;
-    }
+    __DEFINE_BINARY_EXP__(
+        Equal,
+        booleanType,
+        __BINARY_EXP_TYPECHECK_EXP_EQUALITY__,
+        ==,
+        __DEFINE_BINARY_EXP_COMPILE_FUNC_COMPARE__(ASM::Branch::BEQ)
+    )
+    __DEFINE_BINARY_EXP__(
+        NotEqual,
+        booleanType,
+        __BINARY_EXP_TYPECHECK_EXP_EQUALITY__,
+        !=,
+        __DEFINE_BINARY_EXP_COMPILE_FUNC_COMPARE__(ASM::Branch::BNE)
+    )
 
     UnaryExp::UnaryExp(int lineno, Exp *a) : Exp(lineno) {
         this->a = a;
