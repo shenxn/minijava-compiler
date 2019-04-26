@@ -52,4 +52,8 @@ namespace ASM {
     __DEFINE_TRIOPINSTR_REGB__(Orr)
     __DEFINE_TRIOPINSTR_CONSTB__(Orr)
 
+    __DEFINE_TRIOPINSTR__(Eor, "eor")
+    __DEFINE_TRIOPINSTR_REGB__(Eor)
+    __DEFINE_TRIOPINSTR_CONSTB__(Eor)
+
 }

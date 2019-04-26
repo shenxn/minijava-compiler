@@ -102,6 +102,27 @@ namespace ASM {
             }
         }
 
+        // printf("method\n");
+        // for (auto instruction : instructions) {
+        //     printf("use: ");
+        //     for (auto reg : instruction->use) {
+        //         printf("  %p, ", reg);
+        //     }
+        //     printf("\ndef: ");
+        //     for (auto reg : instruction->def) {
+        //         printf("  %p, ", reg);
+        //     }
+        //     printf("\nLVin: ");
+        //     for (auto reg : instruction->LVin) {
+        //         printf("  %p, ", reg);
+        //     }
+        //     printf("\nLVout: ");
+        //     for (auto reg : instruction->LVout) {
+        //         printf("  %p, ", reg);
+        //     }
+        //     printf("\n");
+        // }
+
         /* generate interference graph */
         for (auto instruction : instructions) {
             for (auto regA : instruction->LVin) {

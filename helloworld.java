@@ -50,6 +50,18 @@ class MainClass {
             } else {
                 System.out.println("false");
             }
+            System.out.print("-5 = ");
+            System.out.println(-new HelloClass().v5());
+            System.out.print("+3 = ");
+            System.out.println(+new HelloClass().v3());
+            System.out.print("!true = ");
+            if (!new HelloClass().vtrue()) {
+                System.out.println("true");
+            } else {
+                System.out.println("false");
+            }
+            System.out.print("-8 = ");
+            System.out.println(-8);
         }
 	}
 

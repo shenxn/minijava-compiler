@@ -36,8 +36,42 @@
         preCompileProcess(); \
         if (isConst) { \
             ASM::Mov::New(resultReg, constVal); \
+        } else { \
+            compileFunc \
         } \
-        compileFunc \
+    }
+
+#define __DEFINE_UNARY_EXP__(eName, resultType, typecheckExp, calcOperator, compileFunc) \
+    eName::eName(int lineno, Exp *a) : Exp(lineno) { \
+        type = new Type(resultType); \
+        this->a = a; \
+    } \
+    eName::~eName() { \
+        delete a; \
+    } \
+    bool eName::isValid() { \
+        return _isValid && a->isValid(); \
+    } \
+    void eName::typecheck() { \
+        a->typecheck(); \
+        if (!a->isValid()) return; \
+        if (!(typecheckExp)) reportTypeCheckError("Incorrect oprand type for unary operation"); \
+    } \
+    void eName::preCompileProcess() { \
+        if (a->isConst) { \
+            isConst = true; \
+            constVal = calcOperator a->constVal; \
+        } \
+        Exp::preCompileProcess(); \
+    } \
+    void eName::compile() { \
+        preCompileProcess(); \
+        if (isConst) { \
+            ASM::Mov::New(resultReg, constVal); \
+        } else { \
+            a->compile(); \
+            compileFunc \
+        } \
     }
 
 #define __BINARY_EXP_TYPECHECK_EXP_INT__ (a->isInt() && b->isInt())
@@ -45,6 +79,10 @@
 #define __BINARY_EXP_TYPECHECK_EXP_BOOL__ (a->isBool() && b->isBool())
 
 #define __BINARY_EXP_TYPECHECK_EXP_EQUALITY__ ((a->isInt() && b->isInt()) || (a->isBool() && b->isBool()))
+
+#define __UNARY_EXP_TYPECHECK_EXP_INT__ a->isInt()
+
+#define __UNARY_EXP_TYPECHECK_EXP_BOOL__ a->isBool()
 
 #define __DEFINE_BINARY_EXP_COMPILE_FUNC_INT__(asmConstructor) \
     { \
@@ -193,29 +231,6 @@ namespace AST {
         ASM::Mov::New(resultReg, constVal);
     }
 
-    
-
-    BinaryExp::BinaryExp(int lineno, Exp *a, Exp *b) : Exp(lineno) {
-        this->a = a;
-        this->b = b;
-    }
-
-    BinaryExp::~BinaryExp() {
-        delete a;
-        delete b;
-    }
-
-    bool BinaryExp::isValid() {
-        return _isValid && a->isValid() && b->isValid();
-    }
-
-    void BinaryExp::optimizeConst() {
-        if (a->isConst && b->isConst) {
-            this->isConst = true;
-            this->constVal = constCalc();
-        }
-    }
-
     __DEFINE_BINARY_EXP__(
         Add,
         integerType, 
@@ -312,91 +327,28 @@ namespace AST {
         !=,
         __DEFINE_BINARY_EXP_COMPILE_FUNC_COMPARE__(ASM::Branch::BNE)
     )
-
-    UnaryExp::UnaryExp(int lineno, Exp *a) : Exp(lineno) {
-        this->a = a;
-    }
-
-    UnaryExp::~UnaryExp() {
-        delete this->a;
-    }
-
-    bool UnaryExp::isValid() {
-        return _isValid && a->isValid();
-    }
-
-    void UnaryExp::optimizeConst() {
-        if (a->isConst) {
-            isConst = true;
-            constVal = constCalc();
-        }
-    }
-
-    IntUnaryExp::IntUnaryExp(int lineno, Exp *a) : UnaryExp(lineno, a) {
-        this->type = new Type(integerType);
-    }
-
-    void IntUnaryExp::typecheck() {
-        a->typecheck();
-        if (!a->isInt()) {
-            reportTypeCheckError("Incorrect oprand type for int unary operation");
-        }
-    }
-
-    Positive::Positive(int lineno, Exp *a) : IntUnaryExp(lineno, a) {}
-
-    void Positive::compile() {
-        preCompileProcess();
-
-        CompileConst;
-
-        a->compile();
-    }
-
-    int Positive::constCalc() {
-        return a->constVal;
-    }
-
-    Negative::Negative(int lineno, Exp *a) : IntUnaryExp(lineno, a) {}
-
-    void Negative::compile() {
-        preCompileProcess();
-
-        CompileConst;
-
-        a->compile();
-        printf("\tmov r1, #0\n");
-        printf("\tsub r1, r0\n");
-        printf("\tmov r0, r1\n");  // TODO: improve
-    }
-
-    int Negative::constCalc() {
-        return -a->constVal;
-    }
-    
-    Not::Not(int lineno, Exp *a) : UnaryExp(lineno, a) {
-        this->type = new Type(booleanType);
-    }
-
-    void Not::typecheck() {
-        a->typecheck();
-        if (!a->isBool()) {
-            reportTypeCheckError("Incorrect oprand type for bool uniary operation");
-        }
-    }
-
-    void Not::compile() {
-        preCompileProcess();
-
-        CompileConst;
-
-        a->compile();
-        printf("\tEOR r0, #1\n");
-    }
-
-    int Not::constCalc() {
-        return !a->constVal;
-    }
+    __DEFINE_UNARY_EXP__(
+        Positive,
+        integerType,
+        __UNARY_EXP_TYPECHECK_EXP_INT__,
+        +,
+        ASM::Mov::New(resultReg, a->resultReg);
+    )
+    __DEFINE_UNARY_EXP__(
+        Negative,
+        integerType,
+        __UNARY_EXP_TYPECHECK_EXP_INT__,
+        -,
+        ASM::Mov::New(resultReg, 0);
+        ASM::Sub::New(resultReg, resultReg, a->resultReg);
+    )
+    __DEFINE_UNARY_EXP__(
+        Not,
+        booleanType,
+        __UNARY_EXP_TYPECHECK_EXP_BOOL__,
+        ~,
+        ASM::Eor::New(resultReg, a->resultReg, 1);
+    )
 
     MethodCall::MethodCall(int lineno, Exp *object, Identifier *methodId, ExpList *paramList) : Exp(lineno) {
         this->object = object;

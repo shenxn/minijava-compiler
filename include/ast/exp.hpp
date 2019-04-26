@@ -21,6 +21,18 @@
             __VA_ARGS__ \
     };
 
+#define __DECLEAR_UNARY_EXP__(eName) \
+    class eName: public Exp { \
+        public: \
+            Exp *a; \
+            eName(int lineno, Exp *a); \
+            ~eName(); \
+            bool isValid(); \
+            void typecheck(); \
+            void preCompileProcess(); \
+            void compile(); \
+        };
+
 namespace AST {
 
     class Index;
@@ -104,73 +116,9 @@ namespace AST {
     __DECLEAR_BINARY_EXP__(GreaterEqual);
     __DECLEAR_BINARY_EXP__(Equal);
     __DECLEAR_BINARY_EXP__(NotEqual);
-
-    class BinaryExp: public Exp {
-        public:
-            Exp *a;
-            Exp *b;
-
-            BinaryExp(int lineno, Exp *a, Exp *b);
-
-            ~BinaryExp();
-
-            bool isValid();
-
-            void optimizeConst();
-
-            virtual int constCalc() = 0;  // optimization: precalculate const expressions
-    };
-
-    class UnaryExp: public Exp {
-        public:
-            Exp *a;
-
-            UnaryExp(int lineno, Exp *a);
-
-            ~UnaryExp();
-
-            bool isValid();
-
-            void optimizeConst();
-
-            virtual int constCalc() = 0;
-    };
-
-    class IntUnaryExp: public UnaryExp {
-        public:
-            IntUnaryExp(int lineno, Exp *a);
-
-            void typecheck();
-    };
-
-    class Positive: public IntUnaryExp {
-        public:
-            Positive(int lineno, Exp *a);
-
-            void compile();
-
-            int constCalc();
-    };
-
-    class Negative: public IntUnaryExp {
-        public:
-            Negative(int lineno, Exp *a);
-
-            void compile();
-
-            int constCalc();
-    };
-
-    class Not: public UnaryExp {
-        public:
-            Not(int lineno, Exp *a);
-
-            void typecheck();
-
-            void compile();
-
-            int constCalc();
-    };
+    __DECLEAR_UNARY_EXP__(Positive);
+    __DECLEAR_UNARY_EXP__(Negative);
+    __DECLEAR_UNARY_EXP__(Not);
 
     class MethodCall: public Exp {
         public:
