@@ -85,10 +85,7 @@ namespace ASM {
             instruction->LVin.clear();
             instruction->LVin = instruction->LVout;
             for (auto reg : instruction->def) {
-                auto regIt = instruction->LVin.find(reg);
-                if (regIt != instruction->LVin.end()) {
-                    instruction->LVin.erase(regIt);
-                }
+                instruction->LVin.erase(reg);
             }
             for (auto reg : instruction->use) {
                 instruction->LVin.insert(reg);
@@ -148,6 +145,7 @@ namespace ASM {
             if (!found) {
                 // TODO
                 printf("Need spill\n");
+                return;
             }
         }
         while (!coloringStack.empty()) {

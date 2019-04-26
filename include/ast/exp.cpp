@@ -30,9 +30,11 @@
             ASM::Mov::New(resultReg, constVal); \
         } \
         a->compile(); \
-        b->compile(); \
         if (b->isConst) asmConstructor(resultReg, a->resultReg, b->constVal); \
-        else asmConstructor(resultReg, a->resultReg, b->resultReg); \
+        else { \
+            b->compile(); \
+            asmConstructor(resultReg, a->resultReg, b->resultReg); \
+        } \
     }
 
 #define __DEFINE_BINARY_EXP_INT_TYPECHECK__(eName) \
@@ -216,13 +218,13 @@ namespace AST {
     void Div::divide(ASM::Reg *opA, ASM::Reg *opB, ASM::Reg *opC) {
         ASM::Mov::New(HWR0, opB);
         ASM::Mov::New(HWR1, opC);
-        ASM::Branch::BL("__aeabi_idiv", 2);
+        ASM::Branch::BL("__aeabi_idiv");
         ASM::Mov::New(resultReg, HWR0);
     }
     void Div::divide(ASM::Reg *opA, ASM::Reg *opB, int const constC) {
         ASM::Mov::New(HWR0, opB);
         ASM::Mov::New(HWR1, constC);
-        ASM::Branch::BL("__aeabi_idiv", 2);
+        ASM::Branch::BL("__aeabi_idiv");
         ASM::Mov::New(resultReg, HWR0);
     }
 
@@ -569,7 +571,7 @@ namespace AST {
         // TODO: class pointer
         // TODO: vtable
 
-        ASM::Branch::BL(ASM::Label::MethodPrefix, methodDecl->methodId, paramList->list.size());
+        ASM::Branch::BL(ASM::Label::MethodPrefix, methodDecl->methodId);
 
         ASM::Mov::New(resultReg, HWR0);
 
@@ -763,7 +765,7 @@ namespace AST {
         ClassDecl *classDecl = type->classId->classDecl;
 
         ASM::Mov::New(HWR0, classDecl->totalVarSize * 4);
-        ASM::Branch::BL("malloc", 1);
+        ASM::Branch::BL("malloc");
         ASM::Mov::New(resultReg, HWR0);
 
         // TODO: /* set vtable */

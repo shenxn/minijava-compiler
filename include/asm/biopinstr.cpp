@@ -44,7 +44,7 @@
 
 namespace ASM {
 
-    __DEFINE_BIOPINSTR__(Mov, "mov", true, false);
+    __DEFINE_BIOPINSTR__(Mov, "mov", false, true);
     __DEFINE_BIOPINSTR_REGB__(Mov);
     __DEFINE_BIOPINSTR_CONSTB__(Mov);
 

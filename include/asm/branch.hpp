@@ -29,12 +29,12 @@ namespace ASM {
             __DECLEAR_BRANCH__(B);
             __DECLEAR_BRANCH__(BEQ);
             __DECLEAR_BRANCH__(BNE);
-            static void BL(const std::string &label, int paramLength);
-            static void BL(const std::string &labelPrefix, int labelId, int paramLength);
+            static void BL(const std::string &label);
+            static void BL(const std::string &labelPrefix, int labelId);
 
             Branch(BranchType type, const std::string &label);
 
-            Branch(const std::string &label, int paramLength);  // Branch Link
+            Branch(const std::string &label);  // Branch Link
 
             void assembly();
 

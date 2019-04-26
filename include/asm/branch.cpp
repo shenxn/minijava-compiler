@@ -18,12 +18,12 @@ namespace ASM {
     __DEFINE_BRANCH__(BEQ, BranchEqual);
     __DEFINE_BRANCH__(BNE, BranchNotEqual);
 
-    void Branch::BL(const std::string &label, int paramLength) {
-        new Branch(label, paramLength);
+    void Branch::BL(const std::string &label) {
+        new Branch(label);
     }
 
-    void Branch::BL(const std::string &labelPrefix, int labelId, int paramLength) {
-        new Branch(labelPrefix + std::to_string(labelId), paramLength);
+    void Branch::BL(const std::string &labelPrefix, int labelId) {
+        new Branch(labelPrefix + std::to_string(labelId));
     }
 
     Branch::Branch(BranchType type, const std::string &label) {
@@ -31,27 +31,18 @@ namespace ASM {
         this->label = label;
     }
 
-    Branch::Branch(const std::string &label, int paramLength) {
+    Branch::Branch(const std::string &label) {
         this->type = BranchLink;
         this->label = label;
 
-        if (paramLength >= 1) {
-            use.insert(Method::currMethod->R0);
-        }
-        if (paramLength >= 2) {
-            use.insert(Method::currMethod->R1);
-        }
-        if (paramLength >= 3) {
-            use.insert(Method::currMethod->R2);
-        }
-        if (paramLength >= 4) {
-            use.insert(Method::currMethod->R3);
-        }
-
-        def.insert(Method::currMethod->R0);
-        def.insert(Method::currMethod->R1);
-        def.insert(Method::currMethod->R2);
-        def.insert(Method::currMethod->R3);
+        use.insert(HWR0);
+        use.insert(HWR1);
+        use.insert(HWR2);
+        use.insert(HWR3);
+        def.insert(HWR0);
+        def.insert(HWR1);
+        def.insert(HWR2);
+        def.insert(HWR3);
     }
 
     void Branch::generateControlFlow(Instruction *nextInstr) {

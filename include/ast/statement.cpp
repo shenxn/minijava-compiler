@@ -145,7 +145,7 @@ namespace AST {
                 isNewLine ? "_string_printintln" : "_string_printint"
             );  // format
         }
-        ASM::Branch::BL("printf", isString ? 1 : 2);
+        ASM::Branch::BL("printf");
     }
 
     VarAssign::VarAssign(Identifier *id, Index *index, Exp *exp) {
