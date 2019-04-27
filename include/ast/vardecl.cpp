@@ -37,18 +37,7 @@ namespace AST {
     }
 
     void VarDecl::preCompileProcess() {
-        if (isLocal) {
-            asmReg = new ASM::Reg();
-        }
-    }
-
-    void VarDecl::load() {
-        if (isLocal) {
-            if (isLoaded) {
-                return;
-            }
-            ASM::Ldr::New(asmReg, HWFP, &ASM::Method::currMethod->paramStackOffset, memoryOffset);
-        }
+        asmReg = new ASM::Reg();
     }
 
     VarDeclList::~VarDeclList() {

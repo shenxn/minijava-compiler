@@ -6,9 +6,7 @@
 #include "method.hpp"
 
 namespace ASM {
-
-    const int Reg::nGeneralRegs = 11;
-
+    
     Reg::Reg() {
         isSymbolic = true;
         Method::currMethod->symbolicRegs.push_back(this);

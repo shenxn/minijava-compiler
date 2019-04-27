@@ -65,7 +65,12 @@ class MainClass {
             if (new C().params(1, 2, 3, 4, 5, 6)) {
                 System.out.println("params is true");
             } else {
-                System.out.println("param is false");
+                System.out.println("params is false");
+            }
+            if (new C().test()) {
+                System.out.println("test is true");
+            } else {
+                System.out.println("test is false");
             }
         }
 	}
@@ -93,6 +98,7 @@ class C {
         return false;
     }
     public boolean params(int a, int b, int c, int d, int e, int f) {
+        int v1;
         f = 10;
         System.out.print("a = ");
         System.out.println(a);
@@ -110,6 +116,46 @@ class C {
         System.out.println(e + f);
         System.out.print("f / c = ");
         System.out.println(f / c);
+        System.out.print("v1 = ");
+        v1 = 16;
+        System.out.println(v1);
         return true;
+    }
+    public boolean test() {
+        C1 b;
+        b = new C1();
+        System.out.println(b.init(11));
+        System.out.println(b.initv2(10));
+        System.out.print("v1 = ");
+        System.out.println(b.rv1());
+        System.out.print("v1 + v2 = ");
+        System.out.println(b.rv12());
+        return true;
+    }
+}
+
+class Base {
+    int v1;
+
+    public int init(int p1) {
+        v1 = p1;
+        return v1;
+    }
+
+    public int rv1() {
+        return v1;
+    }
+}
+
+class C1 extends Base {
+    int v2;
+
+    public int initv2(int p2) {
+        v2 = p2;
+        return p2;
+    }
+
+    public int rv12() {
+        return v1 + v2;
     }
 }

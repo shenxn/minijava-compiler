@@ -17,6 +17,7 @@
             bool isValid(); \
             void typecheck(); \
             void preCompileProcess(); \
+            bool setTrueLabel(const std::string &labelPrefix, const int labelId); \
             void compile(); \
             __VA_ARGS__ \
     };
@@ -55,7 +56,7 @@ namespace AST {
 
             ~Exp();
 
-            void setTrueLabel(const std::string &labelPrefix, const int labelId);
+            virtual bool setTrueLabel(const std::string &labelPrefix, const int labelId);
 
             virtual bool isValid();
             

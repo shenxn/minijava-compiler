@@ -12,25 +12,24 @@ namespace AST {
 
     Variable::~Variable() {
         delete id;
-        delete type;
     }
 
     void Variable::typecheck() {
-        // TODO: check if initialized
-
         if (MethodDecl::currMethod != NULL) {
             // Not main class
 
             auto varItem = MethodDecl::currMethod->varMap.find(id->s);
             if (varItem != MethodDecl::currMethod->varMap.end()) {
-                type = varItem->second->type;
+                varDecl = varItem->second;
+                memoryOffset = varDecl->memoryOffset;
                 return;
             }
 
             for (auto classDecl = ClassDecl::currClass; classDecl != NULL; classDecl = classDecl->parent) {
+                memoryOffset -= classDecl->varSize;
                 varItem = classDecl->varMap.find(id->s);
                 if (varItem != classDecl->varMap.end()) {
-                    type = varItem->second->type;
+                    varDecl = varItem->second;
                     return;
                 }
             }
@@ -39,23 +38,16 @@ namespace AST {
         id->reportTypeCheckError("Undefined variable");
     }
 
-    VarDecl *Variable::varDecl(int *offset) {
-        auto varDeclIt = MethodDecl::currMethod->varMap.find(id->s);
-        if (varDeclIt != MethodDecl::currMethod->varMap.end()) {
-            *offset = varDeclIt->second->memoryOffset;
-            return varDeclIt->second;
+    void Variable::load() {
+        if (varDecl->isLocal) {
+            if (varDecl->isLoaded) {
+                return;
+            }
+            ASM::Ldr::New(varDecl->asmReg, HWFP, &ASM::Method::currMethod->paramStackOffset, memoryOffset);
+            varDecl->isLoaded = true;
+        } else {
+            ASM::Ldr::New(varDecl->asmReg, HWCP, ClassDecl::currClass->totalVarSize + memoryOffset);
         }
-
-        // *offset = 0;
-        // for (auto classDecl = ClassDecl::currClass; classDecl != NULL; classDecl = classDecl->parent) {
-        //     auto varDeclIt = classDecl->varMap.find(id->s);
-        //     if (varDeclIt != classDecl->varMap.end()) {
-        //         *offset += varDeclIt->second->memoryOffset;
-        //         return varDeclIt->second;
-        //     }
-        //     *offset += classDecl->varSize;
-        // }
-        return NULL;
     }
 
 }

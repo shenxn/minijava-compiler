@@ -6,7 +6,7 @@
 
 #include "typedef.hpp"
 
-#define nGenerealRegs 11
+#define nGenerealRegs 10
 
 #define HWR0 ASM::Method::currMethod->R0
 #define HWR1 ASM::Method::currMethod->R1
@@ -18,7 +18,7 @@
 #define HWR7 ASM::Method::currMethod->R7
 #define HWR8 ASM::Method::currMethod->R8
 #define HWR9 ASM::Method::currMethod->R9
-#define HWR10 ASM::Method::currMethod->R10
+#define HWCP ASM::Method::currMethod->CP
 #define HWFP ASM::Method::currMethod->FP
 #define HWSP ASM::Method::currMethod->SP
 #define HWLR ASM::Method::currMethod->LR
@@ -52,7 +52,7 @@ namespace ASM {
             Reg *R7;
             Reg *R8;
             Reg *R9;
-            Reg *R10;
+            Reg *CP;  // class pointer (r10)
             Reg *FP;
             Reg *SP;
             Reg *LR;

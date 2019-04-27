@@ -4,6 +4,7 @@
 #include "../asm/asm.hpp"
 #include "exp.hpp"
 #include "variable.hpp"
+#include "classdecl.hpp"
 #include "methoddecl.hpp"
 #include "index.hpp"
 #include "type.hpp"
@@ -56,12 +57,13 @@ namespace AST {
     }
 
     void IfElse::compile() {
+        bool optimized = false;
         if (!exp->isConst) {
             /* optimize branch */
-            exp->setTrueLabel(ASM::Label::StatementTruePrefix, statementId);
+            optimized = exp->setTrueLabel(ASM::Label::StatementTruePrefix, statementId);
         }
         exp->compile();
-        if (exp->isConst) {
+        if (!optimized) {
             ASM::Cmp::New(exp->resultReg, 1);
             ASM::Branch::BEQ(ASM::Label::StatementTruePrefix, statementId);
         }
@@ -167,11 +169,11 @@ namespace AST {
 
     void VarAssign::typecheck() {
         var->typecheck();
-        if (var->type == NULL) {
+        if (var->varDecl == NULL) {
             return;
         }
 
-        Type *varType = Type::copy(var->type);
+        Type *varType = Type::copy(var->varDecl->type);
         if (index != NULL) {
             index->typecheck();
             varType->arrayDimension -= index->dimension;
@@ -192,18 +194,18 @@ namespace AST {
 
     void VarAssign::compile() {
         // TODO: index
-        exp->compile();
-        int memoryOffset;
-        auto varDecl = var->varDecl(&memoryOffset);
-        if (varDecl->isLocal) {
+        if (var->varDecl->isLocal) {
             if (exp->isConst) {
-                ASM::Mov::New(varDecl->asmReg, exp->constVal);
+                ASM::Mov::New(var->varDecl->asmReg, exp->constVal);
             } else {
-                ASM::Mov::New(varDecl->asmReg, exp->resultReg);
+                exp->compile();
+                ASM::Mov::New(var->varDecl->asmReg, exp->resultReg);
             }
-            varDecl->isLoaded = true;
+            var->varDecl->isLoaded = true;
+        } else {
+            exp->compile();
+            ASM::Str::New(exp->resultReg, HWCP, ClassDecl::currClass->totalVarSize + var->memoryOffset);
         }
-        printf("\tstr r0, [ %s, #%d ]\n", varDecl->isLocal ? "fp" : "r4", memoryOffset);
     }
 
     Return::Return(Exp *exp) {
@@ -233,8 +235,12 @@ namespace AST {
     }
 
     void Return::compile() {
-        exp->compile();
-        ASM::Mov::New(HWR0, exp->resultReg);
+        if (exp->isConst) {
+            ASM::Mov::New(HWR0, exp->constVal);
+        } else {
+            exp->compile();
+            ASM::Mov::New(HWR0, exp->resultReg);
+        }
 
         /* restore registers */
         ASM::Mov::New(HWSP, HWFP);

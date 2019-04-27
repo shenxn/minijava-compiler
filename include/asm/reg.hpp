@@ -4,6 +4,8 @@
 
 #include "typedef.hpp"
 
+#define N_GENERAL_REGS 10
+
 namespace ASM {
 
     union RegValue {
@@ -13,8 +15,6 @@ namespace ASM {
 
     class Reg {
         public:
-            static const int nGeneralRegs;
-
             bool isSymbolic;
 
             bool isInInterGraph = true;

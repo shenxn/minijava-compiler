@@ -27,7 +27,7 @@ namespace ASM {
         generalRegs[7] = R7 = new Reg("r7");
         generalRegs[8] = R8 = new Reg("r8");
         generalRegs[9] = R9 = new Reg("r9");
-        generalRegs[10] = R10 = new Reg("r10");
+        CP = new Reg("r10");
         FP = new Reg("fp");
         SP = new Reg("sp");
         LR = new Reg("lr");
@@ -151,7 +151,7 @@ namespace ASM {
                     continue;
                 }
                 
-                if (reg->interferences.size() >= Reg::nGeneralRegs) {
+                if (reg->interferences.size() >= N_GENERAL_REGS) {
                     continue;
                 }
                 found = true;
@@ -175,7 +175,7 @@ namespace ASM {
             coloringStack.pop();
 
             /* find and assign hw register */
-            for (int i = 0; i < Reg::nGeneralRegs; i++) {
+            for (int i = 0; i < N_GENERAL_REGS; i++) {
                 if (reg->interferences.find(generalRegs[i]) != reg->interferences.end()) {
                     /* interfere with hw register */
                     continue;
@@ -203,13 +203,13 @@ namespace ASM {
         }
 
         /* add used hardware registers to list of saved registers */
-        for (int i = N_REG_PARAM; i < Reg::nGeneralRegs; i++) {
+        for (int i = N_REG_PARAM; i < N_GENERAL_REGS; i++) {
             if (generalRegs[i]->isUsed) {
                 savedRegs.push_back(generalRegs[i]);
             }
         }
 
-        paramStackOffset = (2 + savedRegs.size()) * WORD_SIZE;
+        paramStackOffset = (3 + savedRegs.size()) * WORD_SIZE;
     }
 
     void Method::assembly() {

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../asm/asm.hpp"
 #include "node.hpp"
 #include "typedef.hpp"
 
@@ -9,7 +10,8 @@ namespace AST {
     class Variable: public Node {
         public:
             Identifier *id;
-            Type *type = NULL;
+            VarDecl *varDecl = NULL;
+            int memoryOffset;
 
             Variable(Identifier *id);
 
@@ -17,7 +19,7 @@ namespace AST {
 
             void typecheck();
 
-            VarDecl *varDecl(int *offset);
+            void load();
     };
 
 }

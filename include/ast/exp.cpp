@@ -32,6 +32,10 @@
         } \
         Exp::preCompileProcess(); \
     } \
+    bool eName::setTrueLabel(const std::string &labelPrefix, const int labelId) { \
+        trueLabel = new std::string(labelPrefix + std::to_string(labelId)); \
+        return true; \
+    } \
     void eName::compile() { \
         preCompileProcess(); \
         if (isConst) { \
@@ -163,8 +167,8 @@ namespace AST {
         delete trueLabel;
     }
 
-    void Exp::setTrueLabel(const std::string &labelPrefix, const int labelId) {
-        trueLabel = new std::string(labelPrefix + std::to_string(labelId));
+    bool Exp::setTrueLabel(const std::string &labelPrefix, const int labelId) {
+        return false;  // not allowed by default
     }
 
     bool Exp::isValid() {
@@ -432,10 +436,12 @@ namespace AST {
             paramIt++;
         }
 
-        // TODO: class pointer
         // TODO: vtable
 
+        ASM::Push::New(1, HWCP);
+        ASM::Mov::New(HWCP, object->resultReg);
         ASM::Branch::BL(ASM::Label::MethodPrefix, methodDecl->methodId);
+        ASM::Pop::New(1, HWCP);
 
         ASM::Mov::New(resultReg, HWR0);
 
@@ -563,25 +569,18 @@ namespace AST {
 
     void IdObject::typecheck() {
         var->typecheck();
-        type = var->type;
+        type = var->varDecl->type;
     }
 
     bool IdObject::isValid() {
-        return _isValid && var->type != NULL && var->type->isValid;
+        return _isValid && var->varDecl->type != NULL && var->varDecl->type->isValid;
     }
 
     void IdObject::compile() {
         preCompileProcess();
 
-        int memoryOffset;
-        auto varDecl = var->varDecl(&memoryOffset);
-        varDecl->load();
-        if (varDecl->isLocal) {
-            ASM::Mov::New(resultReg, varDecl->asmReg);
-        } else {
-            // TODO
-        }
-        // printf("\tldr r0, [ %s, #%d ]\n", varDecl->isLocal ? "fp" : "r4", memoryOffset);
+        var->load();
+        ASM::Mov::New(resultReg, var->varDecl->asmReg);
     }
 
     ThisObject::ThisObject(int lineno) : Exp(lineno) {}
@@ -602,8 +601,7 @@ namespace AST {
 
     void ThisObject::compile() {
         preCompileProcess();
-
-        printf("\tmov r0, r4\n");
+        ASM::Mov::New(resultReg, HWCP);
     }
 
     NewClassObject::NewClassObject(int lineno, Identifier *classId) : Exp(lineno) {
@@ -630,7 +628,7 @@ namespace AST {
 
         ClassDecl *classDecl = type->classId->classDecl;
 
-        ASM::Mov::New(HWR0, classDecl->totalVarSize * 4);
+        ASM::Mov::New(HWR0, classDecl->totalVarSize);
         ASM::Branch::BL("malloc");
         ASM::Mov::New(resultReg, HWR0);
 

@@ -26,7 +26,7 @@ namespace AST {
             for (auto varDecl : varDeclList->list) {
                 varDecl->varMap = &varMap;
                 varDecl->memoryOffset = memoryOffset;
-                memoryOffset += 4;
+                memoryOffset += WORD_SIZE;
 
                 if (varMap.find(varDecl->id->s) == varMap.end()) {
                     varMap[varDecl->id->s] = varDecl;
@@ -34,7 +34,7 @@ namespace AST {
 
                 varDecl->isLocal = false;
             }
-            varSize = 4 * varMap.size();
+            varSize = memoryOffset;
 
             /* Insert method into methodMap */
             for (auto methodDecl : methodDeclList->list) {
@@ -176,6 +176,7 @@ namespace AST {
 
     void ClassDecl::preCompileProcess() {
         buildMethodSigMap();
+        varDeclList->preCompileProcess();
         methodDeclList->preCompileProcess();
     }
 

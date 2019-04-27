@@ -34,8 +34,6 @@ namespace AST {
 
             void preCompileProcess();
 
-            void load();
-
             void store();
     };
 
