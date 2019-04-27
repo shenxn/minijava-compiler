@@ -39,7 +39,7 @@ namespace AST {
     }
 
     void Variable::preCompileProcess() {
-        memoryOffset += ClassDecl::currClass->totalVarSize;
+        memoryOffset += ClassDecl::currClass->methodVTable.size() * WORD_SIZE + ClassDecl::currClass->totalVarSize;
     }
 
     void Variable::load() {

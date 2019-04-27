@@ -22,6 +22,7 @@ namespace AST {
             Identifier *superClass;
             VarDeclList *varDeclList;
             MethodDeclList *methodDeclList;
+            std::list <MethodDecl*> methodVTable;
 
             int classId;
 
@@ -49,7 +50,7 @@ namespace AST {
 
             MethodSigMap *buildMethodSigMap();
 
-            void compileVTable();
+            void buildMethodVTable();
 
             void typecheck();
 
@@ -65,8 +66,6 @@ namespace AST {
             ~ClassDeclList();
 
             void buildParentRelation();
-
-            void compileVTable();
 
             void typecheck();
 

@@ -79,6 +79,8 @@ class MainClass {
             }
             System.out.print("whileTest is ");
             System.out.println(new C().whileTest());
+            System.out.print("vtable is ");
+            System.out.println(new C().vtable());
         }
 	}
 
@@ -160,6 +162,12 @@ class C {
         }
         return p;
     }
+    public int vtable() {
+        Base b;
+        b = new C1();
+        System.out.println(b.hello(99));
+        return 10;
+    }
 }
 
 class Base {
@@ -173,6 +181,12 @@ class Base {
     public int rv1() {
         return v1;
     }
+
+    public int hello(int a) {
+        System.out.print("Hello from Base ");
+        System.out.println(a);
+        return 5;
+    }
 }
 
 class C1 extends Base {
@@ -185,5 +199,11 @@ class C1 extends Base {
 
     public int rv12() {
         return v1 + v2;
+    }
+
+    public int hello(int a) {
+        System.out.print("Hello from C1 ");
+        System.out.println(a);
+        return 8;
     }
 }

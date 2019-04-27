@@ -453,7 +453,14 @@ namespace AST {
 
         ASM::Push::New(1, HWCP);
         ASM::Mov::New(HWCP, object->resultReg);
-        ASM::Branch::BL(ASM::Label::MethodPrefix, methodDecl->methodId);
+
+        if (methodDecl->methodSignature->isVirtual) {
+            ASM::Reg *methodAddr = new ASM::Reg();
+            ASM::Ldr::New(methodAddr, HWCP, methodDecl->methodSignature->virtualId * WORD_SIZE);
+            ASM::Branch::BLX(methodAddr);
+        } else {
+            ASM::Branch::BL(ASM::Label::MethodPrefix, methodDecl->methodId);
+        }
         ASM::Pop::New(1, HWCP);
 
         ASM::Mov::New(resultReg, HWR0);
@@ -646,13 +653,18 @@ namespace AST {
     void NewClassObject::compile() {
         ClassDecl *classDecl = type->classId->classDecl;
 
-        ASM::Mov::New(HWR0, classDecl->totalVarSize);
+        ASM::Mov::New(HWR0, classDecl->methodVTable.size() * WORD_SIZE + classDecl->totalVarSize);
         ASM::Branch::BL("malloc");
         ASM::Mov::New(resultReg, HWR0);
 
-        // TODO: /* set vtable */
-        // printf("\tldr r1, =_class_%d_vtable\n", type->classId->classDecl->classId);
-        // printf("\tstr r1, [ r0, #%lu ]\n", classDecl->totalVarSize);
+        /* setup vtable */
+        int stackOffset = 0;
+        ASM::Reg *methodAddr = new ASM::Reg();
+        for (auto methodDecl : classDecl->methodVTable) {
+            ASM::Ldr::New(methodAddr, ASM::Label::MethodPrefix, methodDecl->methodId);
+            ASM::Str::New(methodAddr, resultReg, stackOffset);
+            stackOffset += WORD_SIZE;
+        }
     }
 
     NewArrayObject::NewArrayObject(int lineno, Type *primeType, Index *index) : Exp(lineno) {

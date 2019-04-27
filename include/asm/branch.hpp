@@ -21,6 +21,7 @@ namespace ASM {
         BranchNotEqual,
         BranchLink,
         BranchX,
+        BranchLinkX,
     };
 
     union BranchValue {
@@ -43,12 +44,13 @@ namespace ASM {
             static void BL(const std::string &label);
             static void BL(const std::string &labelPrefix, int labelId);
             static void BX(Reg *reg);
+            static void BLX(Reg *reg);
 
             Branch(BranchType type, const std::string &label);
 
             Branch(const std::string &label);  // BL
 
-            Branch(Reg *reg);  //  BX
+            Branch(BranchType type, Reg *reg);  //  BX, BLX
 
             ~Branch();
 

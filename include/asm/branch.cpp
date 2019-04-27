@@ -32,7 +32,11 @@ namespace ASM {
     }
 
     void Branch::BX(Reg *reg) {
-        new Branch(reg);
+        new Branch(BranchX, reg);
+    }
+
+    void Branch::BLX(Reg *reg) {
+        new Branch(BranchLinkX, reg);
     }
 
     Branch::Branch(BranchType type, const std::string &label) {
@@ -54,11 +58,11 @@ namespace ASM {
         setDef(HWR3);
     }
 
-    Branch::Branch(Reg *reg) {
-        this->type = BranchX;
+    Branch::Branch(BranchType type, Reg *reg) {
+        this->type = type;
         this->val.reg = reg;
 
-        setDef(reg);
+        setUse(reg);
     }
 
     Branch::~Branch() {
@@ -72,7 +76,7 @@ namespace ASM {
             Instruction::generateControlFlow(nextInstr);
         }
 
-        if (type == BranchLink || type == BranchX) {
+        if (type == BranchLink || type == BranchX || type == BranchLinkX) {
             /* branch outside the method */
             return;
         }
@@ -110,6 +114,9 @@ namespace ASM {
                 break;
             case BranchX:
                 Global::out << "bx " << val.reg->toString() << std::endl;
+                return;
+            case BranchLinkX:
+                Global::out << "blx " << val.reg->toString() << std::endl;
                 return;
         }
         Global::out << *val.label << std::endl;

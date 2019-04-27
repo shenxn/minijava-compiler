@@ -115,16 +115,13 @@ namespace AST {
         return methodSigMap;
     }
 
-    void ClassDecl::compileVTable() {
-        printf("_class_%d_vtable:\n", classId);
-        int virtualMethodCount = 0;
+    void ClassDecl::buildMethodVTable() {
         for (auto methodSig : *methodSigList) {
             if (!methodSig->isVirtual) {
                 continue;
             }
-            methodSig->virtualId = virtualMethodCount++;
+            methodSig->virtualId = methodVTable.size();
             MethodDecl *targetMethod = NULL;
-            int classStackOffset = 0;
             for (auto classDecl = this; classDecl != NULL; classDecl = classDecl->parent) {
                 auto methodList = classDecl->methodMap[methodSig->methodDecl->id->s];
                 for (auto methodDecl : *methodList) {
@@ -136,14 +133,8 @@ namespace AST {
                 if (targetMethod != NULL) {
                     break;
                 }
-                classStackOffset += classDecl->varSize;
             }
-            if (targetMethod == NULL) {
-                printf("\t.skip 8\n");
-            } else {
-                printf("\t.word =_method_%d\n", targetMethod->methodId);
-                printf("\t.word %d\n", classStackOffset);
-            }
+            methodVTable.push_back(targetMethod);
         }
     }
 
@@ -198,12 +189,6 @@ namespace AST {
         }
     }
 
-    void ClassDeclList::compileVTable() {
-        for (auto classDecl : list) {
-            classDecl->compileVTable();
-        }
-    }
-
     void ClassDeclList::typecheck() {
         for (auto classDecl : list) {
             classDecl->typecheck();
@@ -213,6 +198,9 @@ namespace AST {
     void ClassDeclList::preCompileProcess() {
         for (auto classDecl : list) {
             classDecl->preCompileProcess();
+        }
+        for (auto classDecl : list) {
+            classDecl->buildMethodVTable();
         }
     }
 
