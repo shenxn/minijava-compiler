@@ -77,6 +77,8 @@ class MainClass {
             } else {
                 System.out.println("array is false");
             }
+            System.out.print("whileTest is ");
+            System.out.println(new C().whileTest());
         }
 	}
 
@@ -148,6 +150,15 @@ class C {
         System.out.print("a[3][5] = ");
         System.out.println(a[3][5]);
         return true;
+    }
+    public int whileTest() {
+        int p;
+        p = 5;
+        while (p > 0) {
+            System.out.print(p);
+            p = p - 1;
+        }
+        return p;
     }
 }
 

@@ -40,8 +40,6 @@ namespace AST {
         this->exp = exp;
         this->ifStatement = ifStatement;
         this->elseStatement = elseStatement;
-
-        statementId = ASM::Global::statementCount++;
     }
 
     IfElse::~IfElse() {
@@ -64,6 +62,8 @@ namespace AST {
         exp->preCompileProcess();
         ifStatement->preCompileProcess();
         elseStatement->preCompileProcess();
+
+        statementId = ASM::Global::statementCount++;
     }
 
     void IfElse::compile() {
@@ -87,8 +87,6 @@ namespace AST {
     While::While(Exp *exp, Statement *statement) {
         this->exp = exp;
         this->statement = statement;
-
-        statementId = ASM::Global::statementCount++;
     }
 
     While::~While() {
@@ -108,16 +106,25 @@ namespace AST {
     void While::preCompileProcess() {
         exp->preCompileProcess();
         statement->preCompileProcess();
+
+        statementId = ASM::Global::statementCount++;
     }
 
     void While::compile() {
-        printf("_statement_%d_while:\n", statementId);
-        exp->compile();
-        printf("\tcmp r0, #0\n");
-        printf("\tbeq _statement_%d_end\n", statementId);
+        ASM::Branch::B(ASM::Label::StatementSkipPrefix, statementId);
+        ASM::Label::New(ASM::Label::StatementTruePrefix, statementId);
         statement->compile();
-        printf("\tb _statement_%d_while\n", statementId);
-        printf("_statement_%d_end:\n", statementId);
+        ASM::Label::New(ASM::Label::StatementSkipPrefix, statementId);
+        bool optimized = false;
+        if (!exp->isConst) {
+            /* optimize branch */
+            optimized = exp->setTrueLabel(ASM::Label::StatementTruePrefix, statementId);
+        }
+        exp->compile();
+        if (!optimized) {
+            ASM::Cmp::New(exp->resultReg, 1);
+            ASM::Branch::BEQ(ASM::Label::StatementTruePrefix, statementId);
+        }
     }
 
     Print::Print(char *s, bool isNewLine = false) {
