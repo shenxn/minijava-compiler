@@ -44,11 +44,11 @@ namespace ASM {
         regs = &Method::currMethod->savedRegs;
 
         if (isPush) {
-            use.insert(HWFP);
-            use.insert(HWLR);
+            setUse(HWFP);
+            setUse(HWLR);
         } else {
-            def.insert(HWFP);
-            def.insert(HWLR);
+            setDef(HWFP);
+            setDef(HWLR);
         }
     }
 

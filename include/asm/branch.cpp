@@ -44,21 +44,21 @@ namespace ASM {
         this->type = BranchLink;
         this->val.label = new std::string(label);
 
-        use.insert(HWR0);
-        use.insert(HWR1);
-        use.insert(HWR2);
-        use.insert(HWR3);
-        def.insert(HWR0);
-        def.insert(HWR1);
-        def.insert(HWR2);
-        def.insert(HWR3);
+        setUse(HWR0);
+        setUse(HWR1);
+        setUse(HWR2);
+        setUse(HWR3);
+        setDef(HWR0);
+        setDef(HWR1);
+        setDef(HWR2);
+        setDef(HWR3);
     }
 
     Branch::Branch(Reg *reg) {
         this->type = BranchX;
         this->val.reg = reg;
 
-        use.insert(reg);
+        setDef(reg);
     }
 
     Branch::~Branch() {

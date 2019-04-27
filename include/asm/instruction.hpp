@@ -21,6 +21,14 @@ namespace ASM {
 
             Instruction();
 
+            void setUse(Reg *reg);
+
+            void setUse(OpRand *opRand);
+
+            void setDef(Reg *reg);
+
+            void setDef(OpRand *opRand);
+
             virtual void assembly() = 0;
 
             virtual void generateControlFlow(Instruction *nextInstr);

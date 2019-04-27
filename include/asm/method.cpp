@@ -52,6 +52,10 @@ namespace ASM {
     }
 
     void Method::optimize() {
+        if (symbolicRegs.empty()) {
+            return;
+        }
+
         currMethod = this;
 
         /* generate control flow graph */

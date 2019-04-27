@@ -9,9 +9,9 @@
         this->opA = opA; \
         this->opB = opB; \
         this->opC = opC; \
-        def.insert(opA); \
-        use.insert(opB); \
-        if (opC->type == RegOpRand || opC->type == AddrOffsetOpRand) use.insert(opC->val.reg); \
+        setDef(opA); \
+        setUse(opB); \
+        setUse(opC); \
     } \
     instrName::~instrName() { \
         delete opB; \

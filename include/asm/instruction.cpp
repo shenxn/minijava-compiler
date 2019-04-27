@@ -13,6 +13,32 @@ namespace ASM {
         Method::currMethod->instructions.push_back(this);
     }
 
+    void Instruction::setUse(Reg *reg) {
+        use.insert(reg);
+    }
+
+    void Instruction::setUse(OpRand *opRand) {
+        if (opRand->type == RegOpRand || opRand->type == AddrOffsetOpRand || opRand->type == AddrRegOffsetOpRand) {
+            setUse(opRand->val.reg);
+        }
+        if (opRand->type == AddrRegOffsetOpRand) {
+            setUse(opRand->regOffset);
+        }
+    }
+
+    void Instruction::setDef(Reg *reg) {
+        def.insert(reg);
+    }
+
+    void Instruction::setDef(OpRand *opRand) {
+        if (opRand->type == RegOpRand || opRand->type == AddrOffsetOpRand || opRand->type == AddrRegOffsetOpRand) {
+            setDef(opRand->val.reg);
+        }
+        if (opRand->type == AddrRegOffsetOpRand) {
+            setDef(opRand->regOffset);
+        }
+    }
+
     void Instruction::generateControlFlow(Instruction *nextInstr) {
         if (nextInstr == NULL) {
             return;

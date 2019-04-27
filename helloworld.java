@@ -141,12 +141,12 @@ class C {
     }
     public boolean array() {
         int[][] a;
-        a = new int[5][10];
+        a = new int[new C().v5()][10];
         System.out.print("a.length = ");
         System.out.println(a.length);
         System.out.print("a[3].length = ");
         System.out.println(a[3].length);
-        a[3][5] = -10;
+        a[3][new C().v5()] = -10;
         System.out.print("a[3][5] = ");
         System.out.println(a[3][5]);
         return true;

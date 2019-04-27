@@ -8,9 +8,9 @@
     instrName::instrName(Reg *opA, OpRand *opB) { \
         this->opA = opA; \
         this->opB = opB; \
-        if (useA) use.insert(opA); \
-        if (defA) def.insert(opA); \
-        if (opB->type == RegOpRand || opB->type == AddrOffsetOpRand) use.insert(opB->val.reg); \
+        if (useA) setUse(opA); \
+        if (defA) setDef(opA); \
+        setUse(opB); \
     } \
     instrName::~instrName() { \
         delete opB; \
