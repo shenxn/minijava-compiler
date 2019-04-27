@@ -148,7 +148,7 @@ namespace AST {
     }
 
     void ClassDecl::typecheck() {
-        currClass = classTable[id->s];
+        currClass = this;
         if (currClass != this) {
             id->reportTypeCheckError("Duplicated class declaration");
             return;
@@ -175,6 +175,7 @@ namespace AST {
     }
 
     void ClassDecl::preCompileProcess() {
+        currClass = this;
         buildMethodSigMap();
         varDeclList->preCompileProcess();
         methodDeclList->preCompileProcess();

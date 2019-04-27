@@ -82,6 +82,8 @@ namespace AST {
             ~ExpList();
 
             void typecheck();
+
+            void preCompileProcess();
     };
 
     class Integer: public Exp {
@@ -141,6 +143,8 @@ namespace AST {
 
             bool isValid();
 
+            void preCompileProcess();
+
             void compile();
     };
 
@@ -155,6 +159,8 @@ namespace AST {
             void typecheck();
 
             bool isValid();
+
+            void preCompileProcess();
 
             void compile();
     };
@@ -172,6 +178,8 @@ namespace AST {
             void typecheck();
 
             bool isValid();
+
+            void preCompileProcess();
 
             void compile();
     };
@@ -212,6 +220,10 @@ namespace AST {
             void typecheck();
 
             bool isValid();
+
+            void preCompileProcess();
+
+            ASM::Reg *newArray(Index *index);
 
             void compile();
     };

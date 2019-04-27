@@ -19,11 +19,15 @@ namespace ASM {
 
             static std::list<Method*> methods;
 
+            static bool needNewArrayFunc;
+
             static int insertStringLiteral(std::string &str);
 
             static void optimize();
 
             static void assembly(std::string programFileName);
+
+            static void assemblyNewArrayFunc();
 
             static void cleanup();
     };

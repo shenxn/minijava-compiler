@@ -40,6 +40,12 @@ namespace ASM {
         this->constOffset = constOffset;
     }
 
+    OpRand::OpRand(Reg *reg, Reg *regOffset) {
+        type = AddrRegOffsetOpRand;
+        val.reg = reg;
+        this->regOffset = regOffset;
+    }
+
     OpRand::~OpRand() {
         if (type == LabelAddrOpRand) {
             delete val.labelName;
@@ -56,13 +62,16 @@ namespace ASM {
                 return val.reg->toString();
             case ConstOpRand:
                 return "#" + std::to_string(val.constValue);
-            case AddrOffsetOpRand:
+            case AddrOffsetOpRand: {
                 int offset = constOffset;
                 if (dynamicOffset != NULL) {
                     offset += *dynamicOffset;
                 }
-                return '[' + val.reg->toString()
-                    + (offset == 0 ? "" : (", #" + std::to_string(offset))) + ']';
+                return "[" + val.reg->toString()
+                    + (offset == 0 ? "" : (",#" + std::to_string(offset))) + "]";
+            }
+            case AddrRegOffsetOpRand:
+                return "[" + val.reg->toString() + "," + regOffset->toString() + "]";
         }
         return "";
     }

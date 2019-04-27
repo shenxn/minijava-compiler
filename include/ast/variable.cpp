@@ -38,6 +38,10 @@ namespace AST {
         id->reportTypeCheckError("Undefined variable");
     }
 
+    void Variable::preCompileProcess() {
+        memoryOffset += ClassDecl::currClass->totalVarSize;
+    }
+
     void Variable::load() {
         if (varDecl->isLocal) {
             if (varDecl->isLoaded) {
@@ -46,7 +50,7 @@ namespace AST {
             ASM::Ldr::New(varDecl->asmReg, HWFP, &ASM::Method::currMethod->paramStackOffset, memoryOffset);
             varDecl->isLoaded = true;
         } else {
-            ASM::Ldr::New(varDecl->asmReg, HWCP, ClassDecl::currClass->totalVarSize + memoryOffset);
+            ASM::Ldr::New(varDecl->asmReg, HWCP, memoryOffset);
         }
     }
 

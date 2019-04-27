@@ -12,6 +12,7 @@ namespace ASM {
             static const std::string StatementTruePrefix;
             static const std::string StatementEndPrefix;
             static const std::string MethodPrefix;
+            static const std::string MethodReturnPrefix;
             static const std::string ExpShortcutPrefix;
             static const std::string ExpTruePrefix;
             static const std::string ExpEndPrefix;

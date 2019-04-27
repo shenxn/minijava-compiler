@@ -26,6 +26,8 @@
     } \
     void eName::preCompileProcess() { \
         expId = expCount++; \
+        a->preCompileProcess(); \
+        b->preCompileProcess(); \
         if (a->isConst && b->isConst) { \
             isConst = true; \
             constVal = a->constVal calcOperator b->constVal; \
@@ -37,7 +39,6 @@
         return true; \
     } \
     void eName::compile() { \
-        preCompileProcess(); \
         if (isConst) { \
             ASM::Mov::New(resultReg, constVal); \
         } else { \
@@ -62,6 +63,7 @@
         if (!(typecheckExp)) reportTypeCheckError("Incorrect oprand type for unary operation"); \
     } \
     void eName::preCompileProcess() { \
+        a->preCompileProcess(); \
         if (a->isConst) { \
             isConst = true; \
             constVal = calcOperator a->constVal; \
@@ -69,7 +71,6 @@
         Exp::preCompileProcess(); \
     } \
     void eName::compile() { \
-        preCompileProcess(); \
         if (isConst) { \
             ASM::Mov::New(resultReg, constVal); \
         } else { \
@@ -88,20 +89,27 @@
 
 #define __UNARY_EXP_TYPECHECK_EXP_BOOL__ a->isBool()
 
+// if (a->isConst) { \
+//     /* optimize: swap a and b */ \
+//     b->compile(); \
+//     asmConstructor(resultReg, b->resultReg, a->constVal); \
+//     return; \
+// }
 #define __DEFINE_BINARY_EXP_COMPILE_FUNC_INT__(asmConstructor) \
     { \
-        if (a->isConst) { \
-            /* optimize: swap a and b */ \
-            b->compile(); \
-            asmConstructor(resultReg, b->resultReg, a->constVal); \
-            return; \
-        } \
         a->compile(); \
         if (b->isConst) asmConstructor(resultReg, a->resultReg, b->constVal); \
         else { \
             b->compile(); \
             asmConstructor(resultReg, a->resultReg, b->resultReg); \
         } \
+    }
+
+#define __DEFINE_BINARY_EXP_COMPILE_FUNC_INT_REG__(asmConstructor) \
+    { \
+        a->compile(); \
+        b->compile(); \
+        asmConstructor(resultReg, a->resultReg, b->resultReg); \
     }
 
 #define __DEFINE_BINARY_EXP_COMPILE_FUNC_BOOL__(shortcutVal) \
@@ -163,7 +171,6 @@ namespace AST {
 
     Exp::~Exp() {
         delete type;
-        delete resultReg;
         delete trueLabel;
     }
 
@@ -212,6 +219,12 @@ namespace AST {
         }
     }
 
+    void ExpList::preCompileProcess() {
+        for (auto exp : list) {
+            exp->preCompileProcess();
+        }
+    }
+
     Integer::Integer(int lineno, int i) : Exp(lineno) {
         this->type = new Type(integerType);
         this->isConst = true;
@@ -221,8 +234,6 @@ namespace AST {
     void Integer::typecheck() {}
 
     void Integer::compile() {
-        preCompileProcess();
-
         ASM::Mov::New(resultReg, constVal);
     }
 
@@ -235,8 +246,6 @@ namespace AST {
     void Boolean::typecheck() {}
 
     void Boolean::compile() {
-        preCompileProcess();
-
         ASM::Mov::New(resultReg, constVal);
     }
 
@@ -259,7 +268,7 @@ namespace AST {
         integerType, 
         __BINARY_EXP_TYPECHECK_EXP_INT__,
         *,
-        __DEFINE_BINARY_EXP_COMPILE_FUNC_INT__(ASM::Mul::New)
+        __DEFINE_BINARY_EXP_COMPILE_FUNC_INT_REG__(ASM::Mul::New)
     )
     __DEFINE_BINARY_EXP__(
         Div,
@@ -406,9 +415,13 @@ namespace AST {
         return methodDecl != NULL;
     }
 
-    void MethodCall::compile() {
-        preCompileProcess();
+    void MethodCall::preCompileProcess() {
+        object->preCompileProcess();
+        paramList->preCompileProcess();
+        Exp::preCompileProcess();
+    }
 
+    void MethodCall::compile() {
         object->compile();
 
         if (paramList->list.size() > 4) {
@@ -502,24 +515,6 @@ namespace AST {
         delete index;
     }
 
-    // void IdIndexLength::execute() {
-    //     id->execute();
-    //     if (index != NULL) {
-    //         index->execute();
-    //     }
-    //     Index *subIndex = index;
-    //     VarValue subValue = id->value;
-    //     while (subIndex != NULL) {
-    //         subValue = subValue.arrayVal->value[subIndex->exp->value.intVal];
-    //         subIndex = subIndex->subIndex;
-    //     }
-    //     if (isLength) {
-    //         value.intVal = subValue.arrayVal->length;
-    //     } else {
-    //         value = subValue;
-    //     }
-    // }
-
     void IdIndexLength::typecheck() {
         id->typecheck();
         if (!id->isValid()) {
@@ -553,10 +548,33 @@ namespace AST {
         return _isValid && id->isValid();
     }
 
-    void IdIndexLength::compile() {
-        preCompileProcess();
+    void IdIndexLength::preCompileProcess() {
+        id->preCompileProcess();
+        if (index != NULL) {
+            index->preCompileProcess();
+        }
+        Exp::preCompileProcess();
+    }
 
-        // TODO
+
+    void IdIndexLength::compile() {
+        id->compile();
+        ASM::Mov::New(resultReg, id->resultReg);
+        for (auto i = index; i != NULL; i = i->subIndex) {
+            if (i->exp->isConst) {
+                ASM::Ldr::New(resultReg, resultReg, (i->exp->constVal + 1) * WORD_SIZE);
+            } else {
+                i->exp->compile();
+                ASM::Reg *offset = new ASM::Reg();
+                ASM::Mov::New(offset, WORD_SIZE);
+                ASM::Mul::New(offset, offset, i->exp->resultReg);
+                ASM::Add::New(offset, offset, 4);
+                ASM::Ldr::New(resultReg, resultReg, offset);
+            }
+        }
+        if (isLength) {
+            ASM::Ldr::New(resultReg, resultReg, 0);
+        }
     }
 
     IdObject::IdObject(int lineno, Identifier *id) : Exp(lineno) {
@@ -576,9 +594,12 @@ namespace AST {
         return _isValid && var->varDecl->type != NULL && var->varDecl->type->isValid;
     }
 
-    void IdObject::compile() {
-        preCompileProcess();
+    void IdObject::preCompileProcess() {
+        var->preCompileProcess();
+        Exp::preCompileProcess();
+    }
 
+    void IdObject::compile() {
         var->load();
         ASM::Mov::New(resultReg, var->varDecl->asmReg);
     }
@@ -600,7 +621,6 @@ namespace AST {
     }
 
     void ThisObject::compile() {
-        preCompileProcess();
         ASM::Mov::New(resultReg, HWCP);
     }
 
@@ -624,8 +644,6 @@ namespace AST {
     }
 
     void NewClassObject::compile() {
-        preCompileProcess();
-
         ClassDecl *classDecl = type->classId->classDecl;
 
         ASM::Mov::New(HWR0, classDecl->totalVarSize);
@@ -670,10 +688,25 @@ namespace AST {
         return _isValid && type->isValid;
     }
 
-    void NewArrayObject::compile() {
-        preCompileProcess();
+    void NewArrayObject::preCompileProcess() {
+        index->preCompileProcess();
+        Exp::preCompileProcess();
+    }
 
-        // TODO
+    void NewArrayObject::compile() {
+        ASM::Global::needNewArrayFunc = true;
+
+        /* store expression results in stack */
+        ASM::Sub::New(HWSP, HWSP, index->dimension * WORD_SIZE);
+        int offset = 0;
+        for (auto i = index; i != NULL; i = i->subIndex, offset += WORD_SIZE) {
+            i->exp->compile();
+            ASM::Str::New(i->exp->resultReg, HWSP, offset);
+        }
+        ASM::Mov::New(HWR0, index->dimension);
+        ASM::Mov::New(HWR1, HWSP);
+        ASM::Branch::BL("_new_array");  // _new_array(dimension, lengthsAddr)
+        ASM::Mov::New(resultReg, HWR0);
     }
 
 }

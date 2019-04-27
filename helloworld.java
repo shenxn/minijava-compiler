@@ -72,6 +72,11 @@ class MainClass {
             } else {
                 System.out.println("test is false");
             }
+            if (new C().array()) {
+                System.out.println("array is true");
+            } else {
+                System.out.println("array is false");
+            }
         }
 	}
 
@@ -130,6 +135,18 @@ class C {
         System.out.println(b.rv1());
         System.out.print("v1 + v2 = ");
         System.out.println(b.rv12());
+        return true;
+    }
+    public boolean array() {
+        int[][] a;
+        a = new int[5][10];
+        System.out.print("a.length = ");
+        System.out.println(a.length);
+        System.out.print("a[3].length = ");
+        System.out.println(a[3].length);
+        a[3][5] = -10;
+        System.out.print("a[3][5] = ");
+        System.out.println(a[3][5]);
         return true;
     }
 }

@@ -62,11 +62,9 @@ namespace AST {
         delete statementList;
     }
 
-    void MethodDecl::execute(ExpList *paramList) {
-        // TODO: delete
-    }
-
     void MethodDecl::typecheck() {
+        currMethod = this;
+
         for (auto methodDecl : *ClassDecl::currClass->methodMap.find(id->s)->second) {
             if (methodDecl->formalList->typeEqual(formalList)) {
                 if (methodDecl != this) {
@@ -106,6 +104,7 @@ namespace AST {
     }
 
     void MethodDecl::preCompileProcess() {
+        currMethod = this;
         asmMethod = new ASM::Method();
         methodId = methodCount++;
 
@@ -115,6 +114,7 @@ namespace AST {
 
         formalList->preCompileProcess();
         varDeclList->preCompileProcess();
+        statementList->preCompileProcess();
     }
 
     void MethodDecl::compile() {
@@ -141,6 +141,19 @@ namespace AST {
         // TODO: local variables
 
         statementList->compile();
+
+        ASM::Label::New(ASM::Label::MethodReturnPrefix, methodId);
+
+        /* restore registers */
+        ASM::Mov::New(HWSP, HWFP);
+        ASM::MethodRegRestore::New(false);
+
+        /* pop params */
+        if (ASM::Method::currMethod->paramStackSize) {
+            ASM::Add::New(HWSP, HWSP, ASM::Method::currMethod->paramStackSize);
+        }
+
+        ASM::Branch::BX(HWLR);
 
         // printf("\tsub sp, #%lu\n", 4 * varDeclList->list.size());  // local variables
 

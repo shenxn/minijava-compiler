@@ -28,6 +28,10 @@ namespace AST {
         statementList->typecheck();
     }
 
+    void StatementBlock::preCompileProcess() {
+        statementList->preCompileProcess();
+    }
+
     void StatementBlock::compile() {
         statementList->compile();
     }
@@ -56,6 +60,12 @@ namespace AST {
         elseStatement->typecheck();
     }
 
+    void IfElse::preCompileProcess() {
+        exp->preCompileProcess();
+        ifStatement->preCompileProcess();
+        elseStatement->preCompileProcess();
+    }
+
     void IfElse::compile() {
         bool optimized = false;
         if (!exp->isConst) {
@@ -78,7 +88,7 @@ namespace AST {
         this->exp = exp;
         this->statement = statement;
 
-        // TODO: statementId = ASM::statementCount++;
+        statementId = ASM::Global::statementCount++;
     }
 
     While::~While() {
@@ -93,6 +103,11 @@ namespace AST {
         }
 
         statement->typecheck();
+    }
+
+    void While::preCompileProcess() {
+        exp->preCompileProcess();
+        statement->preCompileProcess();
     }
 
     void While::compile() {
@@ -138,6 +153,12 @@ namespace AST {
             if (!exp->isInt()) {
                 exp->reportTypeCheckError("Print parameter is neither int nor string literal");
             }
+        }
+    }
+
+    void Print::preCompileProcess() {
+        if (!isString) {
+            exp->preCompileProcess();
         }
     }
 
@@ -192,9 +213,48 @@ namespace AST {
         }
     }
 
+    void VarAssign::preCompileProcess() {
+        var->preCompileProcess();
+        if (index != NULL) {
+            index->preCompileProcess();
+        }
+        exp->preCompileProcess();
+    }
+
     void VarAssign::compile() {
         // TODO: index
-        if (var->varDecl->isLocal) {
+        if (index != NULL) {
+            ASM::Reg *addr = new ASM::Reg();
+            if (var->varDecl->isLocal) {
+                ASM::Mov::New(addr, var->varDecl->asmReg);
+            } else {
+                ASM::Str::New(addr, HWCP, var->memoryOffset);
+            }
+            Index *i;
+            for (i = index; i->subIndex != NULL; i = i->subIndex) {
+                if (i->exp->isConst) {
+                    ASM::Ldr::New(addr, addr, (i->exp->constVal + 1) * WORD_SIZE);
+                } else {
+                    i->exp->compile();
+                    ASM::Reg *offset = new ASM::Reg();
+                    ASM::Mov::New(offset, WORD_SIZE);
+                    ASM::Mul::New(offset, offset, i->exp->resultReg);
+                    ASM::Add::New(offset, offset, 4);
+                    ASM::Ldr::New(addr, addr, offset);
+                }
+            }
+            exp->compile();
+            if (i->exp->isConst) {
+                ASM::Str::New(exp->resultReg, addr, (i->exp->constVal + 1) * WORD_SIZE);
+            } else {
+                i->exp->compile();
+                ASM::Reg *offset = new ASM::Reg();
+                ASM::Mov::New(offset, WORD_SIZE);
+                ASM::Mul::New(offset, offset, i->exp->resultReg);
+                ASM::Add::New(offset, offset, 4);
+                ASM::Str::New(exp->resultReg, addr, offset);
+            }
+        } else if (var->varDecl->isLocal) {
             if (exp->isConst) {
                 ASM::Mov::New(var->varDecl->asmReg, exp->constVal);
             } else {
@@ -204,7 +264,7 @@ namespace AST {
             var->varDecl->isLoaded = true;
         } else {
             exp->compile();
-            ASM::Str::New(exp->resultReg, HWCP, ClassDecl::currClass->totalVarSize + var->memoryOffset);
+            ASM::Str::New(exp->resultReg, HWCP, var->memoryOffset);
         }
     }
 
@@ -234,6 +294,10 @@ namespace AST {
         return true;
     }
 
+    void Return::preCompileProcess() {
+        exp->preCompileProcess();
+    }
+
     void Return::compile() {
         if (exp->isConst) {
             ASM::Mov::New(HWR0, exp->constVal);
@@ -242,16 +306,7 @@ namespace AST {
             ASM::Mov::New(HWR0, exp->resultReg);
         }
 
-        /* restore registers */
-        ASM::Mov::New(HWSP, HWFP);
-        ASM::MethodRegRestore::New(false);
-
-        /* pop params */
-        if (ASM::Method::currMethod->paramStackSize) {
-            ASM::Add::New(HWSP, HWSP, ASM::Method::currMethod->paramStackSize);
-        }
-
-        ASM::Branch::BX(HWLR);
+        ASM::Branch::B(ASM::Label::MethodReturnPrefix, MethodDecl::currMethod->methodId);
     }
 
     StatementList::~StatementList() {
@@ -263,6 +318,12 @@ namespace AST {
     void StatementList::typecheck() {
         for (auto statement : list) {
             statement->typecheck();
+        }
+    }
+
+    void StatementList::preCompileProcess() {
+        for (auto statement : list) {
+            statement->preCompileProcess();
         }
     }
 

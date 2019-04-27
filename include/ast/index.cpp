@@ -41,4 +41,11 @@ namespace AST {
         }
     }
 
+    void Index::preCompileProcess() {
+        exp->preCompileProcess();
+        if (subIndex != NULL) {
+            subIndex->preCompileProcess();
+        }
+    }
+
 }

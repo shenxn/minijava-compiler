@@ -18,24 +18,26 @@ namespace AST {
         delete statement;
     }
 
+    void MainClass::typecheck() {
+        currClass = ClassDecl::classTable[id->s];
+        MethodDecl::currMethod = NULL;
+        statement->typecheck();
+    }
+
     void MainClass::preCompileProcess() {
+        currClass = ClassDecl::classTable[id->s];
+        MethodDecl::currMethod = NULL;
         asmMethod = new ASM::Method();
+        statement->preCompileProcess();
     }
 
     void MainClass::compile() {
         ASM::Method::currMethod = asmMethod;
 
         ASM::Label::New("main");
-        ASM::MethodRegRestore::New(true);
+        ASM::Push::New(1, HWLR);
         statement->compile();
-        ASM::MethodRegRestore::New(false);
-        ASM::Branch::BX(HWLR);
-    }
-
-    void MainClass::typecheck() {
-        currClass = ClassDecl::classTable[id->s];
-        MethodDecl::currMethod = NULL;
-        statement->typecheck();
+        ASM::Pop::New(1, HWPC);
     }
     
 }

@@ -42,7 +42,6 @@ namespace ASM {
 
     __DEFINE_TRIOPINSTR__(Mul, "mul")
     __DEFINE_TRIOPINSTR_REGB__(Mul)
-    __DEFINE_TRIOPINSTR_CONSTB__(Mul)
 
     __DEFINE_TRIOPINSTR__(And, "and")
     __DEFINE_TRIOPINSTR_REGB__(And)

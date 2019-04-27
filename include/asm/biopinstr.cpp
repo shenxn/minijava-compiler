@@ -38,6 +38,11 @@
         new instrName(opA, new OpRand(labelPrefix, labelId, true)); \
     }
 
+#define __DEFINE_BIOPINSTR_ADDRREGOFFSETB__(instrName) \
+    void instrName::New(Reg *opA, Reg *regB, Reg *regOffsetB) { \
+        new instrName(opA, new OpRand(regB, regOffsetB)); \
+    }
+
 #define __DEFINE_BIOPINSTR_ADDRCONSTOFFSETB__(instrName) \
     void instrName::New(Reg *opA, Reg *regB, int constOffsetB) { \
         new instrName(opA, new OpRand(regB, constOffsetB)); \
@@ -58,10 +63,12 @@ namespace ASM {
 
     __DEFINE_BIOPINSTR__(Ldr, "ldr", false, true);
     __DEFINE_BIOPINSTR_LABELADDRB__(Ldr);
+    __DEFINE_BIOPINSTR_ADDRREGOFFSETB__(Ldr);
     __DEFINE_BIOPINSTR_ADDRCONSTOFFSETB__(Ldr);
     __DEFINE_BIOPINSTR_ADDRDYNAMICOFFSETB__(Ldr);
 
     __DEFINE_BIOPINSTR__(Str, "str", true, false);
+    __DEFINE_BIOPINSTR_ADDRREGOFFSETB__(Str);
     __DEFINE_BIOPINSTR_ADDRCONSTOFFSETB__(Str);
     __DEFINE_BIOPINSTR_ADDRDYNAMICOFFSETB__(Str);
 

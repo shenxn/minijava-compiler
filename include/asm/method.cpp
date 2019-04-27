@@ -43,6 +43,9 @@ namespace ASM {
         delete SP;
         delete LR;
         delete PC;
+        for (auto reg : symbolicRegs) {
+            delete reg;
+        }
         for (auto instruction : instructions) {
             delete instruction;
         }
