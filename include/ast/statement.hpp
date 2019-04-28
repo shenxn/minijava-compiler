@@ -113,6 +113,8 @@ namespace AST {
         public:
             Exp *exp;
 
+            int returnId;
+
             Return(Exp *exp);
 
             ~Return();

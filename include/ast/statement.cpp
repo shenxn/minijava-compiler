@@ -302,6 +302,7 @@ namespace AST {
     }
 
     void Return::preCompileProcess() {
+        returnId = MethodDecl::currMethod->nReturnStatements++;
         exp->preCompileProcess();
     }
 
@@ -313,7 +314,10 @@ namespace AST {
             ASM::Mov::New(HWR0, exp->resultReg);
         }
 
-        ASM::Branch::B(ASM::Label::MethodReturnPrefix, MethodDecl::currMethod->methodId);
+        if (returnId + 1 < MethodDecl::currMethod->nReturnStatements) {
+            /* when there is only one return statement at the end, no branch needed */
+            ASM::Branch::B(ASM::Label::MethodReturnPrefix, MethodDecl::currMethod->methodId);
+        }
     }
 
     StatementList::~StatementList() {

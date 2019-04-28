@@ -21,16 +21,4 @@ namespace ASM {
 
     __DECLEAR_LISTOPINSTR__(Pop);
 
-    class MethodRegRestore : public Instruction {
-        public:
-            static void New(bool isPush);
-
-            bool isPush;
-            std::list <Reg*> *regs;
-
-            MethodRegRestore(bool isPush);
-
-            void assembly();
-    };
-
 }

@@ -30,6 +30,8 @@ namespace AST {
 
             ASM::Method *asmMethod;
 
+            int nReturnStatements = 0;
+
             MethodDecl(int lineno, Type *returnType, Identifier *methodId, VarDeclList *formalList, VarDeclList *varDeclList, StatementList *statementList);
 
             ~MethodDecl();

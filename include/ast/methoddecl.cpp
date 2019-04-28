@@ -142,18 +142,13 @@ namespace AST {
 
         statementList->compile();
 
-        ASM::Label::New(ASM::Label::MethodReturnPrefix, methodId);
+        if (nReturnStatements > 1) {
+            ASM::Label::New(ASM::Label::MethodReturnPrefix, methodId);
+        }
 
         /* restore registers */
         ASM::Mov::New(HWSP, HWFP);
         ASM::MethodRegRestore::New(false);
-
-        /* pop params */
-        if (ASM::Method::currMethod->paramStackSize) {
-            ASM::Add::New(HWSP, HWSP, ASM::Method::currMethod->paramStackSize);
-        }
-
-        ASM::Branch::BX(HWLR);
 
         // printf("\tsub sp, #%lu\n", 4 * varDeclList->list.size());  // local variables
 

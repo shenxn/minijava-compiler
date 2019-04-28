@@ -10,6 +10,7 @@
 #include "label.hpp"
 #include "listopinstr.hpp"
 #include "method.hpp"
+#include "methodregrestore.hpp"
 #include "oprand.hpp"
 #include "triopinstr.hpp"
 #include "reg.hpp"
