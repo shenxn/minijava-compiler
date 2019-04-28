@@ -167,7 +167,6 @@ namespace AST {
 
     void ClassDecl::preCompileProcess() {
         currClass = this;
-        buildMethodSigMap();
         varDeclList->preCompileProcess();
         methodDeclList->preCompileProcess();
     }
@@ -197,10 +196,13 @@ namespace AST {
 
     void ClassDeclList::preCompileProcess() {
         for (auto classDecl : list) {
-            classDecl->preCompileProcess();
+            classDecl->buildMethodSigMap();
         }
         for (auto classDecl : list) {
             classDecl->buildMethodVTable();
+        }
+        for (auto classDecl : list) {
+            classDecl->preCompileProcess();
         }
     }
 

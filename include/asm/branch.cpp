@@ -63,6 +63,17 @@ namespace ASM {
         this->val.reg = reg;
 
         setUse(reg);
+
+        if (type == BranchLinkX) {
+            setUse(HWR0);
+            setUse(HWR1);
+            setUse(HWR2);
+            setUse(HWR3);
+            setDef(HWR0);
+            setDef(HWR1);
+            setDef(HWR2);
+            setDef(HWR3);
+        }
     }
 
     Branch::~Branch() {
