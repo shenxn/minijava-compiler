@@ -60,6 +60,12 @@ namespace ASM {
 
             std::map <std::string, Instruction*> labelMap;
 
+            double usageCountWeight = 1;
+
+            int spillStackSize = 0;
+
+            Instruction *currInstruction;
+
             Method();
 
             ~Method();

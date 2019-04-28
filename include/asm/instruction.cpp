@@ -9,12 +9,21 @@
 
 namespace ASM {
 
-    Instruction::Instruction() {
-        Method::currMethod->instructions.push_back(this);
+    Instruction::Instruction() : Instruction(true) {}
+
+    Instruction::Instruction(bool needInsert) {
+        if (needInsert) {
+            usageCountWeight = Method::currMethod->usageCountWeight;
+            Method::currMethod->instructions.push_back(this);
+        } else {
+            usageCountWeight = 0;
+        }
     }
 
     void Instruction::setUse(Reg *reg) {
-        use.insert(reg);
+        if (reg != HWCP && reg != HWFP && reg != HWSP && reg != HWCP && reg != HWLR) {
+            use.insert(reg);
+        }
     }
 
     void Instruction::setUse(OpRand *opRand) {
@@ -27,7 +36,9 @@ namespace ASM {
     }
 
     void Instruction::setDef(Reg *reg) {
-        def.insert(reg);
+        if (reg != HWCP && reg != HWFP && reg != HWSP && reg != HWCP && reg != HWLR) {
+            def.insert(reg);
+        }
     }
 
     void Instruction::setDef(OpRand *opRand) {

@@ -77,11 +77,14 @@ namespace AST {
             ASM::Cmp::New(exp->resultReg, 1);
             ASM::Branch::BEQ(ASM::Label::StatementTruePrefix, statementId);
         }
+
+        ASM::Method::currMethod->usageCountWeight /= 2;
         elseStatement->compile();
         ASM::Branch::B(ASM::Label::StatementEndPrefix, statementId);
         ASM::Label::New(ASM::Label::StatementTruePrefix, statementId);
         ifStatement->compile();
         ASM::Label::New(ASM::Label::StatementEndPrefix, statementId);
+        ASM::Method::currMethod->usageCountWeight *= 2;
     }
 
     While::While(Exp *exp, Statement *statement) {
@@ -112,6 +115,8 @@ namespace AST {
 
     void While::compile() {
         ASM::Branch::B(ASM::Label::StatementSkipPrefix, statementId);
+
+        ASM::Method::currMethod->usageCountWeight *= 10;
         ASM::Label::New(ASM::Label::StatementTruePrefix, statementId);
         statement->compile();
         ASM::Label::New(ASM::Label::StatementSkipPrefix, statementId);
@@ -125,6 +130,7 @@ namespace AST {
             ASM::Cmp::New(exp->resultReg, 1);
             ASM::Branch::BEQ(ASM::Label::StatementTruePrefix, statementId);
         }
+        ASM::Method::currMethod->usageCountWeight /= 10;
     }
 
     Print::Print(char *s, bool isNewLine = false) {

@@ -108,6 +108,12 @@ class C {
     }
     public boolean params(int a, int b, int c, int d, int e, int f) {
         int v1;
+        int v2;
+        int v3;
+        int x1;
+        v1 = 16;
+        v2 = 17;
+        v3 = 18;
         f = 10;
         System.out.print("a = ");
         System.out.println(a);
@@ -126,8 +132,16 @@ class C {
         System.out.print("f / c = ");
         System.out.println(f / c);
         System.out.print("v1 = ");
-        v1 = 16;
         System.out.println(v1);
+        System.out.print("v2 = ");
+        System.out.println(v2);
+        x1 = 5;
+        System.out.print("v3 = ");
+        System.out.println(v3);
+        System.out.print("x1 = ");
+        System.out.println(x1);
+        System.out.print("v2 + v3 = ");
+        System.out.println(v2 + v3);
         return true;
     }
     public boolean test() {

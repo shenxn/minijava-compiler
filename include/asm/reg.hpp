@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <list>
 
 #include "typedef.hpp"
 
@@ -21,6 +22,14 @@ namespace ASM {
 
             bool isUsed = false;  // hardware register only
 
+            double spillingCost;
+
+            bool isSpilled = false;
+
+            std::list <Reg*> spilledRegs;
+            Instruction *lastInstruction;
+            std::list<Reg*>::iterator currSpilledReg;
+
             RegValue val;
 
             RegSet interferences;
@@ -31,7 +40,7 @@ namespace ASM {
 
             ~Reg();
 
-            std::string toString() const;
+            std::string toString();
     };
 
 }

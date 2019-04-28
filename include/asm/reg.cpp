@@ -6,7 +6,7 @@
 #include "method.hpp"
 
 namespace ASM {
-    
+
     Reg::Reg() {
         isSymbolic = true;
         Method::currMethod->symbolicRegs.push_back(this);
@@ -23,7 +23,14 @@ namespace ASM {
         }
     }
 
-    std::string Reg::toString() const {
+    std::string Reg::toString() {
+        if (isSpilled) {
+            if (Method::currMethod->currInstruction != lastInstruction) {
+                lastInstruction = Method::currMethod->currInstruction;
+                currSpilledReg++;
+            }
+            return (*currSpilledReg)->toString();
+        }
         if (isSymbolic) {
             return val.physReg->toString();
         }

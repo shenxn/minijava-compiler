@@ -6,6 +6,7 @@
 #include "global.hpp"
 #include "instruction.hpp"
 #include "reg.hpp"
+#include "spill.hpp"
 
 namespace ASM {
 
@@ -172,8 +173,100 @@ namespace ASM {
                 reg->isInInterGraph = false;
             }
             if (!found) {
-                // TODO
-                printf("Need spill\n");
+                /* spill */
+
+                /* adding back regs */
+                while (!coloringStack.empty()) {
+                    Reg *reg = coloringStack.top();
+                    coloringStack.pop();
+                    for (auto regB : reg->interferences) {
+                        regB->interferences.insert(reg);
+                    }
+                    reg->isInInterGraph = true;
+                }
+                
+                /* calculate cost */
+                for (auto reg : symbolicRegs) {
+                    reg->spillingCost = 0;
+                }
+                for (auto instruction : instructions) {
+                    for (auto reg : instruction->use) {
+                        if (reg->isSymbolic) {
+                            reg->spillingCost += instruction->usageCountWeight;
+                        }
+                    }
+                    for (auto reg : instruction->def) {
+                        if (reg->isSymbolic) {
+                            reg->spillingCost += instruction->usageCountWeight;
+                        }
+                    }
+                }
+
+                /* find reg with smallest cost */
+                Reg *selectedReg = NULL;
+                for (auto reg : symbolicRegs) {
+                    int size = reg->interferences.size();
+                    if (size == 0) {
+                        /* reg with no interference do not need spill */
+                        continue;
+                    }
+                    reg->spillingCost /= size == 0 ? 1 : size;
+                    if (selectedReg == NULL || reg->spillingCost < selectedReg->spillingCost) {
+                        selectedReg = reg;
+                    }
+                }
+
+                /* spill the reg */
+                selectedReg->isSpilled = true;
+                for (auto it = instructions.begin(); it != instructions.end();) {
+                    auto currIt = it;
+                    Instruction *instr = *currIt;
+                    it++;
+                    Reg *newReg = NULL;
+                    if (instr->use.find(selectedReg) != instr->use.end()) {
+                        newReg = new Reg();
+                        Instruction *ldr = SpillLdrStr::Ldr(newReg, spillStackSize);
+                        instructions.insert(currIt, ldr);
+                        (*currIt)->use.erase(selectedReg);
+                        (*currIt)->use.insert(newReg);
+                    }
+                    if (instr->def.find(selectedReg) != instr->def.end()) {
+                        if (newReg == NULL) {
+                            newReg = new Reg();
+                        }
+                        Instruction *str = SpillLdrStr::Str(newReg, spillStackSize);
+                        instructions.insert(it, str);
+                        (*currIt)->def.erase(selectedReg);
+                        (*currIt)->def.insert(newReg);
+                    }
+                    if (newReg != NULL) {
+                        selectedReg->spilledRegs.push_back(newReg);
+                    }
+                }
+                spillStackSize += WORD_SIZE;
+
+                /* reset instruction */
+                for (auto instruction : instructions) {
+                    instruction->LVin.clear();
+                    instruction->LVout.clear();
+                    instruction->predecessors.clear();
+                    instruction->successors.clear();
+                }
+
+                /* reset reg */
+                for (auto reg : symbolicRegs) {
+                    reg->interferences.clear();
+                    if (reg->isSpilled) {
+                        reg->lastInstruction = NULL;
+                        reg->currSpilledReg = reg->spilledRegs.begin();
+                    }
+                }
+                for (int i = 0; i < N_GENERAL_REGS; i++) {
+                    generalRegs[i]->interferences.clear();
+                }
+
+                /* redo optimization */
+                optimize();
                 return;
             }
         }
@@ -221,6 +314,7 @@ namespace ASM {
 
     void Method::assembly() {
         for (auto instruction : instructions) {
+            currInstruction = instruction;
             instruction->assembly();
         }
     }

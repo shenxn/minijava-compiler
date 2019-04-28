@@ -124,6 +124,7 @@ namespace AST {
         ASM::Label::New(ASM::Label::MethodPrefix, methodId);
         ASM::MethodRegRestore::New(true);
         ASM::Mov::New(HWFP, HWSP);  // set new frame point
+        ASM::SpillInit::New(&ASM::Method::currMethod->spillStackSize);
 
         /* load parameters */
         int paramIt = 0;
@@ -149,11 +150,6 @@ namespace AST {
         /* restore registers */
         ASM::Mov::New(HWSP, HWFP);
         ASM::MethodRegRestore::New(false);
-
-        // printf("\tsub sp, #%lu\n", 4 * varDeclList->list.size());  // local variables
-
-        // // TODO: ASM::methodDecl = this;
-        // statementList->compile();
     }
 
     MethodDeclList::~MethodDeclList() {

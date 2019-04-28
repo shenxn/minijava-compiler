@@ -19,7 +19,11 @@ namespace ASM {
             std::list<Instruction*> predecessors;
             std::list<Instruction*> successors;
 
+            double usageCountWeight;  // used to calculate spilling node
+
             Instruction();
+
+            Instruction(bool needInsert);  // initialize without insert into instructions
 
             void setUse(Reg *reg);
 

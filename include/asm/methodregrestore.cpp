@@ -17,14 +17,6 @@ namespace ASM {
         regs = &Method::currMethod->savedRegs;
         isPC = ASM::Method::currMethod->paramStackSize == 0;
 
-        if (isPush) {
-            setUse(HWFP);
-            setUse(HWLR);
-        } else {
-            setDef(HWFP);
-            setDef(isPC ? HWPC : HWLR);
-        }
-
         if (!isPush && !isPC) {
             Add::New(HWSP, HWSP, ASM::Method::currMethod->paramStackSize);
             Branch::BX(HWLR);
