@@ -17,7 +17,8 @@
         for (int i = 0; i < nRegs; i++) { \
             Reg *reg = va_arg(args, Reg*); \
             regs.push_back(reg); \
-            (isUse ? use : def).insert(reg); \
+            if (isUse) setUse(reg); \
+            else setDef(reg); \
         } \
     } \
     void instrName::assembly() { \

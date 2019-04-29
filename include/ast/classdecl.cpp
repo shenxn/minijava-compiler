@@ -139,7 +139,7 @@ namespace AST {
     }
 
     void ClassDecl::typecheck() {
-        currClass = this;
+        currClass = classTable[id->s];
         if (currClass != this) {
             id->reportTypeCheckError("Duplicated class declaration");
             return;

@@ -14,6 +14,7 @@ namespace ASM {
         ConstOpRand,
         AddrOffsetOpRand,
         AddrRegOffsetOpRand,
+        MemoryConstOpRand,
     };
 
     union OpRandValue {
@@ -41,7 +42,7 @@ namespace ASM {
 
             OpRand(Reg* reg);
 
-            OpRand(int constValue);
+            OpRand(int constValue, bool isMemory);
 
             OpRand(Reg *reg, int constOffset);
 

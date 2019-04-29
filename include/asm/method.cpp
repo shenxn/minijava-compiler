@@ -33,6 +33,11 @@ namespace ASM {
         SP = new Reg("sp");
         LR = new Reg("lr");
         PC = new Reg("pc");
+#ifdef DEBUG
+        for (int i = 0; i < 9; i++) {
+            printf("r%d = %p\n", i, generalRegs[i]);
+        }
+#endif
     }
 
     Method::~Method() {
@@ -78,15 +83,22 @@ namespace ASM {
             workList.pop_front();
             instruction->isInWList = false;
 
-            static std::list<Instruction*> workList;
-
             /* LVout = \union_{b \in succ} use(b) */
             instruction->LVout.clear();
+#ifdef DEBUG
+            printf("LVout %p: ", instruction);
+#endif
             for (auto successor : instruction->successors) {
                 for (auto reg : successor->LVin) {
                     instruction->LVout.insert(reg);
+#ifdef DEBUG
+                    printf("%p, ", reg);
+#endif
                 }
             }
+#ifdef DEBUG
+            printf("\n");
+#endif
 
             /* LVin = (LVout - DEF) \union USE */
             int oldInSize = instruction->LVin.size();
@@ -103,6 +115,9 @@ namespace ASM {
                 /* LVin has changed */
                 for (auto predecessor : instruction->predecessors) {
                     if (!predecessor->isInWList) {
+#ifdef DEBUG
+                        printf("reinsert %p\n", predecessor);
+#endif
                         workList.push_back(predecessor);
                         predecessor->isInWList = true;
                     }
@@ -110,27 +125,29 @@ namespace ASM {
             }
         }
 
-        // printf("method\n");
-        // for (auto instruction : instructions) {
-        //     printf("statement:\n");
-        //     printf(" use: ");
-        //     for (auto reg : instruction->use) {
-        //         printf("  %p, ", reg);
-        //     }
-        //     printf("\n def: ");
-        //     for (auto reg : instruction->def) {
-        //         printf("  %p, ", reg);
-        //     }
-        //     printf("\n LVin: ");
-        //     for (auto reg : instruction->LVin) {
-        //         printf("  %p, ", reg);
-        //     }
-        //     printf("\n LVout: ");
-        //     for (auto reg : instruction->LVout) {
-        //         printf("  %p, ", reg);
-        //     }
-        //     printf("\n");
-        // }
+#ifdef DEBUG
+        printf("method\n");
+        for (auto instruction : instructions) {
+            printf("instruction %p:\n", instruction);
+            printf(" use: ");
+            for (auto reg : instruction->use) {
+                printf("%p, ", reg);
+            }
+            printf("\n def: ");
+            for (auto reg : instruction->def) {
+                printf("%p, ", reg);
+            }
+            printf("\n LVin: ");
+            for (auto reg : instruction->LVin) {
+                printf("%p, ", reg);
+            }
+            printf("\n LVout: ");
+            for (auto reg : instruction->LVout) {
+                printf("%p, ", reg);
+            }
+            printf("\n");
+        }
+#endif
 
         /* generate interference graph */
         for (auto instruction : instructions) {
@@ -315,6 +332,13 @@ namespace ASM {
     void Method::assembly() {
         for (auto instruction : instructions) {
             currInstruction = instruction;
+#ifdef DEBUG
+            Global::out << "# instruction: " << instruction << " >> ";
+            for (auto successor : instruction->successors) {
+                Global::out << successor << ", ";
+            }
+            Global::out << std::endl;
+#endif
             instruction->assembly();
         }
     }

@@ -241,7 +241,7 @@ namespace AST {
             if (var->varDecl->isLocal) {
                 ASM::Mov::New(addr, var->varDecl->asmReg);
             } else {
-                ASM::Str::New(addr, HWCP, var->memoryOffset);
+                ASM::Ldr::New(addr, HWCP, var->memoryOffset);
             }
             Index *i;
             for (i = index; i->subIndex != NULL; i = i->subIndex) {

@@ -40,7 +40,7 @@
     } \
     void eName::compile() { \
         if (isConst) { \
-            ASM::Mov::New(resultReg, constVal); \
+            ASM::Ldr::New(resultReg, constVal); \
         } else { \
             compileFunc \
         } \
@@ -72,7 +72,7 @@
     } \
     void eName::compile() { \
         if (isConst) { \
-            ASM::Mov::New(resultReg, constVal); \
+            ASM::Ldr::New(resultReg, constVal); \
         } else { \
             a->compile(); \
             compileFunc \
@@ -234,7 +234,7 @@ namespace AST {
     void Integer::typecheck() {}
 
     void Integer::compile() {
-        ASM::Mov::New(resultReg, constVal);
+        ASM::Ldr::New(resultReg, constVal);
     }
 
     Boolean::Boolean(int lineno, bool b) : Exp(lineno) {
@@ -300,7 +300,7 @@ namespace AST {
         Orr,
         booleanType,
         __BINARY_EXP_TYPECHECK_EXP_BOOL__,
-        &&,
+        ||,
         __DEFINE_BINARY_EXP_COMPILE_FUNC_BOOL__(1)
     )
     __DEFINE_BINARY_EXP__(
@@ -364,7 +364,7 @@ namespace AST {
         Not,
         booleanType,
         __UNARY_EXP_TYPECHECK_EXP_BOOL__,
-        ~,
+        !,
         ASM::Eor::New(resultReg, a->resultReg, 1);
     )
 
@@ -436,16 +436,22 @@ namespace AST {
         int paramIt = 0;
         for (auto param : paramList->list) {
             param->compile();
-            if (paramIt < 4) {
-                /* move param to register */
-                ASM::Mov::New(
-                    ASM::Method::currMethod->generalRegs[paramIt],
-                    param->resultReg
-                );
-            } else {
+            if (paramIt >= N_REG_PARAM) {
                 /* save param into stack */
                 ASM::Str::New(param->resultReg, paramSP, (paramIt - N_REG_PARAM) * WORD_SIZE);
             }
+            paramIt++;
+        }
+        paramIt = 0;
+        for (auto param : paramList->list) {
+            if (paramIt >= N_REG_PARAM) {
+                break;
+            }
+            /* move param to register */
+            ASM::Mov::New(
+                ASM::Method::currMethod->generalRegs[paramIt],
+                param->resultReg
+            );
             paramIt++;
         }
 
@@ -464,51 +470,6 @@ namespace AST {
         ASM::Pop::New(1, HWCP);
 
         ASM::Mov::New(resultReg, HWR0);
-
-        // printf("\tpush {r4}\n");
-        // object->compile();
-        // printf("\tmov r5, r0\n");  // temporarily stored in r5
-        
-        // if (!paramList->list.empty()) {
-        //     printf("\tsub sp, #%lu\n", 4 * paramList->list.size());  // Make space for parameters
-        //     int stackOffset = 0;
-        //     for (auto param : paramList->list) {
-        //         param->compile();
-        //         printf("\tstr r0, [ sp, #%d ]\n", stackOffset);
-        //         stackOffset += 4;
-        //     }
-        //     switch (paramList->list.size()) {
-        //         case 1:
-        //             printf("\tpop {r0}\n");
-        //             break;
-        //         case 2:
-        //             printf("\tpop {r0-r1}\n");
-        //             break;
-        //         case 3:
-        //             printf("\tpop {r0-r2}\n");
-        //             break;
-        //         default:
-        //             printf("\tpop {r0-r3}\n");
-        //             break;
-        //     }
-        // }
-
-        // printf("\tmov r4, r5\n");  // set object base pointer
-        // if (methodDecl->methodSignature->isVirtual) {
-        //     ClassDecl *classDecl = object->type->classId->classDecl;
-        //     printf("\tpush {r5-r6}\n");
-        //     printf("\tldr r5, [ r4, #%lu ]\n", classDecl->totalVarSize + 8 * methodDecl->methodSignature->virtualId);  // method address
-        //     printf("\tldr r6, [ r4, #%lu ]\n", classDecl->totalVarSize + 8 * methodDecl->methodSignature->virtualId + 1);  // stack offset
-        //     printf("\tadd r4, r6\n");
-        //     printf("\tblx r5\n");
-        //     printf("\tpop {r5-r6}\n");
-        // } else {
-        //     if (classStackOffset > 0) {
-        //         printf("\tadd r4, #%d\n", classStackOffset);
-        //     }
-        //     printf("\tbl _method_%d\n", methodDecl->methodId);
-        // }
-        // printf("\tpop {r4}\n");
     }
 
     IdIndexLength::IdIndexLength(int lineno, Identifier* id, Index *index, bool isLength) : Exp(lineno) {
@@ -594,11 +555,11 @@ namespace AST {
 
     void IdObject::typecheck() {
         var->typecheck();
-        type = var->varDecl->type;
+        type = var->varDecl == NULL ? NULL : var->varDecl->type;
     }
 
     bool IdObject::isValid() {
-        return _isValid && var->varDecl->type != NULL && var->varDecl->type->isValid;
+        return _isValid && type != NULL && type->isValid;
     }
 
     void IdObject::preCompileProcess() {
@@ -608,7 +569,7 @@ namespace AST {
 
     void IdObject::compile() {
         var->load();
-        ASM::Mov::New(resultReg, var->varDecl->asmReg);
+        ASM::Mov::New(resultReg, var->asmReg);
     }
 
     ThisObject::ThisObject(int lineno) : Exp(lineno) {}
@@ -719,6 +680,7 @@ namespace AST {
         ASM::Mov::New(HWR1, HWSP);
         ASM::Branch::BL("_new_array");  // _new_array(dimension, lengthsAddr)
         ASM::Mov::New(resultReg, HWR0);
+        ASM::Add::New(HWSP, HWSP, index->dimension * WORD_SIZE);
     }
 
 }

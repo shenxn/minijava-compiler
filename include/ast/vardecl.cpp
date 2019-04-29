@@ -37,7 +37,9 @@ namespace AST {
     }
 
     void VarDecl::preCompileProcess() {
-        asmReg = new ASM::Reg();
+        if (isLocal) {
+            asmReg = new ASM::Reg();
+        }
     }
 
     VarDeclList::~VarDeclList() {

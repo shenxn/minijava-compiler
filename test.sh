@@ -11,7 +11,10 @@ function testparser() {
     FILENAME=$1
     ERRORLINENO=$2
     echo "Testing $FILENAME"
-    RESULT=`./mjavac $FILENAME`
+    RESULT=$(./mjavac $FILENAME 2>&1)
+    if [[ -z RESULT ]]; then
+        rm testcase/parser/*.s
+    fi
     if [[ ERRORLINENO -eq -1 ]]; then
         if [[ ! $RESULT =~ ^Syntax ]]; then
             echo "    ${green}Pass${reset}"
@@ -37,7 +40,10 @@ function testtypechecker() {
     FILENAME=$1
     OUTPUTFILE=$FILENAME.output
     echo "Testing $FILENAME"
-    RESULT=$(./mjavac $FILENAME)
+    RESULT=$(./mjavac $FILENAME 2>&1)
+    if [[ -z RESULT ]]; then
+        rm testcase/typechecker/*.s
+    fi
     DIFF_RESULT=$(diff <(echo "$RESULT") $OUTPUTFILE)
     if [[ -z $DIFF_RESULT ]]; then
         echo "    ${green}Pass${reset}"
@@ -55,14 +61,24 @@ function testtypechecker() {
 
 function testinterpretation() {
     FILENAME=$1
+    CLASSNAME=$([[ $FILENAME =~ ^(.*)\.java$ ]] && echo ${BASH_REMATCH[1]})
     echo "Testing $FILENAME"
-    MY_RESULT=$(../../mjavac $FILENAME)
+    COMPILE_RESULT=$(../../mjavac $FILENAME 2>&1)
+    if [[ -n $COMPILE_RESULT ]]; then
+        echo "    ${red}Failed${reset}"
+        echo "Compile error"
+        echo "$COMPILE_RESULT"
+        exit 
+    fi
+    scp ${CLASSNAME}.s $PI_HOST:~/tmp/test.s
+    ssh $PI_HOST 'cd ~/tmp && gcc -o test test.s'
+    MY_RESULT=$(ssh $PI_HOST 'cd ~/tmp && ./test 2>&1')
     javac $FILENAME
-    CLASSFILE=$([[ $FILENAME =~ ^(.*)\.java$ ]] && echo ${BASH_REMATCH[1]})
-    STD_RESULT=$(java $CLASSFILE)
+    STD_RESULT=$(java $CLASSNAME)
     rm *.class
     DIFF_RESULT=$(diff <(echo "$MY_RESULT") <(echo "$STD_RESULT"))
     if [[ -z $DIFF_RESULT ]]; then
+        rm ${CLASSNAME}.s
         echo "    ${green}Pass${reset}"
     else
         echo "    ${red}Failed${reset}"
@@ -77,7 +93,7 @@ function testinterpretation() {
 }
 
 echo "--- Testing Parser ---"
-for testcase in testcase/parser/*; do
+for testcase in testcase/parser/*.java; do
     if [[ $testcase =~ \.([0-9]+)\.java$ ]]; then
         testparser $testcase ${BASH_REMATCH[1]}
     else
@@ -92,7 +108,7 @@ for testcase in testcase/typechecker/*.java; do
 done
 
 echo ""
-echo "--- Testing Interpretation ---"
+echo "--- Testing Interpretation---"
 cd testcase/interpretation
 for testcase in *.java; do
     testinterpretation $testcase

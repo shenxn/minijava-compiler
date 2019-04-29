@@ -27,7 +27,7 @@
 
 #define __DEFINE_BIOPINSTR_CONSTB__(instrName) \
     void instrName::New(Reg *opA, int constB) { \
-        new instrName(opA, new OpRand(constB)); \
+        new instrName(opA, new OpRand(constB, false)); \
     }
 
 #define __DEFINE_BIOPINSTR_LABELADDRB__(instrName) \
@@ -56,7 +56,7 @@
 namespace ASM {
 
     __DEFINE_BIOPINSTR__(Mov, "mov", false, true,
-        if (opB->type == RegOpRand && (opA->isSymbolic ? opA->val.physReg : opA) == (opB->val.reg->isSymbolic ? opB->val.reg->val.physReg : opB->val.reg)) return;  // optimization: remove self copy
+        // if (opB->type == RegOpRand && (opA->isSymbolic ? opA->val.physReg : opA) == (opB->val.reg->isSymbolic ? opB->val.reg->val.physReg : opB->val.reg)) return;  // optimization: remove self copy
     );
     __DEFINE_BIOPINSTR_REGB__(Mov);
     __DEFINE_BIOPINSTR_CONSTB__(Mov);
@@ -66,6 +66,9 @@ namespace ASM {
     __DEFINE_BIOPINSTR_ADDRREGOFFSETB__(Ldr);
     __DEFINE_BIOPINSTR_ADDRCONSTOFFSETB__(Ldr);
     __DEFINE_BIOPINSTR_ADDRDYNAMICOFFSETB__(Ldr);
+    void Ldr::New(Reg *opA, int constB) {
+        new Ldr(opA, new OpRand(constB, true));
+    }
 
     __DEFINE_BIOPINSTR__(Str, "str", true, false);
     __DEFINE_BIOPINSTR_ADDRREGOFFSETB__(Str);

@@ -22,8 +22,8 @@ namespace ASM {
         val.reg = reg;
     }
 
-    OpRand::OpRand(int constValue) {
-        type = ConstOpRand;
+    OpRand::OpRand(int constValue, bool isMemory) {
+        type = isMemory ? MemoryConstOpRand : ConstOpRand;
         val.constValue = constValue;
     }
 
@@ -62,6 +62,8 @@ namespace ASM {
                 return val.reg->toString();
             case ConstOpRand:
                 return "#" + std::to_string(val.constValue);
+            case MemoryConstOpRand:
+                return "=#" + std::to_string(val.constValue);
             case AddrOffsetOpRand: {
                 int offset = constOffset;
                 if (dynamicOffset != NULL) {

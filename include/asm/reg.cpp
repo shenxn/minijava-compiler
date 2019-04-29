@@ -1,6 +1,7 @@
 #include "reg.hpp"
 
 #include <string>
+#include <sstream>
 
 #include "global.hpp"
 #include "method.hpp"
@@ -32,6 +33,11 @@ namespace ASM {
             return (*currSpilledReg)->toString();
         }
         if (isSymbolic) {
+#ifdef DEBUG
+            std::stringstream ss;
+            ss << this;
+            return val.physReg->toString() + " " + ss.str();
+#endif
             return val.physReg->toString();
         }
         return *val.regName;

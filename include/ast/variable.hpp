@@ -13,6 +13,8 @@ namespace AST {
             VarDecl *varDecl = NULL;
             int memoryOffset;
 
+            ASM::Reg *asmReg;
+
             Variable(Identifier *id);
 
             ~Variable();

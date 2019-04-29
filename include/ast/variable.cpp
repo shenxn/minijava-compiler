@@ -25,11 +25,13 @@ namespace AST {
                 return;
             }
 
+            memoryOffset = 0;
             for (auto classDecl = ClassDecl::currClass; classDecl != NULL; classDecl = classDecl->parent) {
                 memoryOffset -= classDecl->varSize;
                 varItem = classDecl->varMap.find(id->s);
                 if (varItem != classDecl->varMap.end()) {
                     varDecl = varItem->second;
+                    memoryOffset += varDecl->memoryOffset;
                     return;
                 }
             }
@@ -39,7 +41,12 @@ namespace AST {
     }
 
     void Variable::preCompileProcess() {
-        memoryOffset += ClassDecl::currClass->methodVTable.size() * WORD_SIZE + ClassDecl::currClass->totalVarSize;
+        if (varDecl->isLocal) {
+            asmReg = varDecl->asmReg;
+        } else {
+            memoryOffset += ClassDecl::currClass->methodVTable.size() * WORD_SIZE + ClassDecl::currClass->totalVarSize;
+            asmReg = new ASM::Reg();
+        }
     }
 
     void Variable::load() {
@@ -47,10 +54,10 @@ namespace AST {
             if (varDecl->isLoaded) {
                 return;
             }
-            ASM::Ldr::New(varDecl->asmReg, HWFP, &ASM::Method::currMethod->paramStackOffset, memoryOffset);
+            ASM::Ldr::New(asmReg, HWFP, &ASM::Method::currMethod->paramStackOffset, memoryOffset);
             varDecl->isLoaded = true;
         } else {
-            ASM::Ldr::New(varDecl->asmReg, HWCP, memoryOffset);
+            ASM::Ldr::New(asmReg, HWCP, memoryOffset);
         }
     }
 

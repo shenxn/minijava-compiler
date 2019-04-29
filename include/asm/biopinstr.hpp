@@ -46,6 +46,7 @@ namespace ASM {
         __DECLEAR_BIOPINSTER_ADDRREGOFFSETB__
         __DECLEAR_BIOPINSTER_ADDRCONSTOFFSETB__
         __DECLEAR_BIOPINSTER_ADDRDYNAMICOFFSETB__
+        static void New(Reg *opA, int constB);
     );
 
     __DECLEAR_BIOPINSTR__(

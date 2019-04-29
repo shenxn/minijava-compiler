@@ -27,7 +27,7 @@
 
 #define __DEFINE_TRIOPINSTR_CONSTB__(instrName) \
     void instrName::New(Reg *opA, Reg *opB, int constC) { \
-        new instrName(opA, opB, new OpRand(constC)); \
+        new instrName(opA, opB, new OpRand(constC, false)); \
     }
 
 namespace ASM {
