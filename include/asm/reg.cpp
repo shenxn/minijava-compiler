@@ -26,9 +26,14 @@ namespace ASM {
 
     std::string Reg::toString() {
         if (isSpilled) {
+#ifdef DEBUG
+            Global::out << "lastInstruction: " << lastInstruction << " currInstruction: " << Method::currMethod->currInstruction << " ";
+#endif
             if (Method::currMethod->currInstruction != lastInstruction) {
+                if (lastInstruction != NULL) {
+                    currSpilledReg++;
+                }
                 lastInstruction = Method::currMethod->currInstruction;
-                currSpilledReg++;
             }
             return (*currSpilledReg)->toString();
         }

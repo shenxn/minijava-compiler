@@ -26,6 +26,8 @@ namespace ASM {
 
             bool isSpilled = false;
 
+            bool isSpillChild = false;
+
             std::list <Reg*> spilledRegs;
             Instruction *lastInstruction;
             std::list<Reg*>::iterator currSpilledReg;

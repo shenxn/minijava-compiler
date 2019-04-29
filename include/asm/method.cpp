@@ -222,6 +222,9 @@ namespace ASM {
                 /* find reg with smallest cost */
                 Reg *selectedReg = NULL;
                 for (auto reg : symbolicRegs) {
+                    if (reg->isSpilled || reg->isSpillChild) {
+                        continue;
+                    }
                     int size = reg->interferences.size();
                     if (size == 0) {
                         /* reg with no interference do not need spill */
@@ -232,6 +235,10 @@ namespace ASM {
                         selectedReg = reg;
                     }
                 }
+
+#ifdef DEBUG
+                printf("spill %p\n", selectedReg);
+#endif
 
                 /* spill the reg */
                 selectedReg->isSpilled = true;
@@ -257,7 +264,11 @@ namespace ASM {
                         (*currIt)->def.insert(newReg);
                     }
                     if (newReg != NULL) {
+                        newReg->isSpillChild = true;
                         selectedReg->spilledRegs.push_back(newReg);
+#ifdef DEBUG
+                        printf("  add reg: %p\n", newReg);
+#endif
                     }
                 }
                 spillStackSize += WORD_SIZE;
@@ -330,6 +341,7 @@ namespace ASM {
     }
 
     void Method::assembly() {
+        currMethod = this;
         for (auto instruction : instructions) {
             currInstruction = instruction;
 #ifdef DEBUG

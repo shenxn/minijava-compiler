@@ -56,7 +56,7 @@
 namespace ASM {
 
     __DEFINE_BIOPINSTR__(Mov, "mov", false, true,
-        // if (opB->type == RegOpRand && (opA->isSymbolic ? opA->val.physReg : opA) == (opB->val.reg->isSymbolic ? opB->val.reg->val.physReg : opB->val.reg)) return;  // optimization: remove self copy
+        if (opA->toString().compare(opB->toString()) == 0) return;  // optimization: remove self copy
     );
     __DEFINE_BIOPINSTR_REGB__(Mov);
     __DEFINE_BIOPINSTR_CONSTB__(Mov);

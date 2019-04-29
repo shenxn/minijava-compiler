@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+ISLOCAL=$1
+
 make clean
 make mjavac
 
@@ -70,9 +72,14 @@ function testinterpretation() {
         echo "$COMPILE_RESULT"
         exit 
     fi
-    scp ${CLASSNAME}.s $PI_HOST:~/tmp/test.s
-    ssh $PI_HOST 'cd ~/tmp && gcc -o test test.s'
-    MY_RESULT=$(ssh $PI_HOST 'cd ~/tmp && ./test 2>&1')
+    if [[ $ISLOCAL == "local" ]]; then
+        gcc -o test.out ${CLASSNAME}.s
+        MY_RESULT=$(./test.out 2>&1)
+    else
+        scp ${CLASSNAME}.s $PI_HOST:~/tmp/test.s
+        ssh $PI_HOST 'cd ~/tmp && gcc -o test test.s'
+        MY_RESULT=$(ssh $PI_HOST 'cd ~/tmp && ./test 2>&1')
+    fi
     javac $FILENAME
     STD_RESULT=$(java $CLASSNAME)
     rm *.class

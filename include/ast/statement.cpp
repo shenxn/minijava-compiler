@@ -269,10 +269,10 @@ namespace AST {
             }
         } else if (var->varDecl->isLocal) {
             if (exp->isConst) {
-                ASM::Mov::New(var->varDecl->asmReg, exp->constVal);
+                ASM::Mov::New(var->asmReg, exp->constVal);
             } else {
                 exp->compile();
-                ASM::Mov::New(var->varDecl->asmReg, exp->resultReg);
+                ASM::Mov::New(var->asmReg, exp->resultReg);
             }
             var->varDecl->isLoaded = true;
         } else {
